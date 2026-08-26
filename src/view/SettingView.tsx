@@ -2,17 +2,23 @@ import { App, PluginSettingTab, Setting, setIcon } from "obsidian";
 import type { SettingDefinitionItem, SettingGroupItem } from "obsidian";
 
 import { NoteType } from "../enum";
+import { openEditEvent, openQuickAddEvent, removeEvent } from "src/event/commands";
+import { formatOffsets, formatReminderSummary, parseOffsets } from "src/event/offsets";
+import { eventsStore, readEvents } from "src/event/store";
+import { REMINDER_CHANNELS, ReminderChannel } from "src/event/types";
+import type { CalendarEvent } from "src/event/types";
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import HolidayOverrideInput from "../component/HolidayOverrideInput";
 // Type-only import: it produces no require at runtime, so it is not a module
 // dependency (and import-x/no-cycle lets it through for the same reason)
 import type OpenTaiwanCalendarPlugin from "src/main";
-import { LayoutMode } from "src/state/settings";
+import { DotSize, LayoutMode } from "src/state/settings";
 import type { RocHolidayEntry } from "src/holiday/types";
 import { readPath } from "src/util/object";
 import { noteConfigMap, noteTypeLabel } from "src/enum/noteConfig";
 import { t } from "src/i18n";
+import type { TranslationKey } from "src/i18n";
 import { LATEST_OFFICIAL_YEAR } from "src/holiday/rocHolidayData";
 import type { NoteConfigItem } from "src/enum/noteConfig";
 import { DailySetupModal } from "./DailySetupModal";
@@ -22,6 +28,31 @@ import { DailySetupModal } from "./DailySetupModal";
 const FLOATING_WINDOW_HEIGHT_RATIO = 450 / 400;
 // Kept in step with MIN_WIDTH in FloatingCalendarPanel
 const MIN_FLOATING_WIDTH = 200;
+
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/**
+ * The label pair for each notification channel.
+ * A table rather than three copies of the same row, so adding a channel to
+ * REMINDER_CHANNELS is the only edit needed to make it appear here.
+ */
+const CHANNEL_LABELS: Record<
+  ReminderChannel,
+  { name: TranslationKey; desc: TranslationKey }
+> = {
+  [ReminderChannel.MODAL]: {
+    name: "settings.reminderChannelModalName",
+    desc: "settings.reminderChannelModalDesc",
+  },
+  [ReminderChannel.NOTICE]: {
+    name: "settings.reminderChannelNoticeName",
+    desc: "settings.reminderChannelNoticeDesc",
+  },
+  [ReminderChannel.SYSTEM]: {
+    name: "settings.reminderChannelSystemName",
+    desc: "settings.reminderChannelSystemDesc",
+  },
+};
 
 /**
  * The settings page, declared rather than drawn.
@@ -46,6 +77,35 @@ export default class MainSettingTable extends PluginSettingTab {
     // renderer owns the contents of containerEl but not the element itself, so
     // the class is attached once here rather than on each render.
     this.containerEl.addClass("otc-settings");
+
+    /**
+     * Redraw when the events change underneath the page.
+     *
+     * getSettingDefinitions() reads the event list once per render, so a page
+     * that is already on screen keeps showing whatever was there when it was
+     * drawn — which is how an open settings page ended up displaying "nothing
+     * yet" while the calendar beside it drew two entries. The events move for
+     * reasons that have nothing to do with this page: the first load after
+     * startup, a sync from another device, the companion Claude Code skill
+     * writing events.json directly.
+     *
+     * Not guarded on visibility. A closed page looked like the one case that
+     * could be skipped, but Obsidian reuses the rendered rows when the page is
+     * opened again, so skipping the redraw left the list showing "nothing yet"
+     * next time it was opened. Redrawing a page nobody is looking at costs a
+     * DOM rebuild that is already cheap enough to run on every event change.
+     *
+     * Registered through the plugin so the subscription ends when it unloads.
+     */
+    plugin.register(
+      eventsStore.watch(() => {
+        try {
+          this.update();
+        } catch {
+          // The tab has no rendered container until Obsidian has shown it once
+        }
+      })
+    );
   }
 
   getSettingDefinitions(): SettingDefinitionItem[] {
@@ -54,8 +114,53 @@ export default class MainSettingTable extends PluginSettingTab {
       this.appearanceGroup(),
       this.floatingGroup(),
       this.holidayGroup(),
+      this.eventsGroup(),
+      this.eventListGroup(),
       this.noteGroup(),
     ];
+  }
+
+  /**
+   * The keys that do not map one-to-one onto a stored field.
+   *
+   * Three shapes need translating between what is stored and what a control can
+   * hold: a list of numbers shown as one line of text, an array of channels
+   * shown as three separate toggles, and the fields of one event out of a list
+   * addressed by its id. Reading and writing them lives in one pair of helpers
+   * so the two directions cannot drift apart.
+   */
+  private readSynthetic(key: string): unknown {
+    const { reminder } = this.plugin.options;
+    if (key === "reminder.offsetsText") {
+      return formatOffsets(reminder.defaultOffsets);
+    }
+    const channel = REMINDER_CHANNELS.find((c) => key === `reminder.channel.${c}`);
+    return channel ? reminder.channels.includes(channel) : undefined;
+  }
+
+  /** Returns true when the key was a synthetic one and has been handled. */
+  private writeSynthetic(key: string, value: unknown): boolean {
+    if (key === "reminder.offsetsText") {
+      const offsets = parseOffsets(String(value));
+      // A line that does not parse is rejected by `validate` before it reaches
+      // here; this guard is what stops a programming slip from writing an empty
+      // rule that can never fire
+      if (offsets) {
+        this.plugin.writeOptions(() => ({ reminder: { defaultOffsets: offsets } }));
+      }
+      return true;
+    }
+
+    const channel = REMINDER_CHANNELS.find((c) => key === `reminder.channel.${c}`);
+    if (!channel) return false;
+    const current = this.plugin.options.reminder.channels;
+    // Rebuilt from REMINDER_CHANNELS rather than appended to, so the stored
+    // order is always the declared one and a toggle cannot introduce a duplicate
+    const next = value
+      ? REMINDER_CHANNELS.filter((c) => c === channel || current.includes(c))
+      : current.filter((c) => c !== channel);
+    this.plugin.writeOptions(() => ({ reminder: { channels: next } }));
+    return true;
   }
 
   /**
@@ -66,7 +171,8 @@ export default class MainSettingTable extends PluginSettingTab {
    * place the framework hands out `unknown` anyway.
    */
   getControlValue(key: string): unknown {
-    return readPath(this.plugin.options, key);
+    const synthetic = this.readSynthetic(key);
+    return synthetic === undefined ? readPath(this.plugin.options, key) : synthetic;
   }
 
   /**
@@ -77,6 +183,9 @@ export default class MainSettingTable extends PluginSettingTab {
    * predicate of a row further down the page.
    */
   setControlValue(key: string, value: unknown): void {
+    // The synthetic keys persist through their own path, so they return before
+    // the saveOptions at the bottom rather than falling through to it
+    if (this.writeSynthetic(key, value)) return;
     switch (key) {
       case "appearance.layout":
         this.plugin.writeOptions(() => ({
@@ -88,10 +197,16 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { pastTimeTransparent: value as boolean },
         }));
         break;
-      case "floatingWindow.visible":
-        // Opens or closes the panel and persists on its own
-        this.plugin.setFloatingPanelVisible(value as boolean);
-        return;
+      case "appearance.dotSize":
+        this.plugin.writeOptions(() => ({
+          appearance: { dotSize: value as DotSize },
+        }));
+        break;
+      case "appearance.hoverPreview":
+        this.plugin.writeOptions(() => ({
+          appearance: { hoverPreview: value as boolean },
+        }));
+        break;
       case "floatingWindow.width": {
         const width = Math.max(
           MIN_FLOATING_WIDTH,
@@ -105,8 +220,9 @@ export default class MainSettingTable extends PluginSettingTab {
         break;
       }
       default: {
-        // The per-granularity keys: "<note type>.useQuickAdd" and
-        // "<note type>.quickAddChoice"
+        // Everything whose dotted path is exactly "<section>.<field>": the
+        // per-granularity QuickAdd keys, and the event / reminder / daily-block
+        // sections, which need no side effect beyond the write itself
         const [type, field] = key.split(".");
         this.plugin.writeOptions(() => ({ [type]: { [field]: value } }));
         // The choice field is only shown while QuickAdd is on for that
@@ -241,9 +357,27 @@ export default class MainSettingTable extends PluginSettingTab {
           },
         },
         {
+          name: t("settings.dotSizeName"),
+          desc: t("settings.dotSizeDesc"),
+          control: {
+            type: "dropdown",
+            key: "appearance.dotSize",
+            options: {
+              [DotSize.Small]: t("settings.dotSizeSmall"),
+              [DotSize.Medium]: t("settings.dotSizeMedium"),
+              [DotSize.Large]: t("settings.dotSizeLarge"),
+            },
+          },
+        },
+        {
           name: t("settings.pastTransparentName"),
           desc: t("settings.pastTransparentDesc"),
           control: { type: "toggle", key: "appearance.pastTimeTransparent" },
+        },
+        {
+          name: t("settings.hoverPreviewName"),
+          desc: t("settings.hoverPreviewDesc"),
+          control: { type: "toggle", key: "appearance.hoverPreview" },
         },
       ],
     };
@@ -325,6 +459,166 @@ export default class MainSettingTable extends PluginSettingTab {
           },
         },
       ],
+    };
+  }
+
+  private eventsGroup(): SettingDefinitionItem {
+    return {
+      type: "group",
+      cls: "otc-card",
+      items: [
+        this.cardHead(
+          "calendar-plus",
+          t("settings.eventsCardTitle"),
+          t("settings.eventsCardSubtitle")
+        ),
+        {
+          name: t("settings.reminderColorName"),
+          desc: t("settings.reminderColorDesc"),
+          control: { type: "color", key: "eventDefaults.reminderColor" },
+        },
+        {
+          name: t("settings.eventColorName"),
+          desc: t("settings.eventColorDesc"),
+          control: { type: "color", key: "eventDefaults.eventColor" },
+        },
+        {
+          name: t("settings.reminderEnabledName"),
+          desc: t("settings.reminderEnabledDesc"),
+          control: { type: "toggle", key: "reminder.enabled" },
+        },
+        {
+          name: t("settings.reminderTimeName"),
+          desc: t("settings.reminderTimeDesc"),
+          control: {
+            type: "text",
+            key: "reminder.defaultTime",
+            validate: (raw) =>
+              TIME_PATTERN.test(String(raw).trim())
+                ? undefined
+                : t("quickAdd.errorBadTime"),
+          },
+        },
+        {
+          name: t("settings.reminderOffsetsName"),
+          desc: t("settings.reminderOffsetsDesc"),
+          control: {
+            type: "text",
+            key: "reminder.offsetsText",
+            validate: (raw) =>
+              parseOffsets(String(raw)) ? undefined : t("quickAdd.errorNoOffset"),
+          },
+        },
+        ...REMINDER_CHANNELS.map((channel) => ({
+          name: t(CHANNEL_LABELS[channel].name),
+          desc: t(CHANNEL_LABELS[channel].desc),
+          control: {
+            type: "toggle" as const,
+            key: `reminder.channel.${channel}`,
+          },
+        })),
+        {
+          name: t("settings.snoozeName"),
+          desc: t("settings.snoozeDesc"),
+          control: { type: "number", key: "reminder.snoozeMinutes", min: 1 },
+        },
+      ],
+    };
+  }
+
+  /**
+   * The events themselves.
+   *
+   * A plain group whose rows are drawn by hand, not Obsidian 1.13's `type:
+   * "list"`. The list looked like the right tool — it brings add, delete and
+   * drag-to-reorder for free — but its renderer draws nothing for rows that
+   * carry an `action` instead of a `control`: the definitions came back with
+   * every entry present and the page still showed the empty state. Rendering
+   * the rows here costs two buttons and removes the guesswork.
+   */
+  private eventListGroup(): SettingDefinitionItem {
+    const events = readEvents();
+    return {
+      type: "group",
+      cls: "otc-card",
+      items: [
+        {
+          name: t("settings.eventListTitle"),
+          searchable: false,
+          render: (setting: Setting) => {
+            setting.setName(t("settings.eventListTitle")).setHeading();
+            setting.addButton((button) =>
+              button
+                .setButtonText(t("settings.eventListAdd"))
+                .setCta()
+                .onClick(() => openQuickAddEvent(this.app))
+            );
+          },
+        },
+        ...(events.length === 0
+          ? [
+              {
+                name: t("settings.eventListEmpty"),
+                searchable: false,
+                render: (setting: Setting) => {
+                  const el = setting.settingEl;
+                  el.empty();
+                  el.addClass("otc-card-note");
+                  el.createEl("p", {
+                    cls: "setting-item-description",
+                    text: t("settings.eventListEmpty"),
+                  });
+                },
+              },
+            ]
+          : events.map((event) => this.eventRow(event))),
+      ],
+    };
+  }
+
+  /**
+   * One event: its title and a summary, with edit and delete beside them.
+   *
+   * Clicking edit opens the dialog that created the entry rather than a second
+   * one built out of settings rows — every field is the same, and the
+   * natural-language box is as useful for changing a date as for setting one.
+   */
+  private eventRow(event: CalendarEvent): SettingGroupItem {
+    const range =
+      event.start === event.end
+        ? event.start
+        : t("event.dateRange", { start: event.start, end: event.end });
+    return {
+      name: event.title,
+      desc: `${range} · ${formatReminderSummary(event.reminder)}`,
+      render: (setting: Setting) => {
+        setting
+          .setName(event.title)
+          .setDesc(`${range} · ${formatReminderSummary(event.reminder)}`)
+          .addExtraButton((button) =>
+            button
+              .setIcon("pencil")
+              .setTooltip(t("settings.eventEditAction"))
+              .onClick(() => openEditEvent(this.app, event))
+          )
+          .addExtraButton((button) =>
+            button
+              .setIcon("trash-2")
+              .setTooltip(t("settings.eventDeleteAction"))
+              .onClick(() => {
+                void removeEvent(this.app, event.id).then(() => this.update());
+              })
+          );
+        // The colour is the one thing a row cannot say in words, and it is what
+        // the user is looking for when matching a row to a bar on the calendar
+        setting.nameEl.prepend(
+          createSpan({ cls: "otc-event-swatch", attr: { style: "" } })
+        );
+        (setting.nameEl.firstElementChild as HTMLElement).style.setProperty(
+          "--otc-event-color",
+          event.color
+        );
+      },
     };
   }
 

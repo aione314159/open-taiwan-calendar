@@ -65,10 +65,35 @@ export const showNoteContextMenu = (
   event: MouseEvent,
   date: Moment,
   type: NoteType,
-  notes: Notes[NoteType]
+  notes: Notes[NoteType],
+  options: {
+    /** Opens the quick-add dialog with this date already filled in. */
+    onAddEvent?: (date: Moment) => void;
+    /**
+     * True when Periodic Notes has this granularity switched off. The note
+     * items are then left out entirely — the cell is already inert for them,
+     * and an item that silently refuses is worse than one that is not there.
+     */
+    noteActionsDisabled?: boolean;
+  } = {}
 ): void => {
   const menu = new Menu();
-  const file: TFile | null = noteExists(date, type, notes);
+  const { onAddEvent, noteActionsDisabled = false } = options;
+  const file: TFile | null = noteActionsDisabled
+    ? null
+    : noteExists(date, type, notes);
+
+  // First, because it is the only item that works regardless of what Periodic
+  // Notes is or is not configured to do
+  if (onAddEvent) {
+    menu.addItem((item) =>
+      item
+        .setTitle(t("menu.addEvent"))
+        .setIcon("calendar-plus")
+        .onClick(() => onAddEvent(date))
+    );
+    menu.addSeparator();
+  }
 
   // No "open" items when the note does not exist: clicking one would only mislead
   if (file) {
@@ -94,7 +119,7 @@ export const showNoteContextMenu = (
       .onClick(() => copyLunarDate(date))
   );
 
-  if (!file) {
+  if (!file && !noteActionsDisabled) {
     menu.addSeparator();
     menu.addItem((item) =>
       item

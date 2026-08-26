@@ -127,7 +127,16 @@ export const en = {
     "Normal is roomier and easier to read; Compact shrinks the date cells and the gaps so the same width fits more",
   "settings.layoutNormal": "Normal",
   "settings.layoutCompact": "Compact",
+  "settings.dotSizeName": "Dot size",
+  "settings.dotSizeDesc":
+    "How big the dots along the bottom of a date are — the one marking a day that has a note, and one per event.",
+  "settings.dotSizeSmall": "Small",
+  "settings.dotSizeMedium": "Medium",
+  "settings.dotSizeLarge": "Large",
   "settings.pastTransparentName": "Fade past dates",
+  "settings.hoverPreviewName": "Hover preview",
+  "settings.hoverPreviewDesc":
+    "Show the note preview popup when the pointer rests on a date. Off stops this calendar’s popup without touching the core Page Preview plugin, which other plugins share.",
   "settings.pastTransparentDesc":
     "When on, dates before today are drawn slightly transparent",
   "settings.floatingCardTitle": "Floating calendar",
@@ -236,6 +245,108 @@ export const en = {
     "Periodic Notes exposes no usable updateSettings; its settings cannot be written",
   "dailySetup.errorNoCoreOptions":
     "The core Daily notes plugin exposes no usable options object; it cannot be written",
+  // ---------------------------------------------------------------- events and reminders
+  "command.quickAddEvent": "Add an event or reminder",
+  "notice.eventSaved": "Saved: {title}",
+  "notice.dailyNoteCreateFailed":
+    "Could not create the daily note for {date}. Check that daily notes are set up and the folder is writable.",
+  "notice.eventDeleted": "Deleted: {title}",
+  "menu.addEvent": "Add an event on this day",
+  "command.showEventList": "Show reminders and events",
+  "eventList.title": "Reminders and events",
+  "eventList.tabReminders": "Reminders",
+  "eventList.tabEvents": "Events",
+  "eventList.badgeNow": "Now",
+  "eventList.empty": "Nothing here yet.",
+  "menu.addReminderHere": "Add a reminder",
+  "menu.addEventHere": "Add an event",
+
+  /** A single-day event shows just the one date; a range shows both ends. */
+  "event.dateRange": "{start} – {end}",
+  "event.reminderSummary": "Reminder {time}, {offsets}",
+  "event.offsetSameDay": "on the day",
+  "event.offsetDaysBefore": "{count} d before",
+  "event.noReminder": "No reminder",
+  /** Joins the offsets inside a reminder summary. */
+  "event.offsetSeparator": ", ",
+
+  // ---------------------------------------------------------------- quick add modal
+  "quickAdd.title": "Add an event or reminder",
+  "quickAdd.inputLabel": "Type it in your own words",
+  "quickAdd.inputPlaceholder": "Remind me on Saturday to take the laptop home",
+  "quickAdd.inputHint":
+    "The date, the length and the title are read out of the sentence. Everything below stays editable, so a sentence that is read wrongly can simply be corrected.",
+  "quickAdd.fieldTitle": "Title",
+  "quickAdd.fieldStart": "Starts",
+  /**
+   * A format specifier, not prose: it is a token the user types back verbatim,
+   * so it is neither translated nor sentence-cased. The date fields need no
+   * such placeholder — they are native date inputs, which show their own.
+   */
+  "quickAdd.timePlaceholder": "HH:mm",
+  "quickAdd.pickDate": "Pick a date",
+  "quickAdd.fieldEnd": "Ends",
+  "quickAdd.fieldColor": "Colour on the calendar",
+  "quickAdd.fieldReminder": "Remind me",
+  "quickAdd.fieldOffsets": "Days before",
+  "quickAdd.fieldOffsetsDesc":
+    "Comma-separated. 0 is the day itself, so \"1, 0\" fires once the day before and once on the day.",
+  "quickAdd.fieldTime": "At",
+  "quickAdd.submit": "Add",
+  "quickAdd.editTitle": "Edit event",
+  "quickAdd.save": "Save",
+  "quickAdd.errorEmptyTitle": "Give it a title",
+  "quickAdd.errorBadDate": "Dates must be YYYY-MM-DD",
+  "quickAdd.errorEndBeforeStart": "The end date is before the start date",
+  "quickAdd.errorBadTime": "The time must be HH:mm",
+  "quickAdd.errorNoOffset": "Enter at least one number, or turn the reminder off",
+
+  // ---------------------------------------------------------------- reminder alerts
+  "reminder.modalTitle": "Reminder",
+  "reminder.acknowledge": "Got it",
+  "reminder.snooze": "Remind me in {minutes} min",
+  "reminder.dueToday": "Today",
+  "reminder.dueInDays": "In {count} d",
+  "reminder.systemPermissionDenied":
+    "The system refused desktop notifications, so that channel is skipped. Grant Obsidian notification permission in your operating system settings.",
+
+
+  // ---------------------------------------------------------------- settings: events and reminders
+  "settings.eventsCardTitle": "Events and reminders",
+  "settings.reminderColorName": "Reminder colour",
+  "settings.reminderColorDesc": "The dot colour for an entry that reminds you",
+  "settings.eventColorName": "Event colour",
+  "settings.eventColorDesc":
+    "The dot colour for an entry that is only marked on the calendar",
+  "settings.eventsCardSubtitle":
+    "Your own entries live in the daily notes themselves — in the properties of every day they cover, with a checklist generated at the top",
+  "settings.reminderEnabledName": "Reminders",
+  "settings.reminderEnabledDesc":
+    "Off silences every reminder. Events stay on the calendar and in the daily note.",
+  "settings.reminderTimeName": "Default time",
+  "settings.reminderTimeDesc":
+    "HH:mm. A reminder whose time has already passed when Obsidian opens fires on opening rather than being skipped.",
+  "settings.reminderOffsetsName": "Default days before",
+  "settings.reminderOffsetsDesc":
+    "Comma-separated. 0 is the day itself, so \"1, 0\" fires once the day before and once on the day.",
+  "settings.reminderChannelModalName": "Dialog",
+  "settings.reminderChannelModalDesc":
+    "A dialog in the middle of the window that stays until dismissed",
+  "settings.reminderChannelNoticeName": "Corner notice",
+  "settings.reminderChannelNoticeDesc":
+    "Obsidian's own toast in the corner; does not interrupt what you are doing",
+  "settings.reminderChannelSystemName": "Desktop notification",
+  "settings.reminderChannelSystemDesc":
+    "The operating system's notification centre, visible with Obsidian in the background",
+  "settings.snoozeName": "Snooze length",
+  "settings.snoozeDesc":
+    "Minutes that \"remind me later\" pushes a dialog reminder back by",
+  "settings.eventListTitle": "Your events",
+  "settings.eventListEmpty":
+    "Nothing yet. Use the \"Add an event or reminder\" command, or right-click a date on the calendar.",
+  "settings.eventListAdd": "Add an event",
+  "settings.eventEditAction": "Edit",
+  "settings.eventDeleteAction": "Delete",
 } as const;
 
 export type TranslationKey = keyof typeof en;

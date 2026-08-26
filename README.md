@@ -23,7 +23,12 @@ English · <a href="./README.zh-TW.md">繁體中文</a>
 - Public holidays, substitute holidays and make-up workdays follow the calendar announced by the Directorate-General of Personnel Administration.
 - A sidebar view and a floating window that can be dragged anywhere and resized; both scale themselves to fit their container.
 - Every cell opens the periodic note for that day, week, month, quarter or year, and shows a dot when the note already exists.
+- Your own events and reminders, stored in the daily notes themselves and marked on the calendar as a coloured dot in a row beside the "this day has a note" dot, never overlapping it.
+- Reminders fire on a rule of your own — the day before and again on the day, say — through a dialog, a corner notice, a desktop notification, or any combination.
+- The day's events are written into the top of the daily note, inside a comment-marked block that is rewritten without touching anything else in the file.
+- A quick-add dialog that reads the date out of a plain sentence ("remind me on Saturday to take the laptop home"), and shows what it read so you can correct it before saving.
 - Optional QuickAdd integration, plus template tokens for the lunar date, the solar term and the festival name.
+- Dot size (small / medium / large) and hover preview are settings, alongside the normal / compact layout.
 - Traditional Chinese and English interface, following the Obsidian display language.
 - No network access whatsoever. The holiday table ships with the plugin, and a CI step fails the release if any network call site appears in the bundle.
 
@@ -37,7 +42,32 @@ Periodic notes come from either the core **Daily Notes** plugin or the community
 - Click a date to open its daily note, creating it first if it does not exist yet. The week numbers down the left edge, the quarters in the year view, and the year / month / quarter in the heading do the same for their own granularity.
 - Ctrl-click (Cmd-click on macOS) opens the note in a new split.
 - Right-click a cell for the note menu; hover over one to preview it, once "Open Taiwan Calendar" is enabled under Page Preview.
-- The settings page carries the layout (normal or compact), the fading of past dates, the QuickAdd choices per granularity, an editor for the holiday data, and a one-click setup that configures daily notes end to end.
+- Add an event with the **Add an event or reminder** command, the calendar icon in the toolbar, by right-clicking the day you want it on, or by selecting a line in a note and picking **Add a reminder** / **Add an event** from the editor menu — the selected text becomes the sentence.
+- The dialog's dates start at the daily note you have open, if you have one, and each has a calendar button beside it. Moving the start date takes the end date with it, and the end can never fall before the start.
+- **Show reminders and events** opens a list of everything you have entered, split into reminders and events, with what is running today at the top and what is finished greyed out at the bottom.
+- The settings page carries the layout (normal or compact), the fading of past dates, the QuickAdd choices per granularity, an editor for the holiday data, the event and reminder options with the list of everything you have added, and a one-click setup that configures daily notes end to end.
+
+## Events and Reminders
+
+Entries live in the daily notes themselves. Adding one writes it into the `otc-events` property of every daily note its dates cover — creating those notes if they are not there — so a nine-day trip appears in all nine days. There is no side file and no database: the data syncs, versions and merges exactly like the rest of your notes, is editable by hand in Obsidian's property panel, and survives the plugin being uninstalled.
+
+```yaml
+---
+date: 2026-08-29
+otc-events:
+  - id: da25b36f-cde1-427b-94b7-16d49a20a2b8
+    title: Take the laptop home
+    start: 2026-08-29
+    end: 2026-08-29
+    color: "#e07a5f"
+    remindDaysBefore: [1, 0]
+    remindTime: "09:00"
+---
+```
+
+A reminder is a list of "days before" plus a time. `1, 0` fires once the day before and once on the day itself; `0` alone fires only on the day. A reminder whose time has already passed when Obsidian opens fires on opening rather than being skipped for the day. Which channels it uses — dialog, corner notice, desktop notification — is one setting for the whole vault rather than a field on every entry.
+
+Reminders and events get separate default dot colours, so the two kinds of entry are told apart at a glance on the grid.
 
 ## Installation
 

@@ -2,6 +2,7 @@ import { createRoot, Root } from "react-dom/client";
 import type { Moment } from "src/util/moment";
 import { App, PaneType } from "obsidian";
 import type { NoteIndex } from "../state/notes";
+import { openEventList, openQuickAddEvent } from "../event/commands";
 import { openOrCreateNote } from "../note/noteOps";
 import { showNoteContextMenu, triggerHoverPreview } from "../note/noteMenu";
 import { granularityEnabled } from "../note/periodicNotes";
@@ -18,8 +19,8 @@ import Calendar from "./Calendar";
  * `App` is resolved at this layer and nowhere deeper. `Calendar` is a plain
  * React component that never reaches for the Obsidian API, so everything that
  * does need it — opening files, the context menu, the hover preview, asking
- * whether a granularity is switched on — is handed down from here as a
- * callback.
+ * whether a granularity is switched on, adding an event — is handed down from
+ * here as a callback.
  */
 export const mountCalendarRoot = (app: App, container: Element): Root => {
   const root = createRoot(container);
@@ -37,8 +38,20 @@ export const mountCalendarRoot = (app: App, container: Element): Root => {
         event: MouseEvent,
         date: Moment,
         type: NoteType,
-        notes: NoteIndex
-      ) => showNoteContextMenu(app, event, date, type, notes)}
+        notes: NoteIndex,
+        noteActionsDisabled = false
+      ) =>
+        showNoteContextMenu(app, event, date, type, notes, {
+          // Only day cells offer it: an event is bound to a date, and a week or
+          // a quarter column has no single date to bind one to
+          onAddEvent:
+            type === NoteType.DAILY
+              ? (target: Moment) =>
+                  openQuickAddEvent(app, { date: target.format("YYYY-MM-DD") })
+              : undefined,
+          noteActionsDisabled,
+        })
+      }
       onHoverPreview={(
         event: MouseEvent,
         target: HTMLElement,
@@ -50,6 +63,10 @@ export const mountCalendarRoot = (app: App, container: Element): Root => {
       // openPluginSettings only wants app.setting and a constant id, so there is
       // no reason to thread a whole plugin instance down for one button
       onOpenSettings={() => openPluginSettings(app)}
+      onAddEvent={(date: Moment) =>
+        openQuickAddEvent(app, { date: date.format("YYYY-MM-DD") })
+      }
+      onShowEventList={() => openEventList(app)}
     />
   );
   return root;

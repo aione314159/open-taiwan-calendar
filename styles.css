@@ -969,6 +969,12 @@ body {
   max-width: 100%;
   height: 42px;
   margin: 1px 0;
+  /* Room along the bottom edge for the dot row, which is absolutely positioned
+     there. The cell centres its content, so the padding lifts the date and the
+     lunar label clear of the dots instead of letting them be drawn over — which
+     is what happened at the larger dot sizes. The height stays fixed, so the
+     week rows still line up. */
+  padding-bottom: calc(var(--otc-dot-size) + 2px);
 }
 
 .otc-side-cell {
@@ -1011,8 +1017,8 @@ body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
+  width: var(--otc-dot-size);
+  height: var(--otc-dot-size);
   border-radius: 50%;
   background: var(--text-accent);
 }
@@ -1025,16 +1031,31 @@ body {
   bottom: -4px;
 }
 
-.otc-badge {
+/* The badges share one row pinned to the cell's top-right corner. Each used to
+   be positioned there itself, which meant a day that is both today and a public
+   holiday drew the two on top of each other. */
+.otc-badges {
   position: absolute;
   z-index: 1;
-  white-space: nowrap;
   top: -6px;
   right: -6px;
-  padding: 0 4px;
-  font-size: 12px;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 2px;
+}
+
+/* A circle, not a rounded rectangle: every badge is a single character (今 / 休
+   / 班), so a fixed square box holds it without clipping and reads as the same
+   family of mark as the dots along the bottom edge. */
+.otc-badge {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  white-space: nowrap;
+  font-size: 11px;
   line-height: 16px;
-  border-radius: 4px;
+  text-align: center;
+  border-radius: 50%;
   background: var(--otc-badge-bg-blue);
   color: var(--otc-on-badge, #fff);
 }
@@ -1066,7 +1087,10 @@ body {
   color: var(--otc-text-red);
 }
 
-.otc-cell.is-holiday .otc-badge {
+/* Coloured by which badge it is, not by what the cell is. The rules used to
+   read `.is-holiday .otc-badge`, which painted every badge in the cell red —
+   including the "today" one on a day that happens to be a public holiday. */
+.otc-badge.is-holiday {
   background: var(--otc-badge-bg-red);
 }
 
@@ -1074,7 +1098,7 @@ body {
   border-color: var(--text-normal);
 }
 
-.otc-cell.is-workday .otc-badge {
+.otc-badge.is-workday {
   background: var(--text-normal);
   color: var(--background-primary);
 }
@@ -1163,4 +1187,405 @@ body {
   font-size: 12px;
   height: 18px;
   line-height: 16px;
+}
+
+/* ============================================================
+   Events and reminders
+   ============================================================ */
+
+/* ---------- dot size
+   One variable drives every dot: the "this day has a note" one, the event dots
+   beside it, the year view's month dot and the truncation dot. The size is a
+   setting because 4px reads as a hint at a glance and disappears at arm's
+   length or on a high-density display.
+
+   The compact layout takes one pixel off each step rather than having a table
+   of its own — the cells are smaller, so the dots have to be too, but the
+   three steps still have to feel like three steps. */
+.otc-calendar {
+  --otc-dot-size: 4px;
+  --otc-dot-gap: 3px;
+}
+
+.otc-calendar.is-dots-medium {
+  --otc-dot-size: 6px;
+  --otc-dot-gap: 4px;
+}
+
+.otc-calendar.is-dots-large {
+  --otc-dot-size: 8px;
+  --otc-dot-gap: 5px;
+}
+
+.otc-calendar.otc-compact {
+  --otc-dot-size: 3px;
+  --otc-dot-gap: 2px;
+}
+
+.otc-calendar.otc-compact.is-dots-medium {
+  --otc-dot-size: 5px;
+  --otc-dot-gap: 3px;
+}
+
+.otc-calendar.otc-compact.is-dots-large {
+  --otc-dot-size: 7px;
+  --otc-dot-gap: 4px;
+}
+
+/* The marks sit on the bottom edge of a date cell, absolutely positioned so a
+   day with events is exactly as tall as one without — a cell that grew would
+   push the whole week's row out of alignment. One row, laid out in order, so
+   the "has a note" dot and the event dots can never land on top of each other. */
+.otc-event-marks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--otc-dot-gap);
+  height: var(--otc-dot-size);
+  /* Clicks belong to the cell underneath: the row covers the lower edge of the
+     cell, and swallowing the click would make those days unopenable. The
+     tooltip still works, because setTooltip listens on the element itself. */
+  pointer-events: none;
+}
+
+.otc-event-dot {
+  flex: 0 0 auto;
+  width: var(--otc-dot-size);
+  height: var(--otc-dot-size);
+  border-radius: 50%;
+  background: var(--otc-event-color);
+}
+
+/* The "this day has a note" dot, moved into the row. Same size and colour as
+   the pseudo-element it replaces, so nothing about it looks different — only
+   where it sits when there is something beside it. */
+.otc-event-dot.is-note {
+  background: var(--text-accent);
+}
+
+/* A fifth, muted dot: "there is more here than four". Drawn rather than
+   written because a date cell has no room for a "+2" at a readable size. */
+.otc-event-marks.is-truncated::after {
+  content: "";
+  flex: 0 0 auto;
+  width: var(--otc-dot-size);
+  height: var(--otc-dot-size);
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Day cells draw their note dot inside the row instead. Leaving the
+   pseudo-element on as well is what put two dots in the same place. Every
+   other cell type — week, month, quarter, the heading — keeps it. */
+.otc-day.has-note::after {
+  content: none;
+}
+
+/* Year view: a month with anything in it gets a dot, since a month cell has no
+   room for a band and the year view is for navigating rather than reading */
+.otc-month.has-event::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--otc-dot-size);
+  height: var(--otc-dot-size);
+  border-radius: 50%;
+  background: var(--text-accent);
+}
+
+/* ---------- reminder dialog */
+.otc-reminder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 8px 0 4px;
+}
+
+.otc-reminder-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.otc-reminder-dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--otc-event-color);
+}
+
+.otc-reminder-text {
+  min-width: 0;
+}
+
+.otc-reminder-title {
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+  overflow-wrap: anywhere;
+}
+
+.otc-reminder-meta {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+/* ---------- compact layout */
+
+
+/* A colour chip beside an event's title in the settings list, so a row can be
+   matched to the bar it draws on the calendar without opening it. */
+.otc-settings .otc-event-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--otc-event-color);
+  vertical-align: middle;
+}
+
+/* Paths get long, and the settings row's default layout gives the control about
+   a third of the width — enough to show the first two dozen characters of a
+   nested folder path and hide the rest. Wrapping the row puts the field on its
+   own line at full width, so the whole path is readable and the folder
+   suggester has room to open below it. */
+.otc-settings .setting-item:has(.setting-item-control input[type="text"]) {
+  flex-wrap: wrap;
+}
+
+.otc-settings .setting-item-control:has(> input[type="text"]) {
+  flex-basis: 100%;
+  justify-content: stretch;
+  margin-top: 8px;
+}
+
+.otc-settings .setting-item-control > input[type="text"] {
+  width: 100%;
+}
+
+/* A native date field, minus its own picker button. Chromium lays that button
+   out to the left of the date here and will not be moved — `position` has no
+   effect on the indicator pseudo-element in this layout — so it is hidden and
+   QuickAddEventModal adds an Obsidian icon button to the right of the field
+   instead, which opens the same picker through showPicker(). */
+.otc-date-input {
+  font-family: inherit;
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  background: var(--background-modifier-form-field);
+}
+
+.otc-date-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+
+/* ---------- quick-add dialog
+   Obsidian's setting row puts the label left and the control right, each on
+   about half the width. That is fine for a toggle and hopeless for a sentence:
+   the title field showed the first half of its value with the rest cut off,
+   and the natural-language box — the one field the whole dialog is built
+   around — was the narrowest thing on screen.
+
+   So the rows that hold a typed value wrap: label and description on their own
+   line, the field full width beneath. The rows that hold a toggle or a colour
+   swatch keep the control on the right, because those are read at a glance and
+   wrapping them would only make the dialog taller. */
+.otc-quick-add-modal {
+  max-width: 640px;
+}
+
+.otc-quick-add-modal .setting-item:has(.setting-item-control input[type="text"]) {
+  flex-wrap: wrap;
+}
+
+.otc-quick-add-modal
+  .setting-item:has(.setting-item-control input[type="text"])
+  .setting-item-info {
+  flex: 1 1 100%;
+  margin-right: 0;
+}
+
+.otc-quick-add-modal .setting-item-control:has(input[type="text"]) {
+  flex: 1 1 100%;
+  justify-content: stretch;
+  margin-top: 8px;
+}
+
+.otc-quick-add-modal .setting-item-control > input[type="text"] {
+  width: 100%;
+}
+
+/* The sentence box is the headline of the dialog, so it gets the room to look
+   like one rather than like the first of eight equal fields. */
+.otc-quick-add-modal .otc-quick-add-sentence .setting-item-name {
+  font-size: var(--font-ui-medium);
+}
+
+.otc-quick-add-modal .otc-quick-add-sentence input[type="text"] {
+  font-size: var(--font-ui-medium);
+  padding: 8px 10px;
+}
+
+/* Date rows keep the field and its calendar button together on the right; they
+   are a fixed width and already fit. */
+.otc-quick-add-modal .setting-item-control:has(> input[type="date"]) {
+  gap: 6px;
+}
+
+.otc-quick-add-error {
+  display: none;
+  margin: 4px 0 0;
+  color: var(--text-error);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-quick-add-error.is-visible {
+  display: block;
+}
+
+/* ---------- toolbar
+   The icon buttons are grouped so they read as one cluster on the left. In a
+   space-between row they were three loose children, which put the middle one
+   in the centre of the header looking like it belonged to nothing. */
+.otc-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ---------- reminders and events list
+   The calendar answers "what is on this day". This answers "what have I got",
+   which a month view cannot without knowing which month to look in. */
+.otc-event-list-modal {
+  max-width: 560px;
+}
+
+.otc-event-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--divider-color);
+  margin-bottom: 8px;
+}
+
+.otc-event-tab {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  /* Sits on the container's border so the active tab's underline replaces it */
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+
+.otc-event-tab:hover {
+  color: var(--text-normal);
+  background: transparent;
+}
+
+.otc-event-tab.is-active {
+  color: var(--text-accent);
+  border-bottom-color: var(--text-accent);
+}
+
+.otc-event-list {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.otc-event-list-empty {
+  padding: 24px 4px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.otc-event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: 6px;
+}
+
+.otc-event-row + .otc-event-row {
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Running today: the one state the list exists to surface, so it is the one
+   state that gets a background rather than only a badge. */
+.otc-event-row.is-current {
+  background: var(--background-modifier-hover);
+  border-top-color: transparent;
+}
+
+/* Finished. Faded rather than hidden — "did I already take that trip" is a real
+   question — but never competing with what is still ahead. */
+.otc-event-row.is-past {
+  opacity: 0.45;
+}
+
+.otc-event-row-dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--otc-event-color);
+}
+
+.otc-event-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.otc-event-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.otc-event-row-title {
+  color: var(--text-normal);
+  overflow-wrap: anywhere;
+}
+
+.otc-event-row-badge {
+  flex: 0 0 auto;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: var(--font-ui-smaller);
+  line-height: 16px;
+  background: var(--otc-badge-bg-blue);
+  color: var(--otc-on-badge, #fff);
+}
+
+.otc-event-row-meta {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.otc-event-row-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 2px;
+}
+
+.otc-event-list-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }

@@ -104,7 +104,15 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
     "正常較寬鬆易讀；緊縮把日期格與間距收小，同樣寬度能塞下更多內容",
   "settings.layoutNormal": "正常",
   "settings.layoutCompact": "緊縮",
+  "settings.dotSizeName": "圓點大小",
+  "settings.dotSizeDesc": "日期下緣圓點的大小——包含「這天有筆記」那一顆，以及每個活動各一顆。",
+  "settings.dotSizeSmall": "小",
+  "settings.dotSizeMedium": "中",
+  "settings.dotSizeLarge": "大",
   "settings.pastTransparentName": "已過去時間半透明",
+  "settings.hoverPreviewName": "滑鼠停留顯示預覽",
+  "settings.hoverPreviewDesc":
+    "滑鼠停在日期上時彈出該筆記的預覽視窗。關掉只停用本插件的預覽，不動到其他插件共用的「頁面預覽」核心插件。",
   "settings.pastTransparentDesc": "啟用後，今天之前的日期會稍微透明一些",
   "settings.floatingCardTitle": "懸浮農民曆",
   "settings.floatingDesc":
@@ -198,4 +206,95 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "dailySetup.errorNoUpdateSettings":
     "Periodic Notes 沒有可用的 updateSettings，無法寫入設定",
   "dailySetup.errorNoCoreOptions": "核心「每日筆記」沒有可用的設定物件，無法寫入",
+
+  // ---------------------------------------------------------------- events and reminders
+  "command.quickAddEvent": "新增活動／提醒",
+  "notice.eventSaved": "已儲存：{title}",
+  "notice.dailyNoteCreateFailed":
+    "無法建立 {date} 的每日筆記，請確認每日筆記已設定且資料夾可寫入。",
+  "notice.eventDeleted": "已刪除：{title}",
+  "menu.addEvent": "在這天新增活動",
+  "command.showEventList": "顯示提醒與活動",
+  "eventList.title": "提醒與活動",
+  "eventList.tabReminders": "提醒",
+  "eventList.tabEvents": "活動",
+  "eventList.badgeNow": "進行中",
+  "eventList.empty": "還沒有任何項目。",
+  "menu.addReminderHere": "新增提醒",
+  "menu.addEventHere": "新增活動",
+
+  "event.dateRange": "{start} – {end}",
+  "event.reminderSummary": "提醒 {time}，{offsets}",
+  "event.offsetSameDay": "當天",
+  "event.offsetDaysBefore": "前 {count} 天",
+  "event.noReminder": "不提醒",
+  "event.offsetSeparator": "、",
+
+  // ---------------------------------------------------------------- quick add modal
+  "quickAdd.title": "新增活動／提醒",
+  "quickAdd.inputLabel": "用你自己的話打一句",
+  "quickAdd.inputPlaceholder": "提醒我週六要把 macbook pro 16 寸帶回家",
+  "quickAdd.inputHint":
+    "日期、天數與標題會從句子裡讀出來。下面全部可以改，讀錯了直接改掉就好。",
+  "quickAdd.fieldTitle": "標題",
+  "quickAdd.fieldStart": "開始",
+  "quickAdd.fieldEnd": "結束",
+  "quickAdd.pickDate": "選擇日期",
+  "quickAdd.fieldColor": "行事曆上的顏色",
+  "quickAdd.fieldReminder": "要提醒我",
+  "quickAdd.fieldOffsets": "提前幾天",
+  "quickAdd.fieldOffsetsDesc":
+    "用逗號分隔。0 是當天，所以「1, 0」是前一天一次、當天一次。",
+  "quickAdd.fieldTime": "時間",
+  "quickAdd.submit": "新增",
+  "quickAdd.editTitle": "編輯活動",
+  "quickAdd.save": "儲存",
+  "quickAdd.errorEmptyTitle": "請填標題",
+  "quickAdd.errorBadDate": "日期格式必須是 YYYY-MM-DD",
+  "quickAdd.errorEndBeforeStart": "結束日期早於開始日期",
+  "quickAdd.errorBadTime": "時間格式必須是 HH:mm",
+  "quickAdd.errorNoOffset": "至少填一個數字，或把提醒關掉",
+
+  // ---------------------------------------------------------------- reminder alerts
+  "reminder.modalTitle": "提醒",
+  "reminder.acknowledge": "知道了",
+  "reminder.snooze": "{minutes} 分鐘後再提醒",
+  "reminder.dueToday": "今天",
+  "reminder.dueInDays": "{count} 天後",
+  "reminder.systemPermissionDenied":
+    "系統拒絕了桌面通知，這個管道跳過。請到作業系統設定給 Obsidian 通知權限。",
+
+
+  // ---------------------------------------------------------------- settings: events and reminders
+  "settings.eventsCardTitle": "活動與提醒",
+  "settings.reminderColorName": "提醒圓點顏色",
+  "settings.reminderColorDesc": "會提醒你的項目，圓點用這個顏色",
+  "settings.eventColorName": "活動圓點顏色",
+  "settings.eventColorDesc": "只標在行事曆上、不提醒的項目，圓點用這個顏色",
+  "settings.eventsCardSubtitle":
+    "項目就存在每日筆記裡——寫進所涵蓋每一天的屬性，並在最上方生成可打勾的清單",
+  "settings.reminderEnabledName": "提醒功能",
+  "settings.reminderEnabledDesc":
+    "關閉後所有提醒都不會出現。活動仍會顯示在行事曆與每日筆記上。",
+  "settings.reminderTimeName": "預設提醒時間",
+  "settings.reminderTimeDesc":
+    "HH:mm。若 Obsidian 開啟時該時間已過，會在開啟當下補提醒，不會直接跳過。",
+  "settings.reminderOffsetsName": "預設提前天數",
+  "settings.reminderOffsetsDesc":
+    "用逗號分隔。0 是當天，所以「1, 0」是前一天一次、當天一次。",
+  "settings.reminderChannelModalName": "彈出視窗",
+  "settings.reminderChannelModalDesc": "畫面正中央的視窗，不按掉不會消失",
+  "settings.reminderChannelNoticeName": "角落提示",
+  "settings.reminderChannelNoticeDesc": "Obsidian 內建的角落浮動提示，不打斷手邊工作",
+  "settings.reminderChannelSystemName": "系統桌面通知",
+  "settings.reminderChannelSystemDesc":
+    "作業系統的通知中心，Obsidian 沒開在前景也看得到",
+  "settings.snoozeName": "稍後提醒間隔",
+  "settings.snoozeDesc": "按「稍後再提醒」時往後延幾分鐘",
+  "settings.eventListTitle": "你的活動",
+  "settings.eventListEmpty":
+    "還沒有任何項目。用「新增活動／提醒」命令，或在行事曆日期上按右鍵。",
+  "settings.eventListAdd": "新增活動",
+  "settings.eventEditAction": "編輯",
+  "settings.eventDeleteAction": "刪除",
 };

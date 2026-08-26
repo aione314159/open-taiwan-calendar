@@ -1,11 +1,15 @@
 // Import order carries no meaning any more: the module dependencies form a
 // strict DAG (api -> store -> slice, view -> api), guarded by import/no-cycle in
 // .eslintrc.json. The list below is deliberately alphabetical.
-import { Notice, Plugin } from "obsidian";
+import { Notice, Plugin, TFile } from "obsidian";
+import { openEventList, openQuickAddEvent } from "./event/commands";
+import { isDailyNote, refreshEvents } from "./event/noteStore";
 import { sanitizeOverrides } from "./holiday/rocHoliday";
 import type { RocHolidayEntry } from "./holiday/types";
 import { t } from "./i18n";
+import type { TranslationKey } from "./i18n";
 import { HOVER_LINK_SOURCE } from "./note/noteMenu";
+import { runReminderSweep, startReminderScheduler } from "./reminder/scheduler";
 import { refreshAllNotes } from "./state/notes";
 import {
   DeepPartial,
@@ -65,6 +69,42 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       callback: () => this.toggleFloatingPanel(),
     });
 
+    this.addCommand({
+      id: "quick-add-event",
+      name: t("command.quickAddEvent"),
+      callback: () => openQuickAddEvent(this.app),
+    });
+
+    this.addCommand({
+      id: "show-event-list",
+      name: t("command.showEventList"),
+      callback: () => openEventList(this.app),
+    });
+
+    // Right-clicking in a note is where a plan is usually written down, so it
+    // is where turning that line into a reminder belongs. Two items rather than
+    // one: "reminder" and "event" differ only by a toggle inside the dialog,
+    // and picking from the menu is what saves the user from setting it twice.
+    this.registerEvent(
+      this.app.workspace.on("editor-menu", (menu, editor) => {
+        // The selection becomes the sentence, so "select the line, right-click,
+        // add" reads the date straight out of what is already written
+        const sentence = editor.getSelection().trim() || undefined;
+        const items: Array<[TranslationKey, string, boolean]> = [
+          ["menu.addReminderHere", "bell-plus", true],
+          ["menu.addEventHere", "calendar-plus", false],
+        ];
+        for (const [key, icon, remind] of items) {
+          menu.addItem((item) =>
+            item
+              .setTitle(t(key))
+              .setIcon(icon)
+              .onClick(() => openQuickAddEvent(this.app, { sentence, remind }))
+          );
+        }
+      })
+    );
+
     // Register the calendar cells' hover preview as a source in the core Page
     // Preview plugin's list, so the user can decide for themselves whether to
     // turn it on. defaultMod: false = preview without holding a modifier key.
@@ -88,11 +128,38 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
 
     this.addSettingTab(new SettingView(this.app, this));
 
+    // The daily notes are the storage, so "load" is a walk over their
+    // frontmatter. Deferred to onLayoutReady below, because before the layout
+    // is ready the metadata cache is still filling and the walk would see a
+    // fraction of the vault.
+
+    startReminderScheduler(this);
+
     this.app.workspace.onLayoutReady(() => {
       this.initLeaf();
       if (this.options.floatingWindow.visible) {
         this.showFloatingPanel();
       }
+      refreshEvents(this.app);
+      // A reminder due at 09:00 in a vault that was not open at 09:00 has to
+      // appear on opening rather than be skipped for the day
+      runReminderSweep(this);
+
+      // Frontmatter is text the user can edit — in the property panel, in the
+      // editor, or through a sync from another device — so the calendar follows
+      // the metadata cache rather than assuming it is the only writer.
+      this.registerEvent(
+        this.app.metadataCache.on("changed", (file) => {
+          if (isDailyNote(file)) refreshEvents(this.app);
+        })
+      );
+      this.registerEvent(
+        this.app.vault.on("delete", (file) => {
+          if (file instanceof TFile && isDailyNote(file)) {
+            refreshEvents(this.app);
+          }
+        })
+      );
     });
   }
 
@@ -116,6 +183,19 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
     if (options.appearance) {
       delete (options.appearance as Record<string, unknown>).useScale;
     }
+    // eventData held the folder of a side file that no longer exists: the daily
+    // notes are the storage now. Left in place it would be written straight
+    // back out on every save and go on looking like a real setting.
+    delete (options as Record<string, unknown>).eventData;
+    if (options.eventDefaults) {
+      // `color` became reminderColor / eventColor when the two kinds of entry
+      // were given separate defaults
+      delete (options.eventDefaults as Record<string, unknown>).color;
+    }
+    // dailyBlock configured a generated checklist under the properties. It was
+    // removed as a duplicate: Obsidian's property panel already shows every
+    // entry at the top of the note.
+    delete (options as Record<string, unknown>).dailyBlock;
     const { holidayOverrides, ...rest } = options;
     const { value, dropped } = sanitizeOverrides(holidayOverrides);
     patchSettings(rest);
