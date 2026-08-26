@@ -1,7 +1,7 @@
 {
 	"id": "open-taiwan-calendar",
 	"name": "Open Taiwan Calendar",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "1.13.0",
 	"description": "A Taiwanese almanac calendar showing public holidays, substitute-day adjustments, the lunar calendar and solar terms, with month/year views, a sidebar view and a draggable floating window. Pairs with QuickAdd for periodic notes.",
 	"author": "aione",
