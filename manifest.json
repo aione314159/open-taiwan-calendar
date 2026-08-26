@@ -3,7 +3,7 @@
 	"name": "Open Taiwan Calendar",
 	"version": "1.1.0",
 	"minAppVersion": "1.13.0",
-	"description": "A Taiwanese almanac calendar showing public holidays, substitute-day adjustments, the lunar calendar and solar terms, with month/year views, a sidebar view and a draggable floating window. Pairs with QuickAdd for periodic notes.",
+	"description": "Taiwanese almanac calendar: public holidays, day-off adjustments, lunar dates and solar terms in a month or year view, with a sidebar view, a floating window and periodic notes.",
 	"author": "aione",
 	"isDesktopOnly": true
 }
