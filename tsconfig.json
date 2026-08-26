@@ -24,6 +24,12 @@
       "DOM",
       "ES2019"
     ],
+    // On rather than off so the type check matches the one the community
+    // directory runs. The moment package is published as `export = moment`,
+    // and interop is what decides whether a namespace import of it keeps its
+    // call signature; with the two settings disagreeing, `moment()` type-checked
+    // here and came back from the directory's scan as an untyped call.
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
   "include": [
