@@ -5,7 +5,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
-    "target": "ES6",
+    "target": "ES2018",
     "allowJs": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
@@ -14,11 +14,15 @@
     "strict": true,
     "strictNullChecks": true,
     "jsx": "preserve",
+    // Declared up to ES2019 because the source actually uses it: padStart and
+    // Object.entries are ES2017, flatMap is ES2019. It used to say ES7 and
+    // still type-checked, but only because a dependency's .d.ts pulled the
+    // newer libs in through a /// <reference lib="..." />. A checker that
+    // reads this file without those dependencies present saw those methods as
+    // untyped, which is what the community directory's review reported.
     "lib": [
       "DOM",
-      "ES5",
-      "ES6",
-      "ES7"
+      "ES2019"
     ],
     "allowSyntheticDefaultImports": true
   },
