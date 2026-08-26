@@ -1,4 +1,5 @@
-import { getLanguage, moment } from "obsidian";
+import { getLanguage } from "obsidian";
+import { moment } from "src/util/moment";
 
 /**
  * Which language the plugin should speak.

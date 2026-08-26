@@ -1,4 +1,4 @@
-import type { Moment } from "moment";
+import type { Moment } from "src/util/moment";
 import { App, Notice, TFile } from "obsidian";
 import type { PaneType } from "obsidian";
 import * as dni from "obsidian-daily-notes-interface";

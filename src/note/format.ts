@@ -1,4 +1,4 @@
-import type { Moment } from "moment";
+import type { Moment } from "src/util/moment";
 // lunar-typescript API reference: https://6tail.cn/calendar/api.html#overview.html
 import { Lunar } from "lunar-typescript";
 import { getRocHoliday } from "../holiday/rocHoliday";

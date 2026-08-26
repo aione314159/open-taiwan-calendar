@@ -1,5 +1,5 @@
 import { createRoot, Root } from "react-dom/client";
-import type { Moment } from "moment";
+import type { Moment } from "src/util/moment";
 import { App, PaneType } from "obsidian";
 import type { NoteIndex } from "../state/notes";
 import { openOrCreateNote } from "../note/noteOps";

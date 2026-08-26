@@ -1,4 +1,4 @@
-import type { Moment } from "moment";
+import type { Moment } from "src/util/moment";
 import { App, Menu, Notice, TFile } from "obsidian";
 import { NoteType } from "../enum";
 import { noteTypeLabel } from "../enum/noteConfig";

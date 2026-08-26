@@ -1,4 +1,5 @@
-import { App, TFolder, moment, normalizePath } from "obsidian";
+import { App, TFolder, normalizePath } from "obsidian";
+import { moment } from "src/util/moment";
 import { NoteType } from "../enum";
 import {
   DAILY_NOTE_PRESETS,

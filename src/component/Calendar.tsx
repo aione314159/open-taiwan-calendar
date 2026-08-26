@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import classNames from "classnames";
-import type { Moment } from "moment";
-import { moment } from "obsidian";
+import { moment } from "src/util/moment";
+import type { Moment } from "src/util/moment";
 import "moment/locale/zh-tw";
 import type { PaneType } from "obsidian";
 import { formatLabel, formatDate, formatMonth } from "../note/format";
