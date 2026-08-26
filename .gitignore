@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output: main.js is bundled by esbuild at build time, not committed
+main.js
+dist/
+
+# Per-user plugin settings, written by Obsidian at runtime
+data.json
+
+# OS cruft
+.DS_Store
+
+# Local development only. These hold internal tooling, the author's editor and
+# vault configuration, and helper scripts containing machine-local paths.
+.open_bull/
+.obsidian/
+cli/
+CLAUDE.md
+
+# Internal decision log and audit reports. Audit screenshots in particular
+# capture vault content (note titles, data belonging to other plugins), so they
+# stay out of version control. The written conclusions in a report are enough;
+# a screenshot's value ends once the report has been accepted.
+docs/DECISIONS_PENDING.md
+docs_ai/
+
+# --- Sensitive and local-only paths. See .claude/CLAUDE.md for the rule. ---
+# Credentials and key material. Never committed, in any form.
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.ppk
+*.crt
+id_rsa*
+
+# Local AI-assistant instructions and internal task notes.
+.claude/
+TODO.md
+
+# Build output and OS cruft.
+*.vsix

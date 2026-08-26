@@ -1,0 +1,1166 @@
+/* ============================================================
+   WCAG 2.2 AA contrast correction tokens.
+   Obsidian's native --color-red / --text-accent are meant for borders and
+   icons (they clear the 3:1 threshold, so we keep using them as-is there).
+   But when they are used as the text colour for 12-14px small text, or as a
+   badge background, they only clear 3:1, which is below the 4.5:1 that small
+   text requires. Hence these two corrected tokens.
+   Attached to body: the calendar sidebar and the floating window
+   (FloatingCalendarPanel) are the same plugin stylesheet injected into each
+   window's own document, and body is reachable in both. .otc-settings only
+   covers the settings page, and the calendar is not inside it, so that scope
+   cannot be used here.
+   WARNING: these must NOT be attached to :root / html. Obsidian defines its
+   native --color-red / --text-accent on body, not on html. If this block is
+   moved back to :root, then var(--color-red) inside color-mix() has no value
+   yet at the html level, which makes the whole custom property invalid; that
+   invalid value inherits all the way down, and the light theme (which has no
+   .theme-dark block layered directly on top of it) loses the entire set and
+   falls back to inherited colours. This was caught in a live CDP measurement.
+   For where these values are actually applied, see the badge / today / weekend
+   / holiday rules in the Calendar section at the end of this file.
+   ============================================================ */
+body {
+  --otc-text-red: color-mix(in srgb, var(--color-red) 96%, black); /* light 4.51:1 (4.54:1 as measured) */
+  --otc-text-blue: color-mix(in srgb, var(--text-accent) 83%, black); /* light 4.56:1 */
+  --otc-badge-bg-red: color-mix(in srgb, var(--color-red) 95%, black); /* light badge background, white text, 4.60:1 */
+  --otc-badge-bg-blue: color-mix(in srgb, var(--text-accent) 80%, black); /* light badge background, white text, 4.83:1 */
+  --otc-on-badge: #ffffff; /* text colour on a badge; contrast baselines are in the --otc-badge-bg-* comments above */
+}
+
+.theme-dark {
+  --otc-text-red: var(--color-red); /* dark: the native value already clears 4.72:1, so it is left alone */
+  --otc-text-blue: color-mix(in srgb, var(--text-accent) 92%, white); /* dark 4.56:1 */
+  --otc-badge-bg-red: color-mix(in srgb, var(--color-red) 85%, black); /* dark badge background, white text, 4.61:1 (native was only 3.45:1) */
+  --otc-badge-bg-blue: color-mix(in srgb, var(--text-accent) 90%, black); /* dark badge background, white text, 4.84:1 (native was only 4.05:1) */
+}
+
+.otc-floating-panel {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: var(--shadow-l);
+  border: 1px solid var(--background-modifier-border);
+  background: color-mix(in srgb, var(--background-primary) 92%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.otc-floating-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  cursor: move;
+  border-bottom: 1px solid var(--background-modifier-border);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.otc-floating-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.otc-floating-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.otc-floating-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* The width is pinned to the design width; max-content gives the grid no
+   upper bound to settle on and is unusable here.
+   The height is left to the content: JS measures offsetHeight and then scales
+   proportionally. This avoids the invisible padding that a hard-coded height
+   introduces, which would squeeze the calendar smaller than it needs to be. */
+.otc-floating-scale {
+  width: 400px;
+  height: max-content;
+  flex-shrink: 0;
+  transform-origin: center center;
+}
+
+/* The calendar inside the floating window does not need the sidebar's spacing;
+   narrowing it to the 4px minimum step is what makes it sit flush against the
+   panel edge. */
+.otc-floating-scale .otc-calendar {
+  padding: 4px;
+}
+
+/* The auto-scaling container for the sidebar view; it shares
+   src/util/fitScale.ts with the floating window.
+   overflow: hidden is the last line of defence: even before JS has finished
+   measuring, the content cannot push a scrollbar onto the sidebar. */
+/* The final values for align-items / transform-origin are set by fitScale()
+   as inline styles. They are written here with the same values so that the
+   layout does not flash a centred version between mount and first measure. */
+.otc-view-fit {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Same as .otc-floating-scale: the width must be pinned to the design width.
+   Left on max-content the grid has no upper bound to settle on, which throws
+   the computed scale factor completely off. */
+.otc-view-scale {
+  width: 400px;
+  height: max-content;
+  flex-shrink: 0;
+  transform-origin: top center;
+}
+
+.otc-floating-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+}
+
+.otc-holiday-override {
+  width: 100%;
+}
+
+.otc-holiday-override-error {
+  color: var(--text-error);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Hints and errors get different colours: if both were red, an informational
+   message such as "example data inserted" would read as a failure. */
+.otc-holiday-override-notice {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.otc-floating-resize-handle::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+}
+
+/* ============================================================
+   Settings page: Material-style section cards.
+   .otc-settings is the settings page root class (attached to containerEl).
+   Everything below redirects Obsidian's own CSS variables rather than
+   overriding the native components directly.
+   ============================================================ */
+
+.otc-settings {
+  --otc-primary: #1a73e8;
+  --otc-on-primary: #ffffff;
+  --otc-primary-soft: rgba(26, 115, 232, 0.08);
+  --otc-surface: #ffffff;
+  --otc-surface-sunken: #f8f9fa;
+  --otc-on-surface: #202124;
+  --otc-on-surface-muted: #5f6368;
+  --otc-outline: #dadce0;
+  --otc-elevation-1: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+
+  /* --- JSON editor syntax colours. Contrast baseline: the editor background
+     var(--otc-surface) = #ffffff ---
+     Why these do not point at Obsidian's --code-string / --code-property set:
+     those values can be overridden freely by any theme. Measured via CDP on
+     the local theme, --code-string came out as #08b94e (only 1.9:1 against a
+     white background) and --code-value as #A3BE8C (1.9:1), far below the
+     4.5:1 that small text requires. Pointing at them would hand the
+     accessibility standard over to a third-party theme, so the values are
+     defined here instead.
+     Hard-coding hex is acceptable here because the editor background is itself
+     one of two fixed values (#ffffff light / #2d2e30 dark). Unlike the
+     calendar, it does not have to follow Obsidian's --color-red, so no
+     color-mix is needed, and therefore none of the ":root makes color-mix
+     invalid" problem applies. Measured values are noted on each line. */
+  --otc-json-key: #1967d2; /* key names 5.37:1 */
+  --otc-json-string: #188038; /* string values 5.02:1 */
+  --otc-json-number: #a8500a; /* numbers 5.50:1 */
+  --otc-json-keyword: #8430ce; /* true / false / null 6.37:1 */
+  --otc-json-punct: #5f6368; /* {}[],: 6.05:1 */
+
+  /* --- Redirect Obsidian's own variables --- */
+  --interactive-accent: var(--otc-primary);
+  --interactive-accent-hover: var(--otc-primary);
+  --text-on-accent: var(--otc-on-primary);
+  --setting-items-background: transparent;
+  --setting-items-border-width: 0;
+  --setting-items-radius: 0;
+  --toggle-thumb-color: var(--otc-on-primary);
+  --background-modifier-border-hover: var(--otc-outline);
+}
+
+.theme-dark .otc-settings {
+  --otc-primary: #8ab4f8;
+  --otc-on-primary: #202124;
+  --otc-primary-soft: rgba(138, 180, 248, 0.12);
+  --otc-surface: #2d2e30;
+  --otc-surface-sunken: #202124;
+  --otc-on-surface: #e8eaed;
+  --otc-on-surface-muted: #9aa0a6;
+  --otc-outline: #5f6368;
+  --otc-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+
+  /* Contrast baseline: the editor background var(--otc-surface) = #2d2e30 */
+  --otc-json-key: #8ab4f8; /* key names 6.45:1 */
+  --otc-json-string: #81c995; /* string values 6.94:1 */
+  --otc-json-number: #fdd663; /* numbers 9.69:1 */
+  --otc-json-keyword: #d7aefb; /* true / false / null 7.34:1 */
+  --otc-json-punct: #bdc1c6; /* {}[],: 7.51:1 */
+}
+
+/* --- Page header --- */
+
+/* The hero is a rendered setting row (see SettingView's hero()), so Obsidian's
+   own row chrome — the top border and the bottom margin — has to be cleared
+   before it reads as a page header rather than as a setting. */
+.otc-settings .otc-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 4px 20px;
+  border: none;
+  margin: 0;
+}
+
+.otc-settings .otc-hero-mark {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--otc-primary-soft);
+  color: var(--otc-primary);
+}
+
+.otc-settings .otc-hero-mark svg {
+  width: 24px;
+  height: 24px;
+}
+
+.otc-settings .otc-hero-title {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 500;
+  color: var(--otc-on-surface);
+}
+
+.otc-settings .otc-hero-subtitle {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--otc-on-surface-muted);
+  margin-top: 2px;
+}
+
+/* --- Section cards --- */
+
+.otc-settings .otc-card {
+  background: var(--otc-surface);
+  border: 1px solid var(--otc-outline);
+  border-radius: 12px;
+  box-shadow: var(--otc-elevation-1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* Also a rendered row: it sits at the top of its group and draws the card's
+   header, so it keeps its own bottom border and drops the row defaults. */
+.otc-settings .otc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  margin: 0;
+  background: var(--otc-surface-sunken);
+  border: none;
+  border-bottom: 1px solid var(--otc-outline);
+}
+
+.otc-settings .otc-card-icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--otc-primary-soft);
+  color: var(--otc-primary);
+}
+
+.otc-settings .otc-card-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.otc-settings .otc-card-head-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.otc-settings .otc-card-title {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  color: var(--otc-on-surface);
+}
+
+.otc-settings .otc-card-subtitle {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--otc-on-surface-muted);
+}
+
+/* --- Setting rows --- */
+/* In Obsidian, padding and margin-bottom are hard-coded values that do not
+   read from variables, so they have to be overridden directly. */
+
+/* The card is the group element itself (cls: "otc-card"), so the rows are
+   matched as descendants. The header and the paragraphs draw their own frame
+   and are excluded here. */
+.otc-settings .otc-card .setting-item:not(.otc-card-head):not(.otc-card-note) {
+  padding: 16px 20px;
+  margin-bottom: 0;
+  border-top: 1px solid var(--otc-outline);
+  align-items: center;
+  gap: 24px;
+}
+
+.otc-settings .otc-card .otc-card-head + .setting-item {
+  border-top: none;
+}
+
+.otc-settings .setting-item-name {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--otc-on-surface);
+}
+
+.otc-settings .setting-item-description {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--otc-on-surface-muted);
+  margin-top: 2px;
+}
+
+/* Explanation rows (the holiday data intro, the Periodic Notes link, the
+   template variables) carry no control, so they drop the row chrome and only
+   keep the card's horizontal padding. */
+.otc-settings .otc-card-note {
+  display: block;
+  padding: 16px 20px 0;
+  margin: 0;
+  border: none;
+}
+
+.otc-settings .otc-card-note > p.setting-item-description {
+  margin: 0;
+}
+
+/* --- Inputs: Material outlined text field --- */
+
+.otc-settings .setting-item-control input[type="text"],
+.otc-settings .setting-item-control input[type="number"] {
+  height: 40px;
+  min-width: 220px;
+  padding: 0 16px;
+  border-radius: 4px;
+  border: 1px solid var(--otc-outline);
+  background: var(--otc-surface);
+  color: var(--otc-on-surface);
+  font-size: 14px;
+  box-shadow: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.otc-settings .setting-item-control input:hover {
+  border-color: var(--otc-on-surface-muted);
+}
+
+.otc-settings .setting-item-control input:focus {
+  outline: none;
+  /* Thickening the border on focus is the Material approach. It is layered on
+     with an inset shadow rather than by changing border-width, so the element
+     does not change size and shove the rest of the row sideways. */
+  border-color: var(--otc-primary);
+  box-shadow: inset 0 0 0 1px var(--otc-primary);
+}
+
+/* --- Dropdowns --- */
+
+.otc-settings .setting-item-control .dropdown {
+  height: 40px;
+  padding: 0 32px 0 16px;
+  border-radius: 4px;
+  border: 1px solid var(--otc-outline);
+  background-color: var(--otc-surface);
+  color: var(--otc-on-surface);
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.otc-settings .setting-item-control .dropdown:focus {
+  outline: none;
+  border-color: var(--otc-primary);
+  box-shadow: inset 0 0 0 1px var(--otc-primary);
+}
+
+/* --- Toggles --- */
+/* Geometry is left to Obsidian: it derives the size from a set of variables
+   such as --toggle-s-width that convert between one another, and specifying
+   width/height here would fight with that. Only the outline and the colours
+   are taken over. */
+
+.otc-settings .checkbox-container {
+  box-shadow: inset 0 0 0 2px var(--otc-outline);
+}
+
+.otc-settings .checkbox-container.is-enabled {
+  box-shadow: none;
+}
+
+/* --- Holiday data JSON input area (HolidayOverrideInput, the React mount
+   point inside the card) --- */
+
+/* This row differs from the other setting rows: besides the title row it also
+   has to hold a whole editor. Keeping Obsidian's original horizontal flex
+   layout would squeeze the editor into a thin strip, so it is stacked
+   vertically instead. */
+.otc-settings .otc-card .setting-item.otc-holiday-override-item {
+  display: block;
+}
+
+.otc-settings .otc-holiday-override-head {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.otc-settings .otc-holiday-override-head .setting-item-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.otc-settings .otc-holiday-override-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+}
+
+.otc-settings .otc-json-toolbar-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Same reasoning as .otc-daily-setup-btn: every other :focus rule on this page
+   switches to an inset shadow, but on a button that is not visible, and
+   keyboard users would lose track of where the focus is. */
+.otc-settings .otc-json-toolbar-btn:focus-visible {
+  outline: 2px solid var(--otc-primary);
+  outline-offset: 2px;
+}
+
+/* ---- The JSON editor, built from three stacked layers ----
+   WARNING: font-family, font-size, line-height, padding-top and white-space
+   must match item for item across the three elements below (gutter /
+   highlight / input). If any one of them differs, the coloured text drifts
+   away from the real caret, and the drift accumulates with the number of
+   lines, so it is not obvious at first glance.
+   Before changing anything here, measure the caret position inside Obsidian
+   itself; do not rely on a screenshot. */
+
+.otc-settings .otc-json-editor {
+  display: flex;
+  height: 236px;
+  min-height: 120px;
+  /* resize only takes effect when overflow is not visible; this also stops the
+     child layers from spilling past the rounded corners. */
+  overflow: hidden;
+  resize: vertical;
+  border: 1px solid var(--otc-outline);
+  border-radius: 4px;
+  background: var(--otc-surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* The textarea's own outline has been removed, so the focus ring is drawn on
+   the outer frame instead; otherwise the editor as a whole would give no
+   visible indication that it is focused. */
+.otc-settings .otc-json-editor:focus-within {
+  border-color: var(--otc-primary);
+  box-shadow: inset 0 0 0 1px var(--otc-primary);
+}
+
+.otc-settings .otc-json-editor-gutter,
+.otc-settings .otc-json-editor-highlight,
+.otc-settings .otc-json-editor-input {
+  margin: 0;
+  border: 0;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: normal;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.otc-settings .otc-json-editor-gutter {
+  flex: 0 0 auto;
+  min-width: 40px;
+  padding: 8px 8px 8px 4px;
+  overflow: hidden;
+  text-align: right;
+  user-select: none;
+  color: var(--otc-on-surface-muted);
+  background: var(--otc-surface-sunken);
+  border-right: 1px solid var(--otc-outline);
+}
+
+.otc-settings .otc-json-editor-line-no {
+  display: block;
+}
+
+.otc-settings .otc-json-editor-scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.otc-settings .otc-json-editor-highlight {
+  position: absolute;
+  inset: 0;
+  padding: 8px 12px;
+  overflow: hidden;
+  background: none;
+  color: var(--otc-on-surface);
+  pointer-events: none;
+}
+
+.otc-settings .otc-json-editor-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 8px 12px;
+  overflow: auto;
+  resize: none;
+  background: transparent;
+  box-shadow: none;
+  /* color must stay: both the caret and the underline shown while composing
+     with a Zhuyin/Pinyin IME take their colour from it. Only the glyph bodies
+     are made transparent, via -webkit-text-fill-color, so that the coloured
+     text on the layer underneath shows through. */
+  color: var(--otc-on-surface);
+  -webkit-text-fill-color: transparent;
+  caret-color: var(--otc-on-surface);
+}
+
+.otc-settings .otc-json-editor-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* The placeholder is also made transparent by -webkit-text-fill-color, so it
+   has to be restored separately. */
+.otc-settings .otc-json-editor-input::placeholder {
+  color: var(--otc-on-surface-muted);
+  -webkit-text-fill-color: var(--otc-on-surface-muted);
+}
+
+.otc-settings .otc-json-key {
+  color: var(--otc-json-key);
+}
+
+.otc-settings .otc-json-string {
+  color: var(--otc-json-string);
+}
+
+.otc-settings .otc-json-number {
+  color: var(--otc-json-number);
+}
+
+.otc-settings .otc-json-keyword {
+  color: var(--otc-json-keyword);
+}
+
+.otc-settings .otc-json-punct {
+  color: var(--otc-json-punct);
+}
+
+.otc-settings .otc-json-plain {
+  color: var(--otc-on-surface);
+}
+
+/* --- The "set up daily notes in one click" button, placed on the right-hand
+   side of the "Daily notes" subheading row --- */
+/* The :focus rules above all drop the native outline in favour of an inset
+   shadow. This button deliberately does not follow that: an inset shadow is
+   almost invisible against the accent background, and keyboard users would
+   lose track of where the focus is. */
+
+.otc-settings .otc-daily-setup-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.otc-settings .otc-daily-setup-btn:focus-visible {
+  outline: 2px solid var(--otc-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   One-click daily note setup: the preview Modal.
+   This is a native Obsidian Modal and lives outside the .otc-settings scope,
+   so it can only use Obsidian's own theme variables, not the --otc-* tokens
+   defined above.
+   ============================================================ */
+
+.otc-daily-setup .otc-daily-setup-lead {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-muted);
+  margin: 0 0 16px;
+}
+
+.otc-daily-setup .otc-daily-setup-section {
+  margin-bottom: 20px;
+}
+
+.otc-daily-setup .otc-daily-setup-heading {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.otc-daily-setup .otc-daily-setup-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.otc-daily-setup .otc-daily-setup-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-normal);
+}
+
+/* Items that are already satisfied should read as "this run will not touch
+   it", without being dimmed so far that they become unreadable. */
+.otc-daily-setup .otc-daily-setup-item.is-satisfied {
+  color: var(--text-muted);
+}
+
+.otc-daily-setup .otc-daily-setup-mark {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  color: var(--text-accent);
+}
+
+.otc-daily-setup .otc-daily-setup-item.is-satisfied .otc-daily-setup-mark {
+  color: var(--text-faint);
+}
+
+.otc-daily-setup .otc-daily-setup-mark svg {
+  width: 16px;
+  height: 16px;
+}
+
+.otc-daily-setup .otc-daily-setup-blockers .otc-daily-setup-mark {
+  color: var(--text-warning);
+}
+
+.otc-daily-setup .otc-daily-setup-blocker-title {
+  font-weight: 600;
+}
+
+.otc-daily-setup .otc-daily-setup-blocker-detail {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.otc-daily-setup .otc-daily-setup-error {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-error);
+}
+
+/* ============================================================
+   Calendar
+   The grid is drawn by this plugin rather than by a UI framework, so every
+   rule below addresses this plugin's own class names. Colours always resolve
+   through Obsidian variables (or the corrected --otc-* tokens defined at the
+   top of this file) so that a theme switch carries the calendar with it.
+   Spacing stays on a 4px step: 4 / 8 / 12 / 16 / 20 / 24.
+   ============================================================ */
+.otc-calendar {
+  box-sizing: border-box;
+  /* The width comes from the scaling wrapper (.otc-view-scale /
+     .otc-floating-scale), which is pinned. Anything wider than that gets
+     clipped rather than scaled, so nothing in here may set a min-width. */
+  width: 100%;
+  padding: 8px;
+  color: var(--text-normal);
+  user-select: none;
+}
+
+.otc-compact {
+  padding: 4px;
+}
+
+/* ---------- toolbar: settings button on the left, view modes on the right */
+.otc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.otc-settings-button,
+.otc-nav-button {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border: none;
+  box-shadow: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.otc-settings-button:hover,
+.otc-nav-button:hover {
+  background: var(--nav-item-background-hover);
+  color: var(--text-normal);
+}
+
+/* The browser default outline washes out against a card background, so keyboard
+   focus gets an explicit, contrast-checked ring. */
+.otc-settings-button:focus-visible,
+.otc-nav-button:focus-visible,
+.otc-mode-button:focus-visible {
+  outline: 2px solid
+    color-mix(in srgb, var(--text-accent) 70%, var(--text-normal) 30%);
+  outline-offset: 2px;
+}
+
+.otc-settings-button svg,
+.otc-nav-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.otc-modes {
+  flex-shrink: 0;
+  display: inline-flex;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.otc-mode-button {
+  white-space: nowrap;
+  padding: 0 8px;
+  height: 20px;
+  font-size: 12px;
+  line-height: 18px;
+  border: none;
+  border-left: 1px solid var(--divider-color);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.otc-mode-button:first-child {
+  border-left: none;
+}
+
+.otc-mode-button:hover {
+  background: var(--nav-item-background-hover);
+}
+
+.otc-mode-button.is-active {
+  color: var(--otc-text-blue);
+  box-shadow: inset 0 -2px 0 var(--text-accent);
+}
+
+/* ---------- navigation row: arrows either side of the date heading */
+.otc-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+  padding-bottom: 4px;
+  border-bottom: var(--divider-width) solid var(--divider-color);
+}
+
+.otc-nav-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.otc-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 20px;
+}
+
+.otc-title-item {
+  position: relative;
+  white-space: nowrap;
+  padding: 0 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.otc-title-item:hover {
+  background: var(--nav-item-background-hover);
+}
+
+.otc-title-lunar {
+  font-size: 14px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- body: the week / quarter column, then the grid */
+.otc-body {
+  display: flex;
+}
+
+.otc-side {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+  margin-right: 4px;
+  border-right: var(--divider-width) solid var(--divider-color);
+}
+
+.otc-side-quarters {
+  justify-content: space-around;
+}
+
+.otc-side-head {
+  width: 40px;
+  height: 20px;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.otc-grid {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+}
+
+.otc-weekdays,
+.otc-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  justify-items: center;
+  align-items: center;
+}
+
+.otc-weekday {
+  height: 20px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-normal);
+}
+
+.otc-grid-months {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-items: center;
+  align-content: space-around;
+}
+
+/* ---------- cells
+   No overflow clipping anywhere on this chain: the badges sit at -6px outside
+   the box and the "has a note" dot hangs on the bottom edge, so a clip would
+   erase all four. Long labels are cut down by CellLabel instead, which is the
+   layer that can do it without collateral damage. */
+.otc-cell {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-normal);
+  transition: background 300ms;
+  cursor: pointer;
+}
+
+.otc-cell:hover {
+  background: var(--nav-item-background-hover);
+}
+
+.otc-day {
+  width: 42px;
+  max-width: 100%;
+  height: 42px;
+  margin: 1px 0;
+}
+
+.otc-side-cell {
+  width: 40px;
+  height: 42px;
+  margin: 1px 0;
+  font-size: 14px;
+}
+
+.otc-quarter {
+  line-height: 16px;
+}
+
+.otc-month {
+  width: 108px;
+  max-width: 100%;
+  padding: 5px 0;
+}
+
+.otc-day-number {
+  font-size: 16px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.otc-lunar {
+  max-width: 100%;
+  font-size: 12px;
+  line-height: 14px;
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The dot marking "this date already has a note". */
+.otc-cell.has-note::after,
+.otc-title-item.has-note::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-accent);
+}
+
+.otc-cell.has-note::after {
+  bottom: -1px;
+}
+
+.otc-title-item.has-note::after {
+  bottom: -4px;
+}
+
+.otc-badge {
+  position: absolute;
+  z-index: 1;
+  white-space: nowrap;
+  top: -6px;
+  right: -6px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 4px;
+  background: var(--otc-badge-bg-blue);
+  color: var(--otc-on-badge, #fff);
+}
+
+/* ---------- cell states */
+.otc-cell.is-today {
+  border-color: var(--text-accent);
+  color: var(--otc-text-blue);
+}
+
+.otc-cell.is-today .otc-lunar {
+  color: var(--otc-text-blue);
+}
+
+.otc-cell.is-weekend {
+  color: var(--otc-text-red);
+}
+
+.otc-cell.is-weekend .otc-lunar {
+  color: var(--otc-text-red);
+}
+
+.otc-cell.is-holiday {
+  border-color: var(--color-red);
+  color: var(--otc-text-red);
+}
+
+.otc-cell.is-holiday .otc-lunar {
+  color: var(--otc-text-red);
+}
+
+.otc-cell.is-holiday .otc-badge {
+  background: var(--otc-badge-bg-red);
+}
+
+.otc-cell.is-workday {
+  border-color: var(--text-normal);
+}
+
+.otc-cell.is-workday .otc-badge {
+  background: var(--text-normal);
+  color: var(--background-primary);
+}
+
+.otc-cell.is-current {
+  color: var(--text-accent);
+}
+
+/* Belongs to the month either side of the one on screen. */
+.otc-cell.is-outside {
+  opacity: 0.3;
+}
+
+/* Already in the past: faded, but every bit as clickable — of course a past
+   day's note has to be openable. Deliberately not named "disabled", which
+   below means the opposite thing. */
+.otc-cell.is-past {
+  opacity: 0.45;
+}
+
+/* The granularity is switched off in Periodic Notes: visible, but inert and
+   without hover feedback. The .otc-calendar prefix is what makes these rules
+   win: without it they tie with the .otc-cell:hover / .otc-title-item:hover
+   rules above and the winner is decided by declaration order, which is too
+   fragile to rely on. Both elements are always rendered inside .otc-calendar
+   (see Calendar.tsx), so the extra class costs nothing but specificity. */
+.otc-calendar .otc-cell.is-disabled,
+.otc-calendar .otc-title-item.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.otc-calendar .otc-cell.is-disabled:hover,
+.otc-calendar .otc-title-item.is-disabled:hover {
+  background: transparent;
+}
+
+.otc-calendar .otc-cell.is-disabled * {
+  cursor: not-allowed;
+}
+
+/* Faint on both counts has to read fainter than either one alone, and that
+   has to be settled by specificity rather than by declaration order. */
+.otc-cell.is-past.is-disabled {
+  opacity: 0.3;
+}
+
+/* ---------- compact layout */
+.otc-compact .otc-day {
+  width: 38px;
+  height: 40px;
+}
+
+.otc-compact .otc-lunar {
+  font-size: 11px;
+}
+
+.otc-compact .otc-side-cell {
+  width: 34px;
+  height: 40px;
+  font-size: 12px;
+}
+
+.otc-compact .otc-side-head {
+  width: 34px;
+  font-size: 12px;
+}
+
+.otc-compact .otc-month {
+  width: 92px;
+}
+
+.otc-compact .otc-title-row {
+  font-size: 16px;
+}
+
+.otc-compact .otc-title-lunar {
+  font-size: 12px;
+}
+
+.otc-compact .otc-day-number {
+  font-size: 14px;
+}
+
+.otc-compact .otc-mode-button {
+  font-size: 12px;
+  height: 18px;
+  line-height: 16px;
+}
