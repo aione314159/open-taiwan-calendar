@@ -1357,12 +1357,16 @@ body {
    a third of the width — enough to show the first two dozen characters of a
    nested folder path and hide the rest. Wrapping the row puts the field on its
    own line at full width, so the whole path is readable and the folder
-   suggester has room to open below it. */
-.otc-settings .setting-item:has(.setting-item-control input[type="text"]) {
+   suggester has room to open below it.
+
+   The two classes below stand in for the has() selector, which said the same
+   thing until the community CSS lint flagged its invalidation cost.
+   src/view/settingRowShape.ts writes them onto the rows after each render. */
+.otc-settings .setting-item.otc-row-text {
   flex-wrap: wrap;
 }
 
-.otc-settings .setting-item-control:has(> input[type="text"]) {
+.otc-settings .setting-item-control.otc-control-text {
   flex-basis: 100%;
   justify-content: stretch;
   margin-top: 8px;
@@ -1404,18 +1408,16 @@ body {
   max-width: 640px;
 }
 
-.otc-quick-add-modal .setting-item:has(.setting-item-control input[type="text"]) {
+.otc-quick-add-modal .setting-item.otc-row-text {
   flex-wrap: wrap;
 }
 
-.otc-quick-add-modal
-  .setting-item:has(.setting-item-control input[type="text"])
-  .setting-item-info {
+.otc-quick-add-modal .setting-item.otc-row-text .setting-item-info {
   flex: 1 1 100%;
   margin-right: 0;
 }
 
-.otc-quick-add-modal .setting-item-control:has(input[type="text"]) {
+.otc-quick-add-modal .setting-item-control.otc-control-text {
   flex: 1 1 100%;
   justify-content: stretch;
   margin-top: 8px;
@@ -1438,7 +1440,7 @@ body {
 
 /* Date rows keep the field and its calendar button together on the right; they
    are a fixed width and already fit. */
-.otc-quick-add-modal .setting-item-control:has(> input[type="date"]) {
+.otc-quick-add-modal .setting-item-control.otc-control-date {
   gap: 6px;
 }
 

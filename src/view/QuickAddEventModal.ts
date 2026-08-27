@@ -5,6 +5,7 @@ import { parseNaturalLanguage } from "../event/parseNaturalLanguage";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 import { settingsStore } from "../state/settings";
+import { markSettingRowShapes } from "./settingRowShape";
 import { moment } from "../util/moment";
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -255,6 +256,10 @@ export class QuickAddEventModal extends Modal {
           .setCta()
           .onClick(() => this.submit())
       );
+
+    // The rows are built once and never change shape, so one pass here is the
+    // whole of what `:has()` used to do continuously. See settingRowShape.ts.
+    markSettingRowShapes(this.contentEl);
   }
 
   /**

@@ -22,6 +22,7 @@ import type { TranslationKey } from "src/i18n";
 import { LATEST_OFFICIAL_YEAR } from "src/holiday/rocHolidayData";
 import type { NoteConfigItem } from "src/enum/noteConfig";
 import { DailySetupModal } from "./DailySetupModal";
+import { markSettingRowShapes } from "./settingRowShape";
 
 // Default height/width ratio of the floating panel, keeping the original
 // 400x450 default (8:9)
@@ -77,6 +78,25 @@ export default class MainSettingTable extends PluginSettingTab {
     // renderer owns the contents of containerEl but not the element itself, so
     // the class is attached once here rather than on each render.
     this.containerEl.addClass("otc-settings");
+
+    /**
+     * Re-mark the row shapes after every render.
+     *
+     * styles.css needs to know which rows hold a text field. `:has()` said so
+     * directly until the community CSS lint flagged its invalidation cost, and
+     * the declarative renderer owns these rows: `cls` exists on a group but not
+     * on an individual definition, so there is nowhere to declare the mark
+     * alongside the item. Watching the container covers every path that redraws
+     * it — the first open, update(), and Obsidian's own re-renders — without
+     * this class having to know which one ran.
+     *
+     * Only childList is observed, so the class writes below cannot feed back in.
+     */
+    const shapeMarker = new MutationObserver(() =>
+      markSettingRowShapes(this.containerEl)
+    );
+    shapeMarker.observe(this.containerEl, { childList: true, subtree: true });
+    plugin.register(() => shapeMarker.disconnect());
 
     /**
      * Redraw when the events change underneath the page.
