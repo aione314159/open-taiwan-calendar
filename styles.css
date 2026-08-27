@@ -1045,25 +1045,34 @@ body {
 .otc-badges {
   position: absolute;
   z-index: 1;
-  top: -6px;
-  right: -6px;
+  /* Further out than the 6px a single-character badge needed. A word-length
+     badge ("Now", "Work") only grows leftwards, because the row is pinned by
+     its right edge — at -6px it reached back over the date itself. */
+  top: -8px;
+  right: -8px;
   display: flex;
   flex-direction: row-reverse;
   gap: 2px;
 }
 
-/* A circle, not a rounded rectangle: every badge is a single character (今 / 休
-   / 班), so a fixed square box holds it without clipping and reads as the same
-   family of mark as the dots along the bottom edge. */
+/* A circle for one character, a pill for more.
+   The Chinese badges are single characters (今 / 休 / 班) and a fixed 16px
+   circle held them exactly. The English ones are not — "Now", "Off", "Work" —
+   and that box clipped every one of them to two letters. So the width is a
+   floor rather than a fixed size, the radius is half the height rather than
+   50%, and a one-character badge still comes out round while a word comes out
+   as a pill of the same height. */
 .otc-badge {
   flex: 0 0 auto;
-  width: 16px;
-  height: 16px;
+  box-sizing: border-box;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
   white-space: nowrap;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 10px;
+  line-height: 15px;
   text-align: center;
-  border-radius: 50%;
+  border-radius: 8px;
   background: var(--otc-badge-bg-blue);
   color: var(--otc-on-badge, #fff);
 }
