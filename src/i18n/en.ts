@@ -24,6 +24,7 @@ export const en = {
 
   // ---------------------------------------------------------------- calendar
   "calendar.settings": "Taiwan Calendar settings",
+  "calendar.toggleColorScheme": "Toggle light/dark mode",
   "calendar.modeToday": "Today",
   "calendar.modeMonth": "Month",
   "calendar.modeYear": "Year",

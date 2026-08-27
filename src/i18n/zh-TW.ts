@@ -25,6 +25,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
 
   // ---------------------------------------------------------------- calendar
   "calendar.settings": "農民曆設定",
+  "calendar.toggleColorScheme": "切換淺色／深色模式",
   "calendar.modeToday": "今",
   "calendar.modeMonth": "月",
   "calendar.modeYear": "年",

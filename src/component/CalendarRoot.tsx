@@ -7,6 +7,7 @@ import { openOrCreateNote } from "../note/noteOps";
 import { showNoteContextMenu, triggerHoverPreview } from "../note/noteMenu";
 import { granularityEnabled } from "../note/periodicNotes";
 import { openPluginSettings } from "../util/pluginSettings";
+import { subscribeColorScheme, toggleColorScheme } from "../util/theme";
 import { NoteType } from "../enum";
 import Calendar from "./Calendar";
 
@@ -67,6 +68,10 @@ export const mountCalendarRoot = (app: App, container: Element): Root => {
         openQuickAddEvent(app, { date: date.format("YYYY-MM-DD") })
       }
       onShowEventList={() => openEventList(app)}
+      onToggleColorScheme={() => toggleColorScheme(app)}
+      subscribeColorScheme={(onChange: () => void) =>
+        subscribeColorScheme(app, onChange)
+      }
     />
   );
   return root;

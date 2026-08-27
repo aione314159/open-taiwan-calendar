@@ -1,6 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import classNames from "classnames";
 import { moment } from "src/util/moment";
+import { isDarkMode } from "src/util/theme";
 import type { Moment } from "src/util/moment";
 import "moment/locale/zh-tw";
 import type { PaneType } from "obsidian";
@@ -114,6 +121,14 @@ export interface CalendarProps {
   onAddEvent: (date: Moment) => void;
   /** Opens the list of every entry, split into reminders and events. */
   onShowEventList: () => void;
+  /** Flips Obsidian between light and dark. */
+  onToggleColorScheme: () => void;
+  /**
+   * Subscribe to colour-scheme changes; returns the unsubscribe function.
+   * Passed in rather than wired up here because the underlying workspace event
+   * needs `App`, which this component deliberately never touches.
+   */
+  subscribeColorScheme: (onChange: () => void) => () => void;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
@@ -124,6 +139,8 @@ const Calendar: React.FC<CalendarProps> = ({
   onOpenSettings,
   onAddEvent,
   onShowEventList,
+  onToggleColorScheme,
+  subscribeColorScheme,
 }) => {
   const notes = useNotes((state) => state);
   const events = useEvents((state) => state);
@@ -139,6 +156,11 @@ const Calendar: React.FC<CalendarProps> = ({
   const hoverPreview = useSetting((state) => state.appearance.hoverPreview);
   const dotSize = useSetting((state) => state.appearance.dotSize);
   const holidayOverrides = useSetting((state) => state.holidayOverrides);
+
+  // The colour scheme is Obsidian's state, so it is read from Obsidian on every
+  // change rather than mirrored into React state. A toggle made in the command
+  // palette or the appearance settings has to move this button too.
+  const isDark = useSyncExternalStore(subscribeColorScheme, isDarkMode);
 
   const today = useToday();
   const [anchor, setAnchor] = useState<Moment>(() => moment());
@@ -435,6 +457,15 @@ const Calendar: React.FC<CalendarProps> = ({
             label={t("command.showEventList")}
             className="otc-settings-button"
             onClick={onShowEventList}
+          />
+          {/* The icon shows what the click switches to, not what is on now: a
+              sun while dark reads as "go light", which is the question the user
+              is answering when they reach for it. */}
+          <IconButton
+            icon={isDark ? "sun" : "moon"}
+            label={t("calendar.toggleColorScheme")}
+            className="otc-settings-button"
+            onClick={onToggleColorScheme}
           />
         </div>
         <div className="otc-modes" role="group">
