@@ -1,4 +1,6 @@
-<h1 align="center">Open Taiwan Calendar</h1>
+<p align="center">
+<img src="./marketing/banner-b-crimson.png" alt="Open Taiwan Calendar — public holidays, substitute days, lunar dates and solar terms for Obsidian" width="900">
+</p>
 
 <p align="center">
 <span>A Taiwanese almanac calendar for Obsidian: public holidays, substitute-day adjustments, the lunar calendar and the solar terms, with month/year view switching, a sidebar view and a draggable floating window. Pairs with QuickAdd to create daily, weekly, monthly, quarterly and yearly periodic notes.</span>

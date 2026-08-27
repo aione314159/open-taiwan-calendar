@@ -1,4 +1,6 @@
-<h1 align="center">Open Taiwan Calendar</h1>
+<p align="center">
+<img src="./marketing/banner-b-crimson-zh-TW.png" alt="Open Taiwan Calendar — Obsidian 的台灣農民曆插件：國定假日、補班補假、農曆與二十四節氣" width="900">
+</p>
 
 <p align="center">
 <span>Obsidian 的台灣農民曆插件：國定假日、補班補假、農曆與二十四節氣，可切換月／年檢視，提供側邊欄與可拖曳的懸浮視窗，並能搭配 QuickAdd 建立日記、週記、月記、季記與年記。</span>
