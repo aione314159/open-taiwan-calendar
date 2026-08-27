@@ -28,6 +28,8 @@ English · <a href="./README.zh-TW.md">繁體中文</a>
 - Your own events and reminders, stored in the daily notes themselves and marked on the calendar as a coloured dot in a row beside the "this day has a note" dot, never overlapping it.
 - Reminders fire on a rule of your own — the day before and again on the day, say — through a dialog, a corner notice, a desktop notification, or any combination.
 - The day's events are written into the top of the daily note, inside a comment-marked block that is rewritten without touching anything else in the file.
+- Reading view draws the note's own entries as a block at the top, so the frontmatter reads as rows rather than as raw YAML — or as nothing at all, which is what Obsidian shows when "Properties in document" is set to hidden.
+- A day with anything on it is framed on the grid in the same orange the block uses, so a marked day opens to a block of the same colour.
 - A quick-add dialog that reads the date out of a plain sentence ("remind me on Saturday to take the laptop home"), and shows what it read so you can correct it before saving.
 - Optional QuickAdd integration, plus template tokens for the lunar date, the solar term and the festival name.
 - Dot size (small / medium / large) and hover preview are settings, alongside the normal / compact layout.
@@ -43,11 +45,12 @@ Periodic notes come from either the core **Daily Notes** plugin or the community
 - Open the calendar in the sidebar with the **Open sidebar** command, or toggle the floating window from the ribbon icon or the **Toggle floating calendar** command.
 - Click a date to open its daily note, creating it first if it does not exist yet. The week numbers down the left edge, the quarters in the year view, and the year / month / quarter in the heading do the same for their own granularity.
 - Ctrl-click (Cmd-click on macOS) opens the note in a new split.
+- **Today** in the toolbar moves the grid back to today and opens today's note, creating it if it is not there yet — exactly what clicking today's cell does.
 - Right-click a cell for the note menu; hover over one to preview it, once "Open Taiwan Calendar" is enabled under Page Preview.
 - Add an event with the **Add an event or reminder** command, the calendar icon in the toolbar, by right-clicking the day you want it on, or by selecting a line in a note and picking **Add a reminder** / **Add an event** from the editor menu — the selected text becomes the sentence.
 - The dialog's dates start at the daily note you have open, if you have one, and each has a calendar button beside it. Moving the start date takes the end date with it, and the end can never fall before the start.
 - **Show reminders and events** opens a list of everything you have entered, split into reminders and events, with what is running today at the top and what is finished greyed out at the bottom.
-- The settings page carries the layout (normal or compact), the fading of past dates, the QuickAdd choices per granularity, an editor for the holiday data, the event and reminder options with the list of everything you have added, and a one-click setup that configures daily notes end to end.
+- The settings page carries the layout (normal or compact), the fading of past dates, the QuickAdd choices per granularity, an editor for the holiday data, the switch for the reading-view block, the event and reminder options with the list of everything you have added, and a one-click setup that configures daily notes end to end.
 
 ## Events and Reminders
 
@@ -70,6 +73,8 @@ otc-events:
 A reminder is a list of "days before" plus a time. `1, 0` fires once the day before and once on the day itself; `0` alone fires only on the day. A reminder whose time has already passed when Obsidian opens fires on opening rather than being skipped for the day. Which channels it uses — dialog, corner notice, desktop notification — is one setting for the whole vault rather than a field on every entry.
 
 Reminders and events get separate default dot colours, so the two kinds of entry are told apart at a glance on the grid.
+
+Reading view draws those entries at the top of the note, one row each: the colour, the title, the dates and the reminder rule in words. It is read-only — the frontmatter and the quick-add dialog are the two places an entry is edited — and it can be switched off under **Settings → Appearance**. It is drawn whatever Obsidian's own "Properties in document" setting is on, since that setting decides between a raw YAML table and nothing at all, and neither answers "what is on today".
 
 ## Installation
 
