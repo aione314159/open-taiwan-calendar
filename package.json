@@ -1,6 +1,6 @@
 {
   "name": "open-taiwan-calendar",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Taiwanese holiday and lunar calendar for Obsidian, with a sidebar view, a floating window and periodic notes integration",
   "main": "main.js",
   "scripts": {
