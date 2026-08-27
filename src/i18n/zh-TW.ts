@@ -114,6 +114,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.hoverPreviewDesc":
     "滑鼠停在日期上時彈出該筆記的預覽視窗。關掉只停用本插件的預覽，不動到其他插件共用的「頁面預覽」核心插件。",
   "settings.pastTransparentDesc": "啟用後，今天之前的日期會稍微透明一些",
+  "settings.readingViewEventsName": "在閱讀模式顯示項目",
+  "settings.readingViewEventsDesc":
+    "在閱讀模式的筆記最上方，把這篇的提醒與活動排成一塊。關掉不會動到 frontmatter，項目仍然存在、仍然在日曆上。",
   "settings.floatingCardTitle": "懸浮農民曆",
   "settings.floatingDesc":
     "在 Obsidian 主視窗上疊加可拖曳、可縮放的完整月曆懸浮面板",
@@ -220,6 +223,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "eventList.tabEvents": "活動",
   "eventList.badgeNow": "進行中",
   "eventList.empty": "還沒有任何項目。",
+  "noteEvents.heading": "這天的項目",
   "menu.addReminderHere": "新增提醒",
   "menu.addEventHere": "新增活動",
 

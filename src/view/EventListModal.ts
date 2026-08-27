@@ -1,32 +1,11 @@
 import { App, Modal, setIcon, setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import { formatReminderSummary } from "../event/offsets";
+import { PHASE_ORDER, phaseOf } from "../event/phase";
 import { readEvents } from "../event/store";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 import { moment } from "../util/moment";
-
-/**
- * Where an entry sits relative to today.
- *
- * Three buckets rather than two, because "running right now" is the state a
- * list like this exists to surface: a nine-day trip on its fourth day is
- * neither upcoming nor over, and burying it under next month's entries would
- * hide the one thing the user opened the list to check.
- */
-type Phase = "current" | "upcoming" | "past";
-
-const phaseOf = (event: CalendarEvent, today: string): Phase => {
-  if (event.end < today) return "past";
-  if (event.start > today) return "upcoming";
-  return "current";
-};
-
-const PHASE_ORDER: Record<Phase, number> = {
-  current: 0,
-  upcoming: 1,
-  past: 2,
-};
 
 type TabKey = "reminders" | "events";
 

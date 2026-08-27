@@ -9,6 +9,7 @@ import type { RocHolidayEntry } from "./holiday/types";
 import { t } from "./i18n";
 import type { TranslationKey } from "./i18n";
 import { HOVER_LINK_SOURCE } from "./note/noteMenu";
+import { registerReadingViewEvents } from "./note/readingViewEvents";
 import { runReminderSweep, startReminderScheduler } from "./reminder/scheduler";
 import { refreshAllNotes } from "./state/notes";
 import {
@@ -112,6 +113,11 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       display: t("hoverSource.display"),
       defaultMod: false,
     });
+
+    // Reading view draws the note's own entries. Registered here rather than in
+    // onLayoutReady: a post processor only runs when there is a note to render,
+    // and by then the metadata cache has filled.
+    registerReadingViewEvents(this);
 
     // Everything above is synchronous registration. Reading data.json is not,
     // and Plugin.onload is typed to return void, so the asynchronous half is

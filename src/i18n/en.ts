@@ -139,6 +139,9 @@ export const en = {
     "Show the note preview popup when the pointer rests on a date. Off stops this calendar’s popup without touching the core Page Preview plugin, which other plugins share.",
   "settings.pastTransparentDesc":
     "When on, dates before today are drawn slightly transparent",
+  "settings.readingViewEventsName": "Show entries in reading view",
+  "settings.readingViewEventsDesc":
+    "Draw this note's reminders and events as a block at the top of reading view. Off leaves the frontmatter untouched; the entries are still there and still on the calendar.",
   "settings.floatingCardTitle": "Floating calendar",
   "settings.floatingDesc":
     "A draggable, resizable full-month calendar panel layered over the Obsidian main window",
@@ -258,6 +261,7 @@ export const en = {
   "eventList.tabEvents": "Events",
   "eventList.badgeNow": "Now",
   "eventList.empty": "Nothing here yet.",
+  "noteEvents.heading": "On this day",
   "menu.addReminderHere": "Add a reminder",
   "menu.addEventHere": "Add an event",
 

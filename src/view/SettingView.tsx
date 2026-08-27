@@ -227,6 +227,11 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { hoverPreview: value as boolean },
         }));
         break;
+      case "appearance.readingViewEvents":
+        this.plugin.writeOptions(() => ({
+          appearance: { readingViewEvents: value as boolean },
+        }));
+        break;
       case "floatingWindow.width": {
         const width = Math.max(
           MIN_FLOATING_WIDTH,
@@ -398,6 +403,11 @@ export default class MainSettingTable extends PluginSettingTab {
           name: t("settings.hoverPreviewName"),
           desc: t("settings.hoverPreviewDesc"),
           control: { type: "toggle", key: "appearance.hoverPreview" },
+        },
+        {
+          name: t("settings.readingViewEventsName"),
+          desc: t("settings.readingViewEventsDesc"),
+          control: { type: "toggle", key: "appearance.readingViewEvents" },
         },
       ],
     };

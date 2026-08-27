@@ -28,6 +28,14 @@ body {
   --otc-on-badge: #ffffff; /* text colour on a badge; contrast baselines are in the --otc-badge-bg-* comments above */
 }
 
+/* 12% of orange over a light ground reads as a wash; over a dark one it is
+   invisible, hence the stronger mix here. Kept next to the day rule's logic
+   rather than in the token block at the top, because it is one value for one
+   state and not part of the contrast-corrected palette. */
+.theme-dark .otc-day.has-event {
+  background: color-mix(in srgb, var(--color-orange) 20%, transparent);
+}
+
 .theme-dark {
   --otc-text-red: var(--color-red); /* dark: the native value already clears 4.72:1, so it is left alone */
   --otc-text-blue: color-mix(in srgb, var(--text-accent) 92%, white); /* dark 4.56:1 */
@@ -1061,6 +1069,25 @@ body {
 }
 
 /* ---------- cell states */
+
+/* A day with something on it gets a warm frame and a light wash. The dots along
+   the bottom edge already say how many, but they are 4px and easy to miss when
+   the month is scanned rather than read, and "is there anything that day" is
+   the question the grid is scanned for.
+   Deliberately ahead of the today / holiday / workday rules: those three carry
+   their own border colour and must keep it, so a day that is both still reads
+   as today (blue frame) while the wash says there is something on it. */
+.otc-day.has-event {
+  border-color: var(--color-orange);
+  background: color-mix(in srgb, var(--color-orange) 12%, transparent);
+}
+
+/* Hover is defined further up, so it needs restating here to win against the
+   wash — without this a day with an entry stops responding to the pointer. */
+.otc-day.has-event:hover {
+  background: var(--nav-item-background-hover);
+}
+
 .otc-cell.is-today {
   border-color: var(--text-accent);
   color: var(--otc-text-blue);
@@ -1590,4 +1617,46 @@ body {
   display: flex;
   justify-content: flex-end;
   margin-top: 12px;
+}
+
+/* ============================================================
+   Reading view: the note's own entries (src/note/readingViewEvents.ts).
+   Only the container is defined here. The rows reuse the .otc-event-row rules
+   above, which carry no parent scope on purpose, so an entry looks the same
+   whether it is read in the list modal or at the top of its note.
+   ============================================================ */
+.otc-note-events {
+  margin: 0 0 1em;
+  padding: 8px 10px 10px 12px;
+  border: 1px solid var(--background-modifier-border);
+  /* The rail carries the attention. A whole panel in a strong colour would
+     compete with the note itself, which is what the reader came for; a 4px edge
+     is seen before it is read and then stops asking. */
+  border-left: 4px solid var(--color-orange);
+  border-radius: 8px;
+  /* Same orange, same mix as .otc-day.has-event on the calendar. One colour for
+     one meaning: "there is something on this day". A day marked orange in the
+     grid opens to a block in the same orange, and the two read as one thing
+     rather than as two features that happen to sit near each other. */
+  background: color-mix(in srgb, var(--color-orange) 12%, var(--background-primary));
+}
+
+.theme-dark .otc-note-events {
+  background: color-mix(in srgb, var(--color-orange) 20%, var(--background-primary));
+}
+
+.otc-note-events-heading {
+  margin-bottom: 4px;
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Inside the block the rows sit tighter than in the modal: this is a header on
+   someone's note, not a screen of its own, and it should not push the writing
+   below the fold. */
+.otc-note-events .otc-event-row {
+  padding: 4px 0;
 }

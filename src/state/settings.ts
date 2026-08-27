@@ -57,6 +57,16 @@ export interface AppearanceSetting {
    * else too.
    */
   hoverPreview: boolean;
+  /**
+   * Whether reading view shows the note's `otc-events` as formatted rows.
+   *
+   * The entries are stored in frontmatter, which reading view renders as either
+   * nothing or a raw YAML table depending on Obsidian's own property setting.
+   * Neither is readable, hence the block — and hence the switch, because a
+   * plugin that adds something to the top of the user's notes has to let them
+   * take it away again.
+   */
+  readingViewEvents: boolean;
 }
 
 export interface FloatingWindowSetting {
@@ -142,6 +152,7 @@ export const defaultSetting: PluginSetting = {
     dotSize: DotSize.Small,
     pastTimeTransparent: false,
     hoverPreview: true,
+    readingViewEvents: true,
   },
   floatingWindow: {
     visible: false,
