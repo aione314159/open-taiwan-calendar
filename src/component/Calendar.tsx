@@ -380,8 +380,25 @@ const Calendar: React.FC<CalendarProps> = ({
     [NoteType.QUARTERLY, t("calendar.headerQuarter", { quarter: anchor.format("Q") })],
   ];
 
+  /**
+   * "Today" moves the grid and opens the day.
+   *
+   * Scrolling back to today and then having to click the cell was two steps for
+   * one intention: someone who presses this wants to be looking at today, and
+   * the note is where today is written. It does exactly what clicking the cell
+   * does — including creating the note when it does not exist yet — so the two
+   * routes to the same day cannot disagree.
+   */
+  const openToday = (): void => {
+    setAnchor(today);
+    // Periodic Notes can have the daily granularity switched off, in which case
+    // there is no note to open and the button just moves the grid
+    if (!isNoteTypeEnabled(NoteType.DAILY)) return;
+    openOrCreateNote(today, NoteType.DAILY, notes[NoteType.DAILY]);
+  };
+
   const modeButtons: Array<[string, string, () => void, boolean]> = [
-    ["today", t("calendar.modeToday"), () => setAnchor(moment()), false],
+    ["today", t("calendar.modeToday"), openToday, false],
     ["month", t("calendar.modeMonth"), () => setMode("month"), mode === "month"],
     ["year", t("calendar.modeYear"), () => setMode("year"), mode === "year"],
   ];
