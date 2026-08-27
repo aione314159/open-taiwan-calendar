@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Open Taiwan Calendar</title>
+  <desc id="desc">A blue social preview banner with a glossy calendar icon and plugin description.</desc>
+  <defs>
+    <radialGradient id="backgroundLift" cx="25%" cy="48%" r="75%">
+      <stop offset="0" stop-color="#19376d" stop-opacity="0.58"/>
+      <stop offset="0.52" stop-color="#0f2853" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#0B1B3A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2E5BFF"/>
+      <stop offset="0.54" stop-color="#2149e8"/>
+      <stop offset="1" stop-color="#1436C8"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#315fff"/>
+      <stop offset="0.78" stop-color="#1436C8"/>
+      <stop offset="1" stop-color="#0b2494"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.72"/>
+      <stop offset="0.38" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="tileShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="17" result="blur"/>
+      <feOffset in="blur" dx="0" dy="19" result="offsetBlur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.42" result="shadowColor"/>
+      <feComposite in="shadowColor" in2="offsetBlur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glyphShadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/>
+      <feOffset in="blur" dx="0" dy="7" result="offsetBlur"/>
+      <feFlood flood-color="#08174f" flood-opacity="0.62" result="shadowColor"/>
+      <feComposite in="shadowColor" in2="offsetBlur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="tileClip"><rect x="110" y="130" width="380" height="380" rx="84"/></clipPath>
+  </defs>
+
+  <rect width="1280" height="640" fill="#0B1B3A"/>
+  <rect width="1280" height="640" fill="url(#backgroundLift)"/>
+
+  <!-- Physical glossy app tile. -->
+  <g filter="url(#tileShadow)">
+    <rect x="110" y="130" width="380" height="380" rx="84" fill="url(#rim)"/>
+    <rect x="116" y="134" width="368" height="368" rx="79" fill="url(#tile)"/>
+    <g clip-path="url(#tileClip)">
+      <ellipse cx="300" cy="136" rx="252" ry="118" fill="url(#gloss)"/>
+      <ellipse cx="300" cy="141" rx="188" ry="54" fill="#ffffff" opacity="0.14"/>
+      <path d="M130 174C162 142 213 134 300 134C388 134 441 143 472 176" fill="none" stroke="#ffffff" stroke-opacity="0.29" stroke-width="6" stroke-linecap="round"/>
+      <path d="M118 144C187 133 409 133 482 145" fill="none" stroke="#071c79" stroke-opacity="0.28" stroke-width="10"/>
+    </g>
+    <rect x="116" y="134" width="368" height="368" rx="79" fill="none" stroke="#ffffff" stroke-opacity="0.13" stroke-width="3"/>
+  </g>
+
+  <!-- Calendar glyph. -->
+  <g filter="url(#glyphShadow)" fill="none" stroke="#ffffff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="181" y="218" width="238" height="208" rx="29"/>
+    <path d="M181 274H419"/>
+    <path d="M238 199V238M362 199V238"/>
+  </g>
+  <g fill="#ffffff">
+    <rect x="221" y="303" width="20" height="20" rx="10"/>
+    <rect x="290" y="303" width="20" height="20" rx="10"/>
+    <rect x="359" y="303" width="20" height="20" rx="10"/>
+    <rect x="221" y="346" width="20" height="20" rx="10"/>
+    <rect x="286" y="341" width="29" height="29" rx="14.5"/>
+    <rect x="359" y="346" width="20" height="20" rx="10"/>
+    <rect x="221" y="389" width="20" height="20" rx="10"/>
+    <rect x="290" y="389" width="20" height="20" rx="10"/>
+    <rect x="359" y="389" width="20" height="20" rx="10"/>
+  </g>
+
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" fill="#f8fbff">
+    <text x="552" y="290" font-size="64" font-weight="800" letter-spacing="-2">Open Taiwan Calendar</text>
+    <g font-size="24" font-weight="400" opacity="0.72">
+      <text x="552" y="345">Public holidays · Substitute days · Lunar dates · Solar terms</text>
+      <text x="552" y="384">A Taiwanese almanac calendar for Obsidian</text>
+    </g>
+  </g>
+</svg>
