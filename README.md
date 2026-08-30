@@ -6,6 +6,19 @@
 <span>A Taiwanese almanac calendar for Obsidian: public holidays, substitute-day adjustments, the lunar calendar and the solar terms, with month/year view switching, a sidebar view and a draggable floating window. Pairs with QuickAdd to create daily, weekly, monthly, quarterly and yearly periodic notes.</span>
 </p>
 
+<div align="center">
+
+[![Latest release](https://img.shields.io/github/v/release/aione314159/open-taiwan-calendar?label=release)](../../releases/latest)
+[![Total downloads](https://img.shields.io/github/downloads/aione314159/open-taiwan-calendar/total?label=downloads)](../../releases)
+[![Obsidian 1.13.0+](https://img.shields.io/badge/Obsidian-1.13.0%2B-7C3AED)](#requirements)
+[![Desktop only](https://img.shields.io/badge/Platform-Desktop%20only-555555)](#requirements)
+[![No network access](https://img.shields.io/badge/Network-None-0a7ea4)](#features)
+[![MIT License](https://img.shields.io/badge/License-MIT-9e9e9e)](./LICENSE)
+
+[📥 Download](../../releases/latest) · [💡 Features](#features) · [🗓️ Holiday Data Strategy](#holiday-data-strategy) · [🛠️ Installation](#installation) · [🐞 Report an issue](../../issues/new)
+
+</div>
+
 <p align="center">
 English · <a href="./README.zh-TW.md">繁體中文</a>
 </p>
@@ -18,6 +31,8 @@ English · <a href="./README.zh-TW.md">繁體中文</a>
 <img src="./image/calendar-month.png" alt="Month view in the floating window, showing Taiwanese public holidays and make-up workdays" width="420">
 <img src="./image/calendar-year.png" alt="Year view, with all twelve months and their lunar month names" width="420">
 </p>
+
+---
 
 ## Features
 

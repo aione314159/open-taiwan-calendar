@@ -6,6 +6,19 @@
 <span>Obsidian 的台灣農民曆插件：國定假日、補班補假、農曆與二十四節氣，可切換月／年檢視，提供側邊欄與可拖曳的懸浮視窗，並能搭配 QuickAdd 建立日記、週記、月記、季記與年記。</span>
 </p>
 
+<div align="center">
+
+[![版本](https://img.shields.io/github/v/release/aione314159/open-taiwan-calendar?label=%E7%89%88%E6%9C%AC)](../../releases/latest)
+[![下載次數](https://img.shields.io/github/downloads/aione314159/open-taiwan-calendar/total?label=%E4%B8%8B%E8%BC%89%E6%AC%A1%E6%95%B8)](../../releases)
+[![Obsidian 1.13.0+](https://img.shields.io/badge/Obsidian-1.13.0%2B-7C3AED)](#前置需求)
+[![僅支援桌面版](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-%E5%83%85%E6%94%AF%E6%8F%B4%E6%A1%8C%E9%9D%A2%E7%89%88-555555)](#前置需求)
+[![無網路存取](https://img.shields.io/badge/%E7%B6%B2%E8%B7%AF%E5%AD%98%E5%8F%96-%E7%84%A1-0a7ea4)](#功能)
+[![MIT 授權](https://img.shields.io/badge/%E6%8E%88%E6%AC%8A-MIT-9e9e9e)](./LICENSE)
+
+[📥 下載](../../releases/latest) · [💡 功能](#功能) · [🗓️ 放假日期怎麼決定](#台灣放假日期是怎麼決定的) · [🛠️ 安裝](#安裝) · [🐞 回報問題](../../issues/new)
+
+</div>
+
 <p align="center">
 <a href="./README.md">English</a> · 繁體中文
 </p>
@@ -18,6 +31,8 @@
 <img src="./image/zh-TW/calendar-month.png" alt="懸浮視窗的月檢視，顯示國慶日、光復節與補假補班" width="420">
 <img src="./image/zh-TW/calendar-year.png" alt="年檢視，十二個月與對應的農曆月份" width="420">
 </p>
+
+---
 
 ## 功能
 
