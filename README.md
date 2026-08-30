@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./marketing/banner-b-crimson.png" alt="Open Taiwan Calendar — public holidays, substitute days, lunar dates and solar terms for Obsidian" width="900">
+<img src="./marketing/cover-en.png" alt="Open Taiwan Calendar — public holidays, substitute days, lunar dates and solar terms for Obsidian" width="900">
 </p>
 
 <p align="center">

@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./marketing/banner-b-crimson-zh-TW.png" alt="Open Taiwan Calendar — Obsidian 的台灣農民曆插件：國定假日、補班補假、農曆與二十四節氣" width="900">
+<img src="./marketing/cover-zh-TW.png" alt="Open Taiwan Calendar — Obsidian 的台灣農民曆插件：國定假日、補班補假、農曆與二十四節氣" width="900">
 </p>
 
 <p align="center">

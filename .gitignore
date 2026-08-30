@@ -42,3 +42,5 @@ TODO.md
 
 # Build output and OS cruft.
 *.vsix
+# Backup directory made by the ob-obsidian-kit audit tool.
+.kit-backup-*/
