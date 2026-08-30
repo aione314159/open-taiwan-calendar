@@ -14,23 +14,15 @@
     "strict": true,
     "strictNullChecks": true,
     "jsx": "preserve",
-    // Declared up to ES2019 because the source actually uses it: padStart and
-    // Object.entries are ES2017, flatMap is ES2019. It used to say ES7 and
-    // still type-checked, but only because a dependency's .d.ts pulled the
-    // newer libs in through a /// <reference lib="..." />. A checker that
-    // reads this file without those dependencies present saw those methods as
-    // untyped, which is what the community directory's review reported.
     "lib": [
       "DOM",
       "ES2019"
     ],
-    // On rather than off so the type check matches the one the community
-    // directory runs. The moment package is published as `export = moment`,
-    // and interop is what decides whether a namespace import of it keeps its
-    // call signature; with the two settings disagreeing, `moment()` type-checked
-    // here and came back from the directory's scan as an untyped call.
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "./src/main.ts"

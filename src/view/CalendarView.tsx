@@ -20,7 +20,7 @@ export const VIEW_TYPE_CALENDAR = "open-taiwan-calendar-view";
 export class CalendarView extends ItemView {
   private root: Root | null = null;
   private scaleController: FitScaleController | null = null;
-  private plugin: OpenTaiwanCalendarPlugin | null = null;
+  readonly plugin: OpenTaiwanCalendarPlugin | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: OpenTaiwanCalendarPlugin) {
     super(leaf);
