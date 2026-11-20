@@ -503,6 +503,10 @@ export const en = {
   "noteEvents.add": "Add an entry on this day",
   "notice.undo": "Undo",
   "notice.eventRestored": "Restored: {title}",
+  "eventList.search": "Search titles",
+  "eventList.noMatch": "Nothing matches \"{query}\".",
+  "eventList.pastFolded": "▸ Finished ({count})",
+  "eventList.pastOpen": "▾ Finished ({count})",
 } as const;
 
 export type TranslationKey = keyof typeof en;

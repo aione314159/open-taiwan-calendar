@@ -2022,3 +2022,18 @@ body {
 .otc-reminder-notice-meta {
   color: var(--text-muted);
 }
+
+/* ---------- list search and the folded "finished" line */
+.otc-event-search {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.otc-event-past-toggle {
+  width: 100%;
+  margin: 6px 0 2px;
+  justify-content: flex-start;
+  color: var(--text-muted);
+  box-shadow: none;
+  background: transparent;
+}
