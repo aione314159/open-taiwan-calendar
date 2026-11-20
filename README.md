@@ -64,7 +64,7 @@ Periodic notes come from either the core **Daily Notes** plugin or the community
 - Right-click a cell for the note menu; hover over one to preview it, once "Open Taiwan Calendar" is enabled under Page Preview.
 - Add an event with the **Add an event or reminder** command, the calendar icon in the toolbar, by right-clicking the day you want it on, or by selecting a line in a note and picking **Add a reminder** / **Add an event** from the editor menu — the selected text becomes the sentence.
 - The dialog's dates start at the daily note you have open, if you have one, and each has a calendar button beside it. Moving the start date takes the end date with it, and the end can never fall before the start.
-- **Show reminders and events** opens a list of everything you have entered, split into reminders and events, with what is running today at the top and what is finished greyed out at the bottom.
+- **Show reminders and events** opens one list of everything you have entered — reminders (round dot) and events (bar) together — with what is running today at the top and what is finished folded at the bottom. In the sidebar, the list button in the toolbar opens the same list under the calendar instead.
 - The settings page carries the layout (normal or compact), the fading of past dates, the QuickAdd choices per granularity, an editor for the holiday data, the switch for the reading-view block, the event and reminder options with the list of everything you have added, and a one-click setup that configures daily notes end to end.
 
 ## Events and Reminders

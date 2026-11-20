@@ -120,8 +120,8 @@ export class CalendarView extends ItemView {
     head.createSpan({ cls: "otc-panel-title", text: t("eventList.title") });
     const add = head.createEl("button", { cls: "clickable-icon otc-panel-action" });
     setIcon(add, "plus");
-    setTooltip(add, t("settings.eventListAdd"));
-    add.setAttr("aria-label", t("settings.eventListAdd"));
+    setTooltip(add, t("command.quickAddEvent"));
+    add.setAttr("aria-label", t("command.quickAddEvent"));
     add.addEventListener("click", () => openQuickAddEvent(this.app));
     const close = head.createEl("button", { cls: "clickable-icon otc-panel-action" });
     setIcon(close, "x");

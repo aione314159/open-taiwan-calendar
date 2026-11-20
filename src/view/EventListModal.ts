@@ -19,8 +19,8 @@ import { t } from "../i18n";
 import type { TranslationKey } from "../i18n";
 import { moment } from "../util/moment";
 
-/** "all" is the sidebar panel's single list: reminders and events together, no tabs. */
-type TabKey = "all" | "reminders" | "events" | "inline";
+/** "all" is reminders and events in one list; "inline" is the `(@…)` lines. */
+type TabKey = "all" | "inline";
 
 const PROBLEM_LABELS: Record<EntryProblemReason, TranslationKey> = {
   notObject: "problem.notObject",
@@ -44,7 +44,7 @@ const PROBLEM_LABELS: Record<EntryProblemReason, TranslationKey> = {
  * question, but never in the way.
  */
 export class EventListBody {
-  private tab: TabKey = "reminders";
+  private tab: TabKey = "all";
   private listEl: HTMLElement | null = null;
   private query = "";
   private showPast = false;
@@ -90,8 +90,10 @@ export class EventListBody {
 
     // The narrow panel lists everything in one column; the dot's shape (round
     // for a reminder, a bar for an event) already tells the two apart
-    if (this.compact) this.tab = "all";
-    else this.drawTabs();
+    // One list for reminders and events: the dot's shape (round for a
+    // reminder, a bar for an event) tells them apart. Tabs appear only when
+    // inline reminders are on, and the narrow panel never shows them
+    if (!this.compact && settingsStore.read().appearance.inlineReminders) this.drawTabs();
 
     this.listEl = this.root.createDiv({ cls: "otc-event-list" });
     this.renderList();
@@ -106,7 +108,7 @@ export class EventListBody {
     const footer = this.root.createDiv({ cls: "otc-event-list-footer" });
     const add = footer.createEl("button", {
       cls: "mod-cta",
-      text: t("settings.eventListAdd"),
+      text: t("command.quickAddEvent"),
     });
     add.addEventListener("click", () => {
       this.onDismiss();
@@ -140,16 +142,12 @@ export class EventListBody {
     }
   }
 
-  /** The reminders / events (/ inline) tab row, for the dialog. */
+  /** The "all / inline reminders" tab row, for the dialog. */
   private drawTabs(): void {
     const tabs = this.root.createDiv({ cls: "otc-event-tabs", attr: { role: "tablist" } });
     const buttons: Array<[TabKey, string]> = [
-      ["reminders", t("eventList.tabReminders")],
-      ["events", t("eventList.tabEvents")],
-      // Only while the setting is on; otherwise there is nothing to list
-      ...(settingsStore.read().appearance.inlineReminders
-        ? ([["inline", t("eventList.tabInline")]] as Array<[TabKey, string]>)
-        : []),
+      ["all", t("eventList.tabAll")],
+      ["inline", t("eventList.tabInline")],
     ];
     const select = (key: TabKey, focus = false) => {
       this.tab = key;
@@ -245,11 +243,7 @@ export class EventListBody {
     const openCount = (key: TabKey): number =>
       key === "inline"
         ? inlineRemindersStore.read().length
-        : readEvents().filter(
-            (e) =>
-              (key === "reminders" ? e.reminder !== null : e.reminder === null) &&
-              phaseOf(e, today) !== "past"
-          ).length;
+        : readEvents().filter((e) => phaseOf(e, today) !== "past").length;
     for (const [button, key] of this.tabButtons) {
       button.empty();
       button.createSpan({ text: button.dataset.label ?? "" });
@@ -261,9 +255,7 @@ export class EventListBody {
       return;
     }
 
-    const all = readEvents().filter((e) =>
-      this.tab === "all" ? true : this.tab === "reminders" ? e.reminder !== null : e.reminder === null
-    );
+    const all = readEvents();
     const rows = all
       .filter((e) => !this.query || e.title.toLowerCase().includes(this.query))
       .map((event) => ({ event, phase: phaseOf(event, today) }))

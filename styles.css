@@ -2843,3 +2843,43 @@ body {
 .otc-upcoming .otc-upcoming-head {
   padding-left: 2px;
 }
+
+/* ---------- the list dialog: same clean rows and tabs as the sidebar panel.
+   Scoped by the dialog so Obsidian's grey button fill does not win. */
+.otc-event-list-modal .otc-event-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.otc-event-list-modal .otc-event-tab:hover {
+  background: transparent;
+}
+
+.otc-event-list-modal .otc-event-row {
+  padding: 8px;
+  border-radius: var(--radius-s);
+}
+
+.otc-event-list-modal .otc-event-row + .otc-event-row {
+  border-top: none;
+}
+
+.otc-event-list-modal .otc-event-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.otc-event-list-modal .otc-event-row-actions {
+  opacity: 0.55;
+}
+
+.otc-event-list-modal .otc-event-row:hover .otc-event-row-actions,
+.otc-event-list-modal .otc-event-row:focus-within .otc-event-row-actions {
+  opacity: 1;
+}
+
+.otc-event-list-modal .otc-event-search {
+  margin-bottom: 6px;
+}
