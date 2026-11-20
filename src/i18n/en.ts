@@ -480,6 +480,8 @@ export const en = {
   "dayPanel.createNote": "Create this day’s note",
   "settings.dayPanelName": "Show the day panel",
   "settings.dayPanelDesc": "Below the sidebar calendar, show the selected day’s entries and the open to-dos of its note. Clicking a day selects it.",
+  "menu.addReminderOnDay": "Add a reminder on this day",
+  "menu.showAllEvents": "Show all {count}",
 } as const;
 
 export type TranslationKey = keyof typeof en;

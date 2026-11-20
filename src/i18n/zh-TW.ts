@@ -430,4 +430,6 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "dayPanel.createNote": "建立筆記",
   "settings.dayPanelName": "顯示當日面板",
   "settings.dayPanelDesc": "在側欄日曆下方顯示所選日期的行程與筆記中的未完成待辦。點擊日期即選取該日。",
+  "menu.addReminderOnDay": "在這天新增提醒",
+  "menu.showAllEvents": "顯示全部 {count} 筆",
 };

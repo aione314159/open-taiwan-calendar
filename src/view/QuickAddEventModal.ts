@@ -75,6 +75,8 @@ export interface QuickAddPreset {
   offsets?: number[];
   /** `HH:mm` */
   time?: string;
+  /** When editing: removes the entry. Shown as a Delete button in the dialog. */
+  onDelete?: () => void;
   /**
    * The inline reminder this entry is being converted from. It is the same
    * thing by design, so the duplicate warning leaves it out.
@@ -279,7 +281,20 @@ export class QuickAddEventModal extends Modal {
     // button the user was about to press moves out from under the pointer
     this.error = this.contentEl.createDiv({ cls: "otc-quick-add-error" });
 
-    new Setting(this.contentEl)
+    const buttons = new Setting(this.contentEl);
+    const onDelete = this.preset.onDelete;
+    if (this.preset.existing && onDelete) {
+      buttons.addButton((button) =>
+        button
+          .setButtonText(t("settings.eventDeleteAction"))
+          .setDestructive()
+          .onClick(() => {
+            this.close();
+            onDelete();
+          })
+      );
+    }
+    buttons
       .addButton((button) =>
         button.setButtonText(t("common.cancel")).onClick(() => this.close())
       )

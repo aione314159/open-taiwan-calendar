@@ -158,7 +158,7 @@ export const openEditEvent = (app: App, event: CalendarEvent): void => {
   new QuickAddEventModal(
     app,
     (edited) => void commitEventEdit(app, event, edited),
-    { existing: event }
+    { existing: event, onDelete: () => void removeEvent(app, event.id) }
   ).open();
 };
 

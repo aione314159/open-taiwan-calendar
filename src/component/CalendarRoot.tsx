@@ -4,6 +4,7 @@ import { App, PaneType } from "obsidian";
 import type { NoteIndex } from "../state/notes";
 import { readNotes } from "../state/notes";
 import { openEditEvent, openEventList, openQuickAddEvent } from "../event/commands";
+import { eventsOnDate, readEvents } from "../event/store";
 import Upcoming from "./Upcoming";
 import DayPanel from "./DayPanel";
 import { moment } from "src/util/moment";
@@ -83,9 +84,15 @@ export const mountCalendarRoot = (app: App, container: Element): Root => {
           // a quarter column has no single date to bind one to
           onAddEvent:
             type === NoteType.DAILY
-              ? (target: Moment) =>
-                  openQuickAddEvent(app, { date: target.format("YYYY-MM-DD") })
+              ? (target: Moment, remind: boolean) =>
+                  openQuickAddEvent(app, { date: target.format("YYYY-MM-DD"), remind })
               : undefined,
+          dayEvents:
+            type === NoteType.DAILY
+              ? eventsOnDate(readEvents(), date.format("YYYY-MM-DD"))
+              : [],
+          onEditEvent: (event) => openEditEvent(app, event),
+          onShowAll: () => openEventList(app),
           onCaptureTask:
             type === NoteType.DAILY
               ? (target: Moment) =>
