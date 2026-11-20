@@ -295,7 +295,7 @@ export const en = {
   "quickAdd.fieldReminder": "Remind me",
   "quickAdd.fieldOffsets": "Days before",
   "quickAdd.fieldOffsetsDesc":
-    "Comma-separated. 0 is the day itself, so \"1, 0\" fires once the day before and once on the day.",
+    "Tick the days to be reminded on; put any other number of days in Custom, comma-separated.",
   "quickAdd.fieldTime": "At",
   "quickAdd.submit": "Add",
   "quickAdd.editTitle": "Edit event",
@@ -507,6 +507,7 @@ export const en = {
   "eventList.noMatch": "Nothing matches \"{query}\".",
   "eventList.pastFolded": "▸ Finished ({count})",
   "eventList.pastOpen": "▾ Finished ({count})",
+  "quickAdd.offsetsCustom": "Custom, e.g. 14",
 } as const;
 
 export type TranslationKey = keyof typeof en;
