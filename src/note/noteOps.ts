@@ -1,4 +1,5 @@
 import type { Moment } from "src/util/moment";
+import { moment } from "src/util/moment";
 import { App, FileView, MarkdownView, Notice, TFile } from "obsidian";
 import type { PaneType, WorkspaceLeaf } from "obsidian";
 import * as dni from "obsidian-daily-notes-interface";
@@ -300,6 +301,99 @@ const logOpened = (leaf: WorkspaceLeaf, file: TFile): void => {
     shown: view instanceof FileView ? (view.file?.path ?? null) : null,
     contentLength:
       view instanceof MarkdownView ? view.getViewData().length : null,
+  });
+};
+
+/** The most daily notes "create up to this day" makes in one go. */
+export const MAX_BATCH_DAYS = 14;
+
+/**
+ * Whether the silent-create items apply to daily notes.
+ *
+ * Not when daily notes go through a QuickAdd choice: that path runs the
+ * choice, which opens the note itself, so "without opening it" could not be
+ * kept. The items are hidden rather than left to break that promise.
+ */
+export const silentCreateAvailable = (ctx: App): boolean =>
+  granularityEnabled(ctx, NoteType.DAILY) &&
+  !(settingsStore.read()[NoteType.DAILY].useQuickAdd &&
+    settingsStore.read()[NoteType.DAILY].quickAddChoice);
+
+/** Create one day's note from the template, lunar tokens filled, without opening it. */
+const createDailyQuietly = async (ctx: App, date: Moment): Promise<TFile> => {
+  const note = await createNote(date, NoteType.DAILY);
+  const filename = date.format(NOTE_API[NoteType.DAILY].settings().format);
+  await applyLunarTokens(ctx, note, buildNoteParams(date, NoteType.DAILY, filename));
+  return note;
+};
+
+/** A notice whose link opens the note, so "without opening" is never a dead end. */
+const createdNotice = (ctx: App, message: string, file: TFile | null): void => {
+  const fragment = createFragment();
+  fragment.append(message);
+  if (file) {
+    fragment.append(" ");
+    const link = fragment.createEl("a", { text: t("notice.openNote") });
+    link.addEventListener("click", () => void ctx.workspace.getLeaf(false).openFile(file));
+  }
+  new Notice(fragment, 8000);
+};
+
+/** "Create note, don't open it": no confirmation, the editor stays where it is. */
+export const createNoteWithoutOpening = async (ctx: App, date: Moment): Promise<void> => {
+  if (!silentCreateAvailable(ctx)) return;
+  const index = (() => {
+    try {
+      return dni.getAllDailyNotes();
+    } catch {
+      return {};
+    }
+  })();
+  if (dni.getDailyNote(date, index)) return;
+  const note = await createDailyQuietly(ctx, date);
+  createdNotice(ctx, t("notice.noteCreatedQuietly", { name: note.basename }), note);
+};
+
+/**
+ * Create every missing daily note from tomorrow to `until`, after one
+ * confirmation that lists them. Existing days are skipped; at most
+ * MAX_BATCH_DAYS days are covered.
+ */
+export const createDailyNotesUntil = (ctx: App, until: Moment): void => {
+  if (!silentCreateAvailable(ctx)) return;
+  const index = (() => {
+    try {
+      return dni.getAllDailyNotes();
+    } catch {
+      return {};
+    }
+  })();
+  const tomorrow = moment().startOf("day").add(1, "day");
+  const days: Moment[] = [];
+  for (let d = tomorrow.clone(); !d.isAfter(until, "day") && days.length < MAX_BATCH_DAYS; d.add(1, "day")) {
+    if (!dni.getDailyNote(d, index)) days.push(d.clone());
+  }
+  if (days.length === 0) {
+    new Notice(t("notice.batchNothing"));
+    return;
+  }
+  const format = NOTE_API[NoteType.DAILY].settings().format;
+  createConfirmationDialog({
+    cta: t("common.create"),
+    title: t("confirm.batchTitle"),
+    text: t("confirm.batchText", {
+      count: days.length,
+      dates: days.map((d) => d.format(format)).join(t("event.offsetSeparator")),
+    }),
+    ctx,
+    onAccept: async () => {
+      let created = 0;
+      for (const day of days) {
+        await createDailyQuietly(ctx, day);
+        created++;
+      }
+      createdNotice(ctx, t("notice.batchCreated", { count: created }), null);
+    },
   });
 };
 

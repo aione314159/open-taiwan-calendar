@@ -5,7 +5,14 @@ import { noteTypeLabel } from "../enum/noteConfig";
 import { t } from "../i18n";
 import type { Notes } from "../state/notes";
 import { buildLunarFields } from "./format";
-import { noteExists, openOrCreateNote } from "./noteOps";
+import {
+  createDailyNotesUntil,
+  createNoteWithoutOpening,
+  noteExists,
+  openOrCreateNote,
+  silentCreateAvailable,
+} from "./noteOps";
+import { moment } from "src/util/moment";
 
 /** The source identifier handed to Obsidian when triggering the native page preview; main.ts registers the same string */
 export const HOVER_LINK_SOURCE = "open-taiwan-calendar";
@@ -136,6 +143,29 @@ export const showNoteContextMenu = (
         .setTitle(t("menu.createNote", { noteType: noteTypeLabel(type) }))
         .setIcon("plus")
         .onClick(() => openOrCreateNote(date, type, notes, app))
+    );
+    if (type === NoteType.DAILY && silentCreateAvailable(app)) {
+      menu.addItem((item) =>
+        item
+          .setTitle(t("menu.createWithoutOpening"))
+          .setIcon("file-plus-2")
+          .onClick(() => void createNoteWithoutOpening(app, date))
+      );
+    }
+  }
+
+  // Only for a day after tomorrow: up to tomorrow there is at most one note
+  if (
+    type === NoteType.DAILY &&
+    !noteActionsDisabled &&
+    silentCreateAvailable(app) &&
+    date.isAfter(moment().add(1, "day"), "day")
+  ) {
+    menu.addItem((item) =>
+      item
+        .setTitle(t("menu.createUntilHere"))
+        .setIcon("calendar-range")
+        .onClick(() => createDailyNotesUntil(app, date))
     );
   }
 

@@ -124,6 +124,8 @@ export interface CalendarProps {
   onOpenSettings: () => void;
   /** Opens the quick-add dialog with the clicked day already filled in. */
   onAddEvent: (date: Moment) => void;
+  /** Alt-click on a day: create its note without opening it. */
+  onCreateQuietly: (date: Moment) => void;
   /** Opens the list of every entry, split into reminders and events. */
   onShowEventList: () => void;
   /** Flips Obsidian between light and dark. */
@@ -143,6 +145,7 @@ const Calendar: React.FC<CalendarProps> = ({
   isNoteTypeEnabled,
   onOpenSettings,
   onAddEvent,
+  onCreateQuietly,
   onShowEventList,
   onToggleColorScheme,
   subscribeColorScheme,
@@ -216,13 +219,20 @@ const Calendar: React.FC<CalendarProps> = ({
         disabled: false,
         // Ctrl/Cmd click opens a split, so someone with the panel parked in a
         // corner keeps the tab they were working in
-        onClick: (event) =>
+        onClick: (event) => {
+          // Alt-click on a day sets its note up for later without leaving the
+          // note being worked on
+          if (event.altKey && type === NoteType.DAILY) {
+            onCreateQuietly(date);
+            return;
+          }
           openOrCreateNote(
             date,
             type,
             index,
             event.ctrlKey || event.metaKey ? "split" : false
-          ),
+          );
+        },
         onContextMenu: (event) => {
           event.preventDefault();
           onContextMenu(event.nativeEvent, date, type, index);
@@ -249,6 +259,7 @@ const Calendar: React.FC<CalendarProps> = ({
       onContextMenu,
       onHoverPreview,
       hoverPreview,
+      onCreateQuietly,
     ]
   );
 

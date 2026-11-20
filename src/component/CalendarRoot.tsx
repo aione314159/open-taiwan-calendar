@@ -3,7 +3,7 @@ import type { Moment } from "src/util/moment";
 import { App, PaneType } from "obsidian";
 import type { NoteIndex } from "../state/notes";
 import { openEventList, openQuickAddEvent } from "../event/commands";
-import { openOrCreateNote } from "../note/noteOps";
+import { createNoteWithoutOpening, openOrCreateNote } from "../note/noteOps";
 import { showNoteContextMenu, triggerHoverPreview } from "../note/noteMenu";
 import { granularityEnabled } from "../note/periodicNotes";
 import { openPluginSettings } from "../util/pluginSettings";
@@ -73,6 +73,7 @@ export const mountCalendarRoot = (app: App, container: Element): Root => {
       onAddEvent={(date: Moment) =>
         openQuickAddEvent(app, { date: date.format("YYYY-MM-DD") })
       }
+      onCreateQuietly={(date: Moment) => void createNoteWithoutOpening(app, date)}
       onShowEventList={() => openEventList(app)}
       onToggleColorScheme={() => toggleColorScheme(app)}
       subscribeColorScheme={(onChange: () => void) =>
