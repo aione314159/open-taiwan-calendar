@@ -37,6 +37,18 @@ const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
  * A table rather than three copies of the same row, so adding a channel to
  * REMINDER_CHANNELS is the only edit needed to make it appear here.
  */
+type SystemStatus = "granted" | "default" | "denied" | "unsupported";
+
+const systemNotificationStatus = (): SystemStatus =>
+  typeof Notification === "undefined" ? "unsupported" : Notification.permission;
+
+const SYSTEM_STATUS_LABELS: Record<SystemStatus, TranslationKey> = {
+  granted: "settings.systemGranted",
+  default: "settings.systemDefault",
+  denied: "settings.systemDenied",
+  unsupported: "settings.systemUnsupported",
+};
+
 const CHANNEL_LABELS: Record<
   ReminderChannel,
   { name: TranslationKey; desc: TranslationKey }
@@ -173,6 +185,16 @@ export default class MainSettingTable extends PluginSettingTab {
 
     const channel = REMINDER_CHANNELS.find((c) => key === `reminder.channel.${c}`);
     if (!channel) return false;
+    // Ask at the moment it is switched on, not hours later when the first
+    // reminder fires and the user is not looking
+    if (
+      channel === ReminderChannel.SYSTEM &&
+      value &&
+      typeof Notification !== "undefined" &&
+      Notification.permission === "default"
+    ) {
+      void Notification.requestPermission().then(() => this.update());
+    }
     const current = this.plugin.options.reminder.channels;
     // Rebuilt from REMINDER_CHANNELS rather than appended to, so the stored
     // order is always the declared one and a toggle cannot introduce a duplicate
@@ -647,6 +669,29 @@ export default class MainSettingTable extends PluginSettingTab {
             key: `reminder.channel.${channel}`,
           },
         })),
+        {
+          name: t("settings.systemStatusName"),
+          searchable: false,
+          render: (setting: Setting) => {
+            const status = systemNotificationStatus();
+            setting
+              .setName(t("settings.systemStatusName"))
+              .setDesc(t(SYSTEM_STATUS_LABELS[status]));
+            setting.settingEl.toggleClass("otc-system-denied", status === "denied");
+            if (status === "unsupported") return;
+            setting.addButton((button) =>
+              button.setButtonText(t("settings.systemTest")).onClick(() => {
+                if (Notification.permission === "granted") {
+                  new Notification(t("settings.systemTestTitle"), {
+                    body: t("settings.systemTestBody"),
+                  });
+                  return;
+                }
+                void Notification.requestPermission().then(() => this.update());
+              })
+            );
+          },
+        },
         {
           name: t("settings.snoozeName"),
           desc: t("settings.snoozeDesc"),

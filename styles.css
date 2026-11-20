@@ -1975,3 +1975,7 @@ body {
 .otc-body.no-week-column .otc-day {
   width: min(100%, 50px);
 }
+
+.otc-system-denied .setting-item-description {
+  color: var(--text-error);
+}
