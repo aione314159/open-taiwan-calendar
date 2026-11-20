@@ -1979,3 +1979,19 @@ body {
 .otc-system-denied .setting-item-description {
   color: var(--text-error);
 }
+
+/* ---------- reading-view block: edit on hover or focus, add in the heading */
+.otc-note-events-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.otc-note-events .otc-note-events-edit {
+  opacity: 0;
+}
+
+.otc-note-events .otc-event-row:hover .otc-note-events-edit,
+.otc-note-events .otc-event-row:focus-within .otc-note-events-edit {
+  opacity: 1;
+}
