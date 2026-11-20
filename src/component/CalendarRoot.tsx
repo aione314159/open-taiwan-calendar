@@ -9,6 +9,7 @@ import { granularityEnabled } from "../note/periodicNotes";
 import { openPluginSettings } from "../util/pluginSettings";
 import { subscribeColorScheme, toggleColorScheme } from "../util/theme";
 import { NoteType } from "../enum";
+import { CaptureTaskModal } from "../view/CaptureTaskModal";
 import Calendar from "./Calendar";
 
 /**
@@ -49,6 +50,11 @@ export const mountCalendarRoot = (app: App, container: Element): Root => {
             type === NoteType.DAILY
               ? (target: Moment) =>
                   openQuickAddEvent(app, { date: target.format("YYYY-MM-DD") })
+              : undefined,
+          onCaptureTask:
+            type === NoteType.DAILY
+              ? (target: Moment) =>
+                  new CaptureTaskModal(app, target.format("YYYY-MM-DD")).open()
               : undefined,
           noteActionsDisabled,
         })

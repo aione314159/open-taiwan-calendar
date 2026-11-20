@@ -25,6 +25,7 @@ import { debugLog, flushDebugLog, initDebugLog } from "./util/debugLog";
 import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
+import { CaptureTaskModal } from "./view/CaptureTaskModal";
 import SettingView from "./view/SettingView";
 
 // The plugin object
@@ -83,6 +84,12 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       id: "quick-add-event",
       name: t("command.quickAddEvent"),
       callback: () => openQuickAddEvent(this.app),
+    });
+
+    this.addCommand({
+      id: "capture-task",
+      name: t("command.captureTask"),
+      callback: () => new CaptureTaskModal(this.app).open(),
     });
 
     this.addCommand({

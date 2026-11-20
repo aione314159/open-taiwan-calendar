@@ -69,6 +69,8 @@ export const showNoteContextMenu = (
   options: {
     /** Opens the quick-add dialog with this date already filled in. */
     onAddEvent?: (date: Moment) => void;
+    /** Opens "note a to-do on this day" for this date. */
+    onCaptureTask?: (date: Moment) => void;
     /**
      * True when Periodic Notes has this granularity switched off. The note
      * items are then left out entirely — the cell is already inert for them,
@@ -78,7 +80,7 @@ export const showNoteContextMenu = (
   } = {}
 ): void => {
   const menu = new Menu();
-  const { onAddEvent, noteActionsDisabled = false } = options;
+  const { onAddEvent, onCaptureTask, noteActionsDisabled = false } = options;
   const file: TFile | null = noteActionsDisabled
     ? null
     : noteExists(date, type, notes);
@@ -92,6 +94,14 @@ export const showNoteContextMenu = (
         .setIcon("calendar-plus")
         .onClick(() => onAddEvent(date))
     );
+    if (onCaptureTask) {
+      menu.addItem((item) =>
+        item
+          .setTitle(t("menu.captureTask"))
+          .setIcon("list-plus")
+          .onClick(() => onCaptureTask(date))
+      );
+    }
     menu.addSeparator();
   }
 
