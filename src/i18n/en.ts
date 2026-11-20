@@ -377,6 +377,10 @@ export const en = {
   "jump.placeholder": "2025-08-15, or next Friday",
   "jump.year": "Year",
   "jump.unrecognised": "No date recognised",
+  "reminder.missedTitle": "Missed reminders",
+  "reminder.missedMeta": "Was on {date} · {count} d ago",
+  "reminder.remindToday": "Move to today and remind me",
+  "reminder.openNote": "Open that day’s note",
 } as const;
 
 export type TranslationKey = keyof typeof en;

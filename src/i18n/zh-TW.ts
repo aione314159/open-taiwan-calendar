@@ -327,4 +327,8 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "jump.placeholder": "2025-08-15，或「下週五」",
   "jump.year": "年份",
   "jump.unrecognised": "無法辨識日期",
+  "reminder.missedTitle": "錯過的提醒",
+  "reminder.missedMeta": "原定 {date} · 已過 {count} 天",
+  "reminder.remindToday": "改到今天提醒",
+  "reminder.openNote": "開啟當日筆記",
 };

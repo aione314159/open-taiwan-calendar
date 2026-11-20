@@ -104,3 +104,73 @@ export class ReminderModal extends Modal {
     this.contentEl.empty();
   }
 }
+
+/** One entry whose reminders all passed while Obsidian was closed. */
+export interface MissedReminder {
+  event: CalendarEvent;
+  /** Days since the entry started. */
+  daysAgo: number;
+}
+
+/**
+ * "You missed these" — shown once, on the first sweep after a gap.
+ *
+ * The regular sweep stays silent about an entry that has already begun; this
+ * is the one place that says so, so a reminder lost to a closed laptop is not
+ * lost without a trace.
+ */
+export class MissedReminderModal extends Modal {
+  constructor(
+    app: App,
+    private readonly items: MissedReminder[],
+    private readonly onRemindToday: (event: CalendarEvent) => Promise<void>,
+    private readonly onOpenNote: (event: CalendarEvent) => Promise<void>
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    this.setTitle(t("reminder.missedTitle"));
+    this.modalEl.addClass("otc-reminder-modal");
+
+    const list = this.contentEl.createDiv({ cls: "otc-reminder-list" });
+    for (const { event, daysAgo } of this.items) {
+      const row = list.createDiv({ cls: "otc-reminder-row" });
+      row.createDiv({ cls: "otc-reminder-dot" }).style.setProperty(
+        "--otc-event-color",
+        event.color
+      );
+      const text = row.createDiv({ cls: "otc-reminder-text" });
+      text.createDiv({ cls: "otc-reminder-title", text: event.title });
+      text.createDiv({
+        cls: "otc-reminder-meta",
+        text: t("reminder.missedMeta", { date: shortDate(event.start), count: daysAgo }),
+      });
+      const actions: Array<[string, string, () => Promise<void>]> = [
+        ["alarm-clock", t("reminder.remindToday"), () => this.onRemindToday(event)],
+        ["file-text", t("reminder.openNote"), () => this.onOpenNote(event)],
+      ];
+      for (const [icon, label, run] of actions) {
+        const button = row.createEl("button", { cls: "clickable-icon otc-reminder-done" });
+        setIcon(button, icon);
+        setTooltip(button, label);
+        button.setAttr("aria-label", label);
+        button.addEventListener("click", () => {
+          button.disabled = true;
+          void run().then(() => row.addClass("is-done"));
+        });
+      }
+    }
+
+    new Setting(this.contentEl).addButton((button) =>
+      button
+        .setButtonText(t("reminder.acknowledge"))
+        .setCta()
+        .onClick(() => this.close())
+    );
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+  }
+}

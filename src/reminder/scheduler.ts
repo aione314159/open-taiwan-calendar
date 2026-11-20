@@ -5,9 +5,11 @@ import { readEvents } from "../event/store";
 import { ReminderChannel } from "../event/types";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
-import { replaceReminderState, settingsStore } from "../state/settings";
+import { patchSettings, replaceReminderState, settingsStore } from "../state/settings";
 import { moment } from "../util/moment";
-import { ReminderModal } from "../view/ReminderModal";
+import { commitEventEdit } from "../event/commands";
+import { openDailyNote } from "../event/noteStore";
+import { MissedReminderModal, ReminderModal } from "../view/ReminderModal";
 import type { DueReminder } from "../view/ReminderModal";
 
 /**
@@ -126,13 +128,48 @@ const announce = (
 };
 
 /**
+ * Entries whose start has passed without any of their reminders firing.
+ *
+ * Limited to entries that were not yet over at the last sweep: anything older
+ * was already in the past then and was seen, or deliberately skipped, at the
+ * time. With no previous sweep — the first run after upgrading — nothing is
+ * reported, rather than every expired entry in the vault's history.
+ */
+const collectMissed = (
+  events: CalendarEvent[],
+  state: Record<string, string>,
+  lastSweep: string,
+  today: string
+): CalendarEvent[] =>
+  lastSweep === ""
+    ? []
+    : events.filter(
+        (event) =>
+          event.reminder !== null &&
+          !event.done &&
+          event.start < today &&
+          event.start >= lastSweep &&
+          !keysOf(event).some((key) => state[key])
+      );
+
+/** Move a missed entry to today, keeping its length, so its day-of reminder fires. */
+const rescheduleToday = async (app: App, event: CalendarEvent): Promise<void> => {
+  const today = moment().format("YYYY-MM-DD");
+  const span = diffDays(event.start, event.end);
+  await commitEventEdit(app, event, { ...event, start: today, end: addDays(today, span) });
+};
+
+/**
  * One sweep.
  *
  * Exported so the plugin can run it once the layout is ready as well as on the
  * interval: a reminder set for 09:00 in a vault that was not open at 09:00 has
  * to appear when the vault opens, not be skipped for the day.
  */
-export const runReminderSweep = (host: SchedulerHost): void => {
+export const runReminderSweep = (
+  host: SchedulerHost,
+  options: { startup?: boolean } = {}
+): void => {
   const settings = settingsStore.read();
   if (!settings.reminder.enabled) return;
 
@@ -145,6 +182,12 @@ export const runReminderSweep = (host: SchedulerHost): void => {
   const state = { ...settings.reminderState };
   const due: DueReminder[] = [];
   let changed = false;
+
+  // Read before this sweep records anything, so "never fired" means never
+  const missed = options.startup
+    ? collectMissed(events, state, settings.lastSweepDate, today)
+    : [];
+  const sweepDateChanged = settings.lastSweepDate !== today;
 
   for (const event of events) {
     const rule = event.reminder;
@@ -179,9 +222,17 @@ export const runReminderSweep = (host: SchedulerHost): void => {
     }
   }
 
-  if (changed) {
-    replaceReminderState(state);
-    host.saveOptions();
+  if (changed) replaceReminderState(state);
+  if (sweepDateChanged) patchSettings({ lastSweepDate: today });
+  if (changed || sweepDateChanged) host.saveOptions();
+
+  if (missed.length > 0) {
+    new MissedReminderModal(
+      host.app,
+      missed.map((event) => ({ event, daysAgo: diffDays(event.start, today) })),
+      (event) => rescheduleToday(host.app, event),
+      (event) => openDailyNote(host.app, event.start)
+    ).open();
   }
   if (due.length === 0) return;
 
