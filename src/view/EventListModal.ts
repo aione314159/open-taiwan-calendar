@@ -2,7 +2,7 @@ import { App, Modal, setIcon, setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import { formatReminderSummary } from "../event/offsets";
 import { PHASE_ORDER, phaseOf } from "../event/phase";
-import { readEvents } from "../event/store";
+import { eventsStore, readEvents } from "../event/store";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 import { moment } from "../util/moment";
@@ -26,6 +26,7 @@ type TabKey = "reminders" | "events";
 export class EventListModal extends Modal {
   private tab: TabKey = "reminders";
   private listEl: HTMLElement | null = null;
+  private unwatch: (() => void) | null = null;
 
   constructor(
     app: App,
@@ -62,6 +63,10 @@ export class EventListModal extends Modal {
 
     this.listEl = this.contentEl.createDiv({ cls: "otc-event-list" });
     this.renderList();
+    // A write lands in the store only after Obsidian re-parses the note, a
+    // moment after the write returns, so the list follows the store rather
+    // than re-reading right after its own action
+    this.unwatch = eventsStore.watch(() => this.renderList());
 
     const footer = this.contentEl.createDiv({ cls: "otc-event-list-footer" });
     const add = footer.createEl("button", {
@@ -141,8 +146,8 @@ export class EventListModal extends Modal {
         setTooltip(toggle, t(event.done ? "eventList.markUndone" : "eventList.markDone"));
         toggle.addEventListener("click", () => {
           toggle.disabled = true;
-          // Stays open: the row moves to its new place in the list
-          void this.onToggleDone(event).then(() => this.renderList());
+          // Stays open: the store watch moves the row once the note is re-read
+          void this.onToggleDone(event);
         });
       }
       for (const [icon, label, run] of [
@@ -171,6 +176,8 @@ export class EventListModal extends Modal {
   }
 
   onClose(): void {
+    this.unwatch?.();
+    this.unwatch = null;
     this.contentEl.empty();
   }
 }
