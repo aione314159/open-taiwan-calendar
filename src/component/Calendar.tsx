@@ -42,6 +42,8 @@ import { setTooltip } from "obsidian";
 import IconButton from "./IconButton";
 import JumpToDate from "./JumpToDate";
 import Legend from "./Legend";
+import HolidayStats from "./HolidayStats";
+import { holidayStats } from "../holiday/holidayStats";
 
 /** How long a date picked in the jump picker stays marked. */
 const FLASH_MS = 2000;
@@ -455,6 +457,19 @@ const Calendar: React.FC<CalendarProps> = ({
     );
   }, [anchor]);
 
+  /** Days off per month, shown under each month in the year view. */
+  const monthDaysOff = useMemo(
+    () =>
+      mode === "year"
+        ? monthsOfYear.map(
+            (m) =>
+              holidayStats(m.toDate(), m.clone().endOf("month").toDate(), holidayOverrides)
+                .daysOff
+          )
+        : [],
+    [mode, monthsOfYear, holidayOverrides]
+  );
+
   const renderDay = (date: Moment) => {
     const { dateStr, isWork, isHoliday } = formatDate(date, holidayOverrides);
     const isToday = date.isSame(today, "day");
@@ -610,6 +625,9 @@ const Calendar: React.FC<CalendarProps> = ({
           // A solar month straddles two lunar months; the earlier one wins
           lunar: formatMonth(date),
         })}
+        <span className="otc-month-days-off">
+          {t("calendar.monthDaysOff", { count: monthDaysOff[date.month()] ?? 0 })}
+        </span>
       </div>
     );
   };
@@ -899,6 +917,8 @@ const Calendar: React.FC<CalendarProps> = ({
           </div>
         )}
       </div>
+
+      <HolidayStats mode={mode} anchor={anchor} overrides={holidayOverrides} />
     </div>
   );
 };
