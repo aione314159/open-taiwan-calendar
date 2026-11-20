@@ -180,6 +180,8 @@ export interface CalendarProps {
    * needs `App`, which this component deliberately never touches.
    */
   subscribeColorScheme: (onChange: () => void) => () => void;
+  /** Writes the settings to disk after a change made from the calendar. */
+  onSaveSettings: () => void;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
@@ -193,6 +195,7 @@ const Calendar: React.FC<CalendarProps> = ({
   onShowEventList,
   onToggleColorScheme,
   subscribeColorScheme,
+  onSaveSettings,
 }) => {
   const notes = useNotes((state) => state);
   const events = useEvents((state) => state);
@@ -918,7 +921,12 @@ const Calendar: React.FC<CalendarProps> = ({
         )}
       </div>
 
-      <HolidayStats mode={mode} anchor={anchor} overrides={holidayOverrides} />
+      <HolidayStats
+        mode={mode}
+        anchor={anchor}
+        overrides={holidayOverrides}
+        onSaveSettings={onSaveSettings}
+      />
     </div>
   );
 };

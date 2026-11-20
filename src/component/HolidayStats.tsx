@@ -1,9 +1,11 @@
 import React, { useMemo } from "react";
+import classNames from "classnames";
 import { moment } from "../util/moment";
 import type { Moment } from "../util/moment";
 import { holidayStats } from "../holiday/holidayStats";
 import type { RocHolidayEntry } from "../holiday/types";
 import { t } from "../i18n";
+import { patchSettings, useSetting } from "../state/settings";
 
 /**
  * Days off and long weekends for what the grid shows: the month in the month
@@ -14,7 +16,9 @@ const HolidayStats: React.FC<{
   mode: "month" | "year";
   anchor: Moment;
   overrides?: Record<number, RocHolidayEntry[]>;
-}> = ({ mode, anchor, overrides }) => {
+  onSaveSettings: () => void;
+}> = ({ mode, anchor, overrides, onSaveSettings }) => {
+  const collapsed = useSetting((state) => state.appearance.holidayStatsCollapsed);
   const unit = mode === "month" ? "month" : "year";
   const startIso = anchor.clone().startOf(unit).format("YYYY-MM-DD");
   const stats = useMemo(() => {
@@ -32,9 +36,24 @@ const HolidayStats: React.FC<{
   const dateFormat = t("holidayStats.runDateFormat");
   const day = (iso: string) => moment(iso, "YYYY-MM-DD").format(dateFormat);
 
+  const toggle = () => {
+    patchSettings({ appearance: { holidayStatsCollapsed: !collapsed } });
+    onSaveSettings();
+  };
+
   return (
-    <div className="otc-holiday-stats">
-      <div className="otc-holiday-stats-title">{t("holidayStats.title", { period })}</div>
+    <div className={classNames("otc-holiday-stats", { "is-collapsed": collapsed })}>
+      {/* Same fold-to-heading button as the day panel and the upcoming list */}
+      <button
+        type="button"
+        className="otc-upcoming-head otc-holiday-stats-title"
+        aria-expanded={!collapsed}
+        onClick={toggle}
+      >
+        {t("holidayStats.title", { period })}
+      </button>
+      {!collapsed && (
+      <>
       <div className="otc-holiday-stats-summary">
         {t("holidayStats.summary", {
           total: stats.daysOff,
@@ -52,7 +71,7 @@ const HolidayStats: React.FC<{
           {stats.runs.map((run) => (
             <li key={run.start} className="otc-holiday-stats-run">
               <span className="otc-holiday-stats-range">
-                {day(run.start)}–{day(run.end)}
+                {day(run.start)} – {day(run.end)}
               </span>
               <span className="otc-holiday-stats-days">
                 {t("holidayStats.runDays", { count: run.days })}
@@ -61,6 +80,8 @@ const HolidayStats: React.FC<{
             </li>
           ))}
         </ul>
+      )}
+      </>
       )}
     </div>
   );

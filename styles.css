@@ -1471,33 +1471,47 @@ body {
 }
 
 .otc-holiday-stats-title {
-  margin-bottom: 2px;
-  font-weight: var(--font-semibold);
+  padding-left: 0;
+}
+
+.otc-holiday-stats.is-collapsed .otc-upcoming-head::before {
+  content: "▸ ";
 }
 
 .otc-holiday-stats-summary {
   color: var(--text-muted);
 }
 
+/* One grid for every run, so the dates, the day counts and the names each
+   line up in their own column instead of drifting with the text before them */
 .otc-holiday-stats-runs {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  column-gap: 8px;
+  row-gap: 2px;
   margin: 4px 0 0;
   padding: 0;
   list-style: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .otc-holiday-stats-run {
-  display: flex;
-  gap: 8px;
-  padding: 1px 0;
+  display: contents;
+}
+
+.otc-holiday-stats-range {
   white-space: nowrap;
 }
 
 .otc-holiday-stats-days {
+  justify-self: end;
+  white-space: nowrap;
   color: var(--otc-text-red);
 }
 
 .otc-holiday-stats-name {
   min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-muted);

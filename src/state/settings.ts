@@ -94,6 +94,8 @@ export interface AppearanceSetting {
   upcomingDays: number;
   /** Whether that list is folded to its heading. */
   upcomingCollapsed: boolean;
+  /** Whether the holiday statistics under the grid are folded to their heading. */
+  holidayStatsCollapsed: boolean;
 }
 
 export interface ToolbarSetting {
@@ -265,6 +267,9 @@ export const defaultSetting: PluginSetting = {
     upcoming: true,
     upcomingDays: 14,
     upcomingCollapsed: false,
+    // Folded by default: a year's list of long weekends is a dozen lines, and
+    // the grid is what the panel is opened for
+    holidayStatsCollapsed: true,
   },
   floatingWindow: {
     visible: false,
