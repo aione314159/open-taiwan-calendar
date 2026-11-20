@@ -5,7 +5,13 @@ import { Events, Notice, Plugin, TAbstractFile, TFile, TFolder } from "obsidian"
 import { openEventList, openQuickAddEvent } from "./event/commands";
 import { isDailyNote, refreshEvents } from "./event/noteStore";
 import { handleProtocol, PROTOCOL_ACTION } from "./event/protocol";
-import { startInlineReminders } from "./event/inlineReminders";
+import {
+  inlineRemindersStore,
+  parseInlineReminder,
+  startInlineReminders,
+} from "./event/inlineReminders";
+import { convertInline } from "./event/inlineConvert";
+import { InlineConvertModal } from "./view/InlineConvertModal";
 import { sanitizeOverrides } from "./holiday/rocHoliday";
 import type { RocHolidayEntry } from "./holiday/types";
 import { t } from "./i18n";
@@ -23,6 +29,7 @@ import {
   settingsStore,
 } from "./state/settings";
 import { debugLog, flushDebugLog, initDebugLog } from "./util/debugLog";
+import { moment } from "./util/moment";
 import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
@@ -109,6 +116,24 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "convert-inline-reminders",
+      name: t("command.convertInline"),
+      callback: () => {
+        if (!this.options.appearance.inlineReminders) {
+          new Notice(t("inline.needSetting"));
+          return;
+        }
+        const today = moment().format("YYYY-MM-DD");
+        const items = inlineRemindersStore.read().filter((item) => item.date >= today);
+        if (items.length === 0) {
+          new Notice(t("inline.noneUpcoming"));
+          return;
+        }
+        new InlineConvertModal(this.app, items).open();
+      },
+    });
+
+    this.addCommand({
       id: "capture-task",
       name: t("command.captureTask"),
       callback: () => new CaptureTaskModal(this.app).open(),
@@ -149,6 +174,30 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
         // The selection becomes the sentence, or the cursor's line when nothing
         // is selected, so "right-click, add" reads the date straight out of
         // what is already written
+        // A line carrying the Reminder plugin's mark can be handed over to
+        // this calendar in one step
+        const cursor = editor.getCursor().line;
+        const mark = parseInlineReminder(editor.getLine(cursor));
+        const file = this.app.workspace.getActiveFile();
+        if (mark && file) {
+          menu.addItem((item) =>
+            item
+              .setTitle(t("inline.convert"))
+              .setIcon("calendar-check")
+              .onClick(() =>
+                convertInline(this.app, {
+                  ...mark,
+                  text: editor
+                    .getLine(cursor)
+                    .replace(/^\s*[-*+] \[.\] /, "")
+                    .replace(/\s*\(@[^)]*\)/, "")
+                    .trim(),
+                  path: file.path,
+                  line: cursor,
+                })
+              )
+          );
+        }
         const items: Array<[TranslationKey, string, boolean]> = [
           ["menu.addReminderHere", "bell-plus", true],
           ["menu.addEventHere", "calendar-plus", false],
