@@ -28,6 +28,10 @@ export interface ParsedInput {
   matchedDate: boolean;
   /** True when a length ("9 天", "for 3 days") set the end date. */
   matchedDuration: boolean;
+  /** `HH:mm`, when the sentence named a time of day ("下午三點", "3:30 pm"). */
+  time?: string;
+  /** Days before the start to remind on, when the sentence said ("提前3天"). */
+  offsets?: number[];
 }
 
 import { addDays, buildDate, toParts, weekdayOf } from "./dateMath";
@@ -88,6 +92,74 @@ const ENGLISH_WEEKDAY: Record<string, number> = {
  */
 const nextWeekday = (reference: string, weekday: number): string =>
   addDays(reference, (weekday - weekdayOf(reference) + 7) % 7);
+
+// ---------------------------------------------------------------- times of day
+
+const pad = (n: number): string => String(n).padStart(2, "0");
+
+/** Morning words leave the hour as it is; afternoon and evening words add 12. */
+const PERIOD_PM = /下午|晚上|傍晚/;
+
+/**
+ * A time of day, removed from the text. Read before any date rule: "9點" must
+ * never be left for the day-count rule to read as "9 days".
+ */
+const takeTime = (text: string): { time: string | null; rest: string } => {
+  const chinese = new RegExp(
+    `(上午|早上|中午|下午|晚上|傍晚|凌晨)?\\s*(${NUMBER_SOURCE})\\s*點(?:\\s*(半|(${NUMBER_SOURCE})\\s*分?))?`
+  ).exec(text);
+  if (chinese) {
+    let hour = chineseToNumber(chinese[2]);
+    const minute = chinese[3] === "半" ? 30 : chinese[4] ? chineseToNumber(chinese[4]) : 0;
+    if (hour !== null && minute !== null && hour <= 24 && minute < 60) {
+      if (chinese[1] && PERIOD_PM.test(chinese[1]) && hour < 12) hour += 12;
+      if (chinese[1] === "中午" && hour < 6) hour += 12;
+      if ((chinese[1] === "凌晨" || chinese[1] === "早上") && hour === 12) hour = 0;
+      if (hour === 24) hour = 0;
+      return { time: `${pad(hour)}:${pad(minute)}`, rest: blank(text, chinese) };
+    }
+  }
+  const clock = /\b([01]?\d|2[0-3]):([0-5]\d)(?:\s*(am|pm)\b)?/i.exec(text);
+  if (clock) {
+    let hour = Number(clock[1]);
+    const suffix = clock[3]?.toLowerCase();
+    if (suffix === "pm" && hour < 12) hour += 12;
+    if (suffix === "am" && hour === 12) hour = 0;
+    return { time: `${pad(hour)}:${clock[2]}`, rest: blank(text, clock) };
+  }
+  const bare = /\b(1[0-2]|0?[1-9])\s*(am|pm)\b/i.exec(text);
+  if (bare) {
+    let hour = Number(bare[1]) % 12;
+    if (bare[2].toLowerCase() === "pm") hour += 12;
+    return { time: `${pad(hour)}:00`, rest: blank(text, bare) };
+  }
+  return { time: null, rest: text };
+};
+
+/**
+ * Reminder lead times, removed from the text: "提前3天", "前一天", "當天",
+ * "2 days before". Several may appear; read before the day-offset and length
+ * rules, which would otherwise take "3天" for themselves.
+ */
+const takeOffsets = (text: string): { offsets: number[]; rest: string } => {
+  const offsets: number[] = [];
+  let rest = text;
+  const patterns: Array<[RegExp, (m: RegExpExecArray) => number | null]> = [
+    [new RegExp(`(?:提前|前)\\s*(${NUMBER_SOURCE})\\s*天(?:提醒)?`), (m) => chineseToNumber(m[1])],
+    [/當天(?:提醒)?/, () => 0],
+    [/\b(\d+)\s+days?\s+before\b/i, (m) => Number(m[1])],
+    [/\bthe\s+day\s+before\b/i, () => 1],
+  ];
+  for (const [pattern, read] of patterns) {
+    for (let match = pattern.exec(rest); match; match = pattern.exec(rest)) {
+      const value = read(match);
+      if (value === null || value > 365) break;
+      offsets.push(value);
+      rest = blank(rest, match);
+    }
+  }
+  return { offsets: Array.from(new Set(offsets)).sort((a, b) => b - a), rest };
+};
 
 // ---------------------------------------------------------------- months
 
@@ -267,6 +339,13 @@ export const parseNaturalLanguage = (
     isReminder = true;
     rest = rest.slice(verb[0].length);
   }
+
+  const timed = takeTime(rest);
+  rest = timed.rest;
+  const lead = takeOffsets(rest);
+  rest = lead.rest;
+  // Naming when to be told is asking to be told
+  if (timed.time !== null || lead.offsets.length > 0) isReminder = true;
 
   let start: string | null = null;
   let end: string | null = null;
@@ -499,5 +578,7 @@ export const parseNaturalLanguage = (
     isReminder,
     matchedDate: start !== null,
     matchedDuration: durationDays !== null || end !== null,
+    ...(timed.time !== null ? { time: timed.time } : {}),
+    ...(lead.offsets.length > 0 ? { offsets: lead.offsets } : {}),
   };
 };

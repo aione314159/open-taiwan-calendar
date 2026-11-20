@@ -114,6 +114,8 @@ export class QuickAddEventModal extends Modal {
   private startField: TextComponent | null = null;
   private endField: TextComponent | null = null;
   private remindToggle: ToggleComponent | null = null;
+  private offsetsField: TextComponent | null = null;
+  private timeField: TextComponent | null = null;
   private notesInfo: HTMLElement | null = null;
 
   constructor(
@@ -244,22 +246,24 @@ export class QuickAddEventModal extends Modal {
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldOffsets"))
       .setDesc(t("quickAdd.fieldOffsetsDesc"))
-      .addText((text) =>
+      .addText((text) => {
+        this.offsetsField = text;
         text.setValue(this.draft.offsets).onChange((value) => {
           this.draft.offsets = value;
-        })
-      );
+        });
+      });
 
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldTime"))
-      .addText((text) =>
+      .addText((text) => {
+        this.timeField = text;
         text
           .setPlaceholder(t("quickAdd.timePlaceholder"))
           .setValue(this.draft.time)
           .onChange((value) => {
             this.draft.time = value.trim();
-          })
-      );
+          });
+      });
 
     // Created empty and filled on failure, rather than created on demand: a row
     // that appears between two fields shifts everything below it, and the
@@ -357,6 +361,16 @@ export class QuickAddEventModal extends Modal {
     // A sentence that opened with "remind me" says so; one that did not leaves
     // the toggle wherever the caller or the default put it
     if (parsed.isReminder) this.draft.remind = true;
+    // A time or lead time the sentence named replaces the default; one it did
+    // not name leaves the field as it is
+    if (parsed.time) {
+      this.draft.time = parsed.time;
+      this.timeField?.setValue(parsed.time);
+    }
+    if (parsed.offsets) {
+      this.draft.offsets = formatOffsets(parsed.offsets);
+      this.offsetsField?.setValue(this.draft.offsets);
+    }
 
     this.titleField?.setValue(parsed.title);
     this.startField?.setValue(parsed.start);
