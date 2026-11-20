@@ -89,6 +89,29 @@ A reminder is a list of "days before" plus a time. `1, 0` fires once the day bef
 
 Reminders and events get separate default dot colours, so the two kinds of entry are told apart at a glance on the grid.
 
+### Adding entries from other tools
+
+Scripts and command-line tools can hand an entry to the plugin through an `obsidian://` link instead of writing frontmatter themselves:
+
+```text
+obsidian://open-taiwan-calendar?sentence=Remind%20me%20tomorrow%20to%20pay%20the%20bill
+obsidian://open-taiwan-calendar?title=Trip&start=2026-10-24&end=2026-11-01
+obsidian://open-taiwan-calendar?title=Dentist&start=2026-11-23&remind=1&time=17:00&offsets=0&save=1
+```
+
+| Parameter | Meaning |
+|-----------|---------|
+| `sentence` | Read by the same natural-language parser as the dialog. Explicit fields below override what it reads. |
+| `title` | Title, trimmed to the same length limit as the frontmatter. |
+| `start`, `end` | `YYYY-MM-DD`. `end` defaults to `start`. |
+| `remind` | `1` or `0`. |
+| `time` | `HH:mm`. |
+| `offsets` | Days before, comma-separated, e.g. `1,0`. |
+| `color` | `#rrggbb`. |
+| `save` | `1` writes the entry without the dialog — only when **Let links add entries directly** is on in the settings. |
+
+By default every link only opens the dialog, pre-filled, and nothing is written until you press Add. A link with an invalid value shows a notice and writes nothing.
+
 Reading view draws those entries at the top of the note, one row each: the colour, the title, the dates and the reminder rule in words. It is read-only — the frontmatter and the quick-add dialog are the two places an entry is edited — and it can be switched off under **Settings → Appearance**. It is drawn whatever Obsidian's own "Properties in document" setting is on, since that setting decides between a raw YAML table and nothing at all, and neither answers "what is on today".
 
 ## Installation

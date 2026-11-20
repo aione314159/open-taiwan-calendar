@@ -4,6 +4,7 @@
 import { Events, Notice, Plugin, TAbstractFile, TFile, TFolder } from "obsidian";
 import { openEventList, openQuickAddEvent } from "./event/commands";
 import { isDailyNote, refreshEvents } from "./event/noteStore";
+import { handleProtocol, PROTOCOL_ACTION } from "./event/protocol";
 import { sanitizeOverrides } from "./holiday/rocHoliday";
 import type { RocHolidayEntry } from "./holiday/types";
 import { t } from "./i18n";
@@ -112,6 +113,11 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
           );
         }
       })
+    );
+
+    // obsidian://open-taiwan-calendar?sentence=... — see src/event/protocol.ts
+    this.registerObsidianProtocolHandler(PROTOCOL_ACTION, (params) =>
+      handleProtocol(this.app, params)
     );
 
     // Register the calendar cells' hover preview as a source in the core Page

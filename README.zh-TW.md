@@ -251,6 +251,29 @@ otc-events:
 
 沒帶年份的日期取「今天之後最近一次」的那一年。讀錯了直接在下面的欄位改掉即可。
 
+### 從其他工具新增
+
+腳本或命令列工具可以開一個 `obsidian://` 連結把項目交給插件，不必自己寫 frontmatter：
+
+```text
+obsidian://open-taiwan-calendar?sentence=提醒我明天繳費
+obsidian://open-taiwan-calendar?title=日本旅遊&start=2026-10-24&end=2026-11-01
+obsidian://open-taiwan-calendar?title=牙醫&start=2026-11-23&remind=1&time=17:00&offsets=0&save=1
+```
+
+| 參數 | 說明 |
+|------|------|
+| `sentence` | 用與對話框相同的自然語言解析器讀。下面的明確欄位會蓋過它讀到的值 |
+| `title` | 標題，超過長度上限會截斷（與 frontmatter 相同） |
+| `start`、`end` | `YYYY-MM-DD`，`end` 預設等於 `start` |
+| `remind` | `1` 或 `0` |
+| `time` | `HH:mm` |
+| `offsets` | 提前幾天，逗號分隔，例如 `1,0` |
+| `color` | `#rrggbb` |
+| `save` | `1` 表示不開對話框直接寫入；只有設定頁開啟「允許外部連結直接新增」時才有效 |
+
+預設所有連結都只開啟已預填的對話框，按「新增」之前不會寫入任何東西。參數不正確時只顯示通知，不寫入。
+
 ### 看全部項目
 
 工具列的清單圖示（或命令面板「顯示提醒與活動」）會開一個視窗，分「提醒」與「活動」兩個分頁。
