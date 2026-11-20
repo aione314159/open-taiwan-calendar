@@ -67,7 +67,7 @@ export const en = {
   "holidayStats.longWeekends": "Long weekends (3+ days): {count}",
   "holidayStats.noLongWeekends": "No long weekends",
   "holidayStats.runDays": "{count} days",
-  "holidayStats.runDateFormat": "ddd D MMM",
+  "holidayStats.runDateFormat": "ddd DD MMM",
 
   // ---------------------------------------------------------------- note types
   "noteType.daily": "Daily note",

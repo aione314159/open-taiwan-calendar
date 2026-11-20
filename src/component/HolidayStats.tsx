@@ -52,7 +52,7 @@ const HolidayStats: React.FC<{
           {stats.runs.map((run) => (
             <li key={run.start} className="otc-holiday-stats-run">
               <span className="otc-holiday-stats-range">
-                {day(run.start)}–{day(run.end)}
+                {day(run.start)} – {day(run.end)}
               </span>
               <span className="otc-holiday-stats-days">
                 {t("holidayStats.runDays", { count: run.days })}

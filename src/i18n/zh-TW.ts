@@ -55,7 +55,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "holidayStats.longWeekends": "連假 {count} 次（3 天以上）",
   "holidayStats.noLongWeekends": "沒有連假",
   "holidayStats.runDays": "{count} 天",
-  "holidayStats.runDateFormat": "M/D（dd）",
+  "holidayStats.runDateFormat": "MM/DD(dd)",
 
   // ---------------------------------------------------------------- note types
   "noteType.daily": "每日筆記",
