@@ -373,6 +373,10 @@ export const en = {
   "problem.title": "missing or empty title; skipped",
   "problem.start": "start date is not YYYY-MM-DD; skipped",
   "problem.colorDefaulted": "colour is not #rrggbb; the default colour is used",
+  "jump.title": "Go to a date",
+  "jump.placeholder": "2025-08-15, or next Friday",
+  "jump.year": "Year",
+  "jump.unrecognised": "No date recognised",
 } as const;
 
 export type TranslationKey = keyof typeof en;

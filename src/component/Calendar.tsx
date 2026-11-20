@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -24,6 +25,10 @@ import type { TranslationKey } from "../i18n";
 import CellLabel from "./CellLabel";
 import EventBars from "./EventBars";
 import IconButton from "./IconButton";
+import JumpToDate from "./JumpToDate";
+
+/** How long a date picked in the jump picker stays marked. */
+const FLASH_MS = 2000;
 
 /**
  * Follow the plugin's locale and start the week on Monday.
@@ -165,6 +170,22 @@ const Calendar: React.FC<CalendarProps> = ({
   const today = useToday();
   const [anchor, setAnchor] = useState<Moment>(() => moment());
   const [mode, setMode] = useState<ViewMode>("month");
+  const [jumpOpen, setJumpOpen] = useState(false);
+  const [flashIso, setFlashIso] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!flashIso) return;
+    const timer = window.setTimeout(() => setFlashIso(null), FLASH_MS);
+    return () => window.clearTimeout(timer);
+  }, [flashIso]);
+
+  const closeJump = useCallback(() => {
+    setJumpOpen(false);
+    // Back to the button that opened it, so keyboard users are not dropped at
+    // the top of the document
+    rootRef.current?.querySelector<HTMLButtonElement>(".otc-jump-button")?.focus();
+  }, []);
 
   const shift = (direction: 1 | -1, unit: "month" | "year") =>
     setAnchor((current) => current.clone().add(direction, unit));
@@ -278,6 +299,7 @@ const Calendar: React.FC<CalendarProps> = ({
           "is-disabled": disabled,
           "has-note": hasNote,
           "has-event": dayEvents.length > 0,
+          "is-flash": flashIso === iso,
         })}
         {...handlers}
         /* Declared after the spread so it wins: a granularity Periodic Notes
@@ -427,6 +449,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   return (
     <div
+      ref={rootRef}
       className={classNames("otc-calendar", DOT_SIZE_CLASS[dotSize], {
         "otc-compact": layout === LayoutMode.Small,
       })}
@@ -458,6 +481,12 @@ const Calendar: React.FC<CalendarProps> = ({
             className="otc-settings-button"
             onClick={onShowEventList}
           />
+          <IconButton
+            icon="calendar-search"
+            label={t("jump.title")}
+            className="otc-settings-button otc-jump-button"
+            onClick={() => setJumpOpen((open) => !open)}
+          />
           {/* The icon shows what the click switches to, not what is on now: a
               sun while dark reads as "go light", which is the question the user
               is answering when they reach for it. */}
@@ -482,6 +511,21 @@ const Calendar: React.FC<CalendarProps> = ({
           ))}
         </div>
       </div>
+
+      {jumpOpen && (
+        <JumpToDate
+          anchor={anchor}
+          daily={notes[NoteType.DAILY]}
+          monthly={notes[NoteType.MONTHLY]}
+          onPick={(month, day) => {
+            setAnchor(month);
+            setMode("month");
+            setFlashIso(day);
+            setJumpOpen(false);
+          }}
+          onClose={closeJump}
+        />
+      )}
 
       <div className="otc-nav">
         <IconButton

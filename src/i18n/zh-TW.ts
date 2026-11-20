@@ -323,4 +323,8 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "problem.title": "缺少標題或標題為空，已略過",
   "problem.start": "開始日期不是 YYYY-MM-DD，已略過",
   "problem.colorDefaulted": "顏色不是 #rrggbb，已套用預設色",
+  "jump.title": "跳到日期",
+  "jump.placeholder": "2025-08-15，或「下週五」",
+  "jump.year": "年份",
+  "jump.unrecognised": "無法辨識日期",
 };
