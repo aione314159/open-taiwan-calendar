@@ -2513,3 +2513,13 @@ body {
   margin-left: 6px;
   padding: 2px 0;
 }
+
+.otc-event-list-panel .otc-event-list-footer {
+  margin-top: 4px;
+}
+
+.otc-event-list-panel .otc-event-list-footer button {
+  height: auto;
+  padding: 3px 10px;
+  font-size: var(--font-ui-smaller);
+}
