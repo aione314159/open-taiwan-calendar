@@ -489,4 +489,5 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "tooltip.solarTerm": "節氣：{term}",
   "tooltip.dayOff": "放假",
   "tooltip.workday": "補班",
+  "calendar.todayHint": "回到今天所在的月份（不開啟筆記）",
 };

@@ -539,6 +539,7 @@ export const en = {
   "tooltip.solarTerm": "Solar term: {term}",
   "tooltip.dayOff": "Day off",
   "tooltip.workday": "Make-up workday",
+  "calendar.todayHint": "Back to today’s month (opens no note)",
 } as const;
 
 export type TranslationKey = keyof typeof en;

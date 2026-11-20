@@ -510,24 +510,16 @@ const Calendar: React.FC<CalendarProps> = ({
   ];
 
   /**
-   * "Today" moves the grid and opens the day.
-   *
-   * Scrolling back to today and then having to click the cell was two steps for
-   * one intention: someone who presses this wants to be looking at today, and
-   * the note is where today is written. It does exactly what clicking the cell
-   * does — including creating the note when it does not exist yet — so the two
-   * routes to the same day cannot disagree.
+   * "Today" only moves the grid back to today's month (or year, in the year
+   * view). It used to open today's note as well, which created one behind a
+   * confirmation for someone who only wanted to page back; the note is one
+   * click on today's cell away.
    */
-  const openToday = (): void => {
-    setAnchor(today);
-    // Periodic Notes can have the daily granularity switched off, in which case
-    // there is no note to open and the button just moves the grid
-    if (!isNoteTypeEnabled(NoteType.DAILY)) return;
-    openOrCreateNote(today, NoteType.DAILY, notes[NoteType.DAILY]);
-  };
+  const goToToday = (): void => setAnchor(today);
+  // Paged away from today: the Today button stands out until the grid is back
+  const awayFromToday = !anchor.isSame(today, mode === "month" ? "month" : "year");
 
   const modeButtons: Array<[string, string, () => void, boolean]> = [
-    ["today", t("calendar.modeToday"), openToday, false],
     ["month", t("calendar.modeMonth"), () => setMode("month"), mode === "month"],
     ["year", t("calendar.modeYear"), () => setMode("year"), mode === "year"],
   ];
@@ -604,6 +596,18 @@ const Calendar: React.FC<CalendarProps> = ({
           )}
         </div>
         )}
+        <div className="otc-toolbar-right">
+        <button
+          type="button"
+          className={classNames("otc-today-button", { "is-away": awayFromToday })}
+          aria-label={t("calendar.todayHint")}
+          ref={(el) => {
+            if (el) setTooltip(el, t("calendar.todayHint"));
+          }}
+          onClick={goToToday}
+        >
+          {t("calendar.modeToday")}
+        </button>
         <div className="otc-modes" role="group">
           {modeButtons.map(([key, label, onPick, active]) => (
             <button
@@ -616,6 +620,7 @@ const Calendar: React.FC<CalendarProps> = ({
               {label}
             </button>
           ))}
+        </div>
         </div>
       </div>
 
