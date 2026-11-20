@@ -245,6 +245,12 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { readingViewEvents: value as boolean },
         }));
         break;
+      case "ribbonAction":
+        this.plugin.writeOptions(() => ({
+          ribbonAction:
+            value === "sidebar" || value === "hidden" ? value : "floating",
+        }));
+        break;
       case "carryOverSource":
         // A top-level field, not "<section>.<field>", so the default below
         // cannot write it
@@ -458,6 +464,19 @@ export default class MainSettingTable extends PluginSettingTab {
           t("settings.floatingCardTitle"),
           t("settings.floatingDesc")
         ),
+        {
+          name: t("settings.ribbonActionName"),
+          desc: t("settings.ribbonActionDesc"),
+          control: {
+            type: "dropdown",
+            key: "ribbonAction",
+            options: {
+              floating: t("settings.ribbonFloating"),
+              sidebar: t("settings.ribbonSidebar"),
+              hidden: t("settings.ribbonHidden"),
+            },
+          },
+        },
         {
           name: t("settings.floatingVisibleName"),
           desc: t("settings.floatingDesc"),

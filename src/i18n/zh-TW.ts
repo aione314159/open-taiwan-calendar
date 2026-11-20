@@ -412,4 +412,10 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.upcomingDesc": "在側欄日曆下方列出接下來幾天的提醒與活動。",
   "settings.upcomingDaysName": "顯示天數",
   "settings.upcomingDaysDesc": "清單涵蓋的天數，含今天（1–90）。",
+  "command.revealSidebar": "顯示側欄日曆",
+  "settings.ribbonActionName": "功能區圖示動作",
+  "settings.ribbonActionDesc": "點擊左側功能區日曆圖示時要做什麼。",
+  "settings.ribbonFloating": "切換懸浮面板",
+  "settings.ribbonSidebar": "顯示側欄日曆",
+  "settings.ribbonHidden": "不顯示圖示",
 };
