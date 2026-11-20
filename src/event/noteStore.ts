@@ -162,7 +162,11 @@ export const ensureDailyNote = async (
   const existing = dailyNoteFor(date);
   if (existing) return { file: existing, created: false };
   try {
-    return { file: await dni.createDailyNote(date), created: true };
+    // The library logs and returns nothing, rather than throwing, when the
+    // file cannot be created
+    const file = await dni.createDailyNote(date);
+    if (!file) throw new Error("daily note not created");
+    return { file, created: true };
   } catch {
     if (!quiet) {
       new Notice(t("notice.dailyNoteCreateFailed", { date: date.format("YYYY-MM-DD") }));
@@ -253,11 +257,11 @@ export const upsertEvent = async (
       continue;
     }
     const { file, created } = ensured;
-    const entries = sortEvents([
-      ...entriesOf(app, file).filter((e) => e.id !== event.id),
-      event,
-    ]);
     try {
+      const entries = sortEvents([
+        ...entriesOf(app, file).filter((e) => e.id !== event.id),
+        event,
+      ]);
       await writeEntries(app, file, entries);
       touched.push({ file, entries, created });
     } catch {
