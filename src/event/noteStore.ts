@@ -55,6 +55,14 @@ const allDailyNotes = (): Record<string, TFile> => {
   }
 };
 
+/** Open the daily note for a date if it exists; never creates one. Returns whether it did. */
+export const openExistingDailyNote = async (app: App, day: string): Promise<boolean> => {
+  const file = dailyNoteFor(moment(day, "YYYY-MM-DD"));
+  if (!file) return false;
+  await app.workspace.getLeaf(false).openFile(file);
+  return true;
+};
+
 /** Open the daily note for a `YYYY-MM-DD` date, creating it if needed. */
 export const openDailyNote = async (app: App, day: string): Promise<void> => {
   const ensured = await ensureDailyNote(moment(day, "YYYY-MM-DD"));
