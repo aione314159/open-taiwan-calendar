@@ -4,6 +4,8 @@ import { formatReminderSummary } from "../event/offsets";
 import { PHASE_ORDER, phaseOf } from "../event/phase";
 import { eventsStore, problemsStore, readEvents } from "../event/store";
 import { inlineRemindersStore } from "../event/inlineReminders";
+import { duplicateKey, findDuplicates } from "../event/duplicates";
+import { patchSettings } from "../state/settings";
 import { settingsStore } from "../state/settings";
 import type { EntryProblemReason } from "../event/sanitize";
 import type { CalendarEvent } from "../event/types";
@@ -39,6 +41,7 @@ export class EventListModal extends Modal {
   private listEl: HTMLElement | null = null;
   private problemsEl: HTMLElement | null = null;
   private unwatchProblems: (() => void) | null = null;
+  private unwatchInline: (() => void) | null = null;
   private unwatch: (() => void) | null = null;
 
   constructor(
@@ -90,6 +93,7 @@ export class EventListModal extends Modal {
     // moment after the write returns, so the list follows the store rather
     // than re-reading right after its own action
     this.unwatch = eventsStore.watch(() => this.renderList());
+    this.unwatchInline = inlineRemindersStore.watch(() => this.renderList());
 
     const footer = this.contentEl.createDiv({ cls: "otc-event-list-footer" });
     const add = footer.createEl("button", {
@@ -187,12 +191,43 @@ export class EventListModal extends Modal {
           text: t("eventList.badgeUnhandled"),
         });
       }
+      const settings = settingsStore.read();
+      const duplicates = settings.appearance.inlineReminders
+        ? findDuplicates(event, inlineRemindersStore.read(), settings.ignoredDuplicates)
+        : [];
+      if (duplicates.length > 0) {
+        const badge = head.createSpan({
+          cls: "otc-event-row-badge is-duplicate",
+          text: t("duplicate.badge"),
+        });
+        setTooltip(
+          badge,
+          t("duplicate.explain", {
+            items: duplicates.map((d) => `${d.text}（${d.path}）`).join("\n"),
+          })
+        );
+      }
       text.createDiv({
         cls: "otc-event-row-meta",
         text: `${this.range(event)} · ${formatReminderSummary(event.reminder)}`,
       });
 
       const actions = row.createDiv({ cls: "otc-event-row-actions" });
+      if (duplicates.length > 0) {
+        const mute = actions.createEl("button", { cls: "clickable-icon" });
+        setIcon(mute, "bell-off");
+        setTooltip(mute, t("duplicate.ignore"));
+        mute.addEventListener("click", () => {
+          patchSettings({
+            ignoredDuplicates: [
+              ...settings.ignoredDuplicates,
+              ...duplicates.map((d) => duplicateKey(event, d)),
+            ],
+          });
+          this.app.workspace.trigger("open-taiwan-calendar:save-settings");
+          this.renderList();
+        });
+      }
       // Only a reminder has something to be done; a plain marker does not
       if (event.reminder !== null) {
         const toggle = actions.createEl("button", { cls: "clickable-icon" });
@@ -263,6 +298,8 @@ export class EventListModal extends Modal {
     this.unwatch = null;
     this.unwatchProblems?.();
     this.unwatchProblems = null;
+    this.unwatchInline?.();
+    this.unwatchInline = null;
     this.contentEl.empty();
   }
 }

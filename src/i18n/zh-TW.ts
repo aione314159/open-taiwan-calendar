@@ -387,4 +387,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "inline.tooltipLine": "◆ {text} {time}",
   "eventList.tabInline": "行內提醒",
   "eventList.inlineMeta": "{date} {time} · {note}",
+  "duplicate.badge": "疑似重複",
+  "duplicate.explain": "同一天有看起來是同一件事的行內提醒，可能會被通知兩次：\n{items}",
+  "duplicate.ignore": "不再提示這一組",
+  "duplicate.tooltipLine": "⚠ {line}（疑似重複）",
+  "duplicate.beforeSave": "與同一天的行內提醒疑似重複：{items}。仍要新增請再按一次「新增」。",
 };

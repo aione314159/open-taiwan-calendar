@@ -3,6 +3,8 @@ import { addDays, diffDays } from "../event/dateMath";
 import { dailyNoteExists, MAX_EVENT_DAYS } from "../event/noteStore";
 import { formatOffsets, parseOffsets } from "../event/offsets";
 import { parseNaturalLanguage } from "../event/parseNaturalLanguage";
+import { findDuplicates } from "../event/duplicates";
+import { inlineRemindersStore } from "../event/inlineReminders";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 import { settingsStore } from "../state/settings";
@@ -117,6 +119,8 @@ export class QuickAddEventModal extends Modal {
   private offsetsField: TextComponent | null = null;
   private timeField: TextComponent | null = null;
   private notesInfo: HTMLElement | null = null;
+  /** Set once the duplicate warning has been shown; the next Add goes through. */
+  private duplicateAcknowledged = false;
 
   constructor(
     app: App,
@@ -415,6 +419,25 @@ export class QuickAddEventModal extends Modal {
         return;
       }
       reminder = { offsets: parsedOffsets, time };
+    }
+
+    const candidate = {
+      id: this.preset.existing?.id ?? "",
+      title: cleanTitle,
+      start,
+      end,
+      reminder,
+    };
+    const settings = settingsStore.read();
+    const duplicates = settings.appearance.inlineReminders
+      ? findDuplicates(candidate, inlineRemindersStore.read(), settings.ignoredDuplicates)
+      : [];
+    if (duplicates.length > 0 && !this.duplicateAcknowledged) {
+      this.duplicateAcknowledged = true;
+      this.showError(
+        t("duplicate.beforeSave", { items: duplicates.map((d) => d.text).join(t("event.offsetSeparator")) })
+      );
+      return;
     }
 
     this.onSubmit({

@@ -437,6 +437,11 @@ export const en = {
   "inline.tooltipLine": "◆ {text} {time}",
   "eventList.tabInline": "Inline",
   "eventList.inlineMeta": "{date} {time} · {note}",
+  "duplicate.badge": "Possible duplicate",
+  "duplicate.explain": "An inline reminder on the same day looks like the same thing, so you may be notified twice:\n{items}",
+  "duplicate.ignore": "Don’t warn about this pair again",
+  "duplicate.tooltipLine": "⚠ {line} (possible duplicate)",
+  "duplicate.beforeSave": "Looks like an inline reminder on the same day: {items}. Press Add again to add it anyway.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

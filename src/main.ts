@@ -164,6 +164,13 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       })
     );
 
+    // Views that change a setting outside the settings page ask for a save here
+    this.registerEvent(
+      (this.app.workspace as Events).on("open-taiwan-calendar:save-settings", () =>
+        this.saveOptions()
+      )
+    );
+
     // obsidian://open-taiwan-calendar?sentence=... — see src/event/protocol.ts
     this.registerObsidianProtocolHandler(PROTOCOL_ACTION, (params) =>
       handleProtocol(this.app, params)

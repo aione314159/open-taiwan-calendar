@@ -154,6 +154,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const notes = useNotes((state) => state);
   const events = useEvents((state) => state);
   const inlineReminders = useInlineReminders((state) => state);
+  const ignoredDuplicates = useSetting((state) => state.ignoredDuplicates);
 
   // Settings are subscribed rather than read once. A plain read would leave
   // React unaware that anything changed, and the floating panel — which does
@@ -347,6 +348,7 @@ const Calendar: React.FC<CalendarProps> = ({
           events={dayEvents}
           hasNote={hasNote}
           inline={inlineReminders.filter((item) => item.date === iso)}
+          ignoredDuplicates={ignoredDuplicates}
         />
       </div>
     );

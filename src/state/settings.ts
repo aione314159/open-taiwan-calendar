@@ -170,6 +170,8 @@ export type PluginSetting = Record<NoteType, NoteConfig> & {
    * mark them `[>]` (moved).
    */
   carryOverSource: "keep" | "migrate";
+  /** Reminder / inline-mark pairs the user said not to warn about again. */
+  ignoredDuplicates: string[];
   /**
    * Calendars the Directorate-General of Personnel Administration has announced
    * but this plugin does not bundle yet, keyed by year. They take precedence
@@ -231,6 +233,7 @@ export const defaultSetting: PluginSetting = {
   snoozeState: {},
   lastCaptureSection: "",
   carryOverSource: "keep",
+  ignoredDuplicates: [],
   holidayOverrides: {},
 };
 
