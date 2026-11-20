@@ -26,7 +26,10 @@ import { NoteType } from "../enum";
 import { getLocale, t } from "../i18n";
 import type { TranslationKey } from "../i18n";
 import CellLabel from "./CellLabel";
-import EventBars from "./EventBars";
+import EventBars, { entryTooltipLines } from "./EventBars";
+import { buildLunarFields } from "../note/format";
+import { getRocFestivalLabel } from "../holiday/rocHoliday";
+import { setTooltip } from "obsidian";
 import IconButton from "./IconButton";
 import JumpToDate from "./JumpToDate";
 import Legend from "./Legend";
@@ -44,6 +47,32 @@ const FLASH_MS = 2000;
  * product decision, not a locale default.
  */
 moment.locale(getLocale() === "zh-TW" ? "zh-tw" : "en", { week: { dow: 1 } });
+
+/**
+ * The day's tooltip: date and weekday, the full lunar date, solar term,
+ * festival, day off or make-up workday, then the entry lines. Sections with
+ * nothing to say are left out.
+ */
+const dayTooltip = (
+  date: Moment,
+  overrides: Parameters<typeof getRocFestivalLabel>[1],
+  isDayOff: boolean,
+  isWorkday: boolean,
+  entries: string[]
+): string => {
+  const { chineseYear, chineseMonth, chineseDay, solarTerm } = buildLunarFields(date.toDate());
+  const festival = getRocFestivalLabel(date.toDate(), overrides);
+  return [
+    date.format(t("tooltip.dateFormat")),
+    t("tooltip.lunar", { lunar: `${chineseYear}${chineseMonth}${chineseDay}` }),
+    solarTerm ? t("tooltip.solarTerm", { term: solarTerm }) : "",
+    festival ?? "",
+    isDayOff ? t("tooltip.dayOff") : isWorkday ? t("tooltip.workday") : "",
+    ...entries,
+  ]
+    .filter((line) => line.length > 0)
+    .join("\n");
+};
 
 /** A month grid always draws six whole weeks, so the height never jumps. */
 const WEEKS_IN_GRID = 6;
@@ -316,6 +345,17 @@ const Calendar: React.FC<CalendarProps> = ({
     const spanRight = date.day() !== 0 && multiDay.some((e) => e.end > iso);
     const hasNote = !!noteExists(date, NoteType.DAILY, notes[NoteType.DAILY]);
     const { disabled, ...handlers } = cellHandlers(date, NoteType.DAILY);
+    const dayInline = inlineReminders.filter((item) => item.date === iso);
+    const dayTasks = taskProgress && hasNote ? taskStats[iso] : undefined;
+    // Everything about the day in one tooltip on the cell, where the pointer
+    // actually is. With note preview on and a note to show, the preview is
+    // what hovering means, so the tooltip steps aside rather than covering it
+    const tooltip =
+      hoverPreview && hasNote
+        ? ""
+        : dayTooltip(date, holidayOverrides, isHoliday && !isWork, isWork, [
+            ...entryTooltipLines(dayEvents, dayInline, ignoredDuplicates, dayTasks),
+          ]);
     // A day is never both a holiday and a make-up workday, so at most two of
     // these are ever present at once
     const badges: Array<[string, string]> = [
@@ -344,6 +384,9 @@ const Calendar: React.FC<CalendarProps> = ({
           "is-flash": flashIso === iso,
         })}
         {...handlers}
+        ref={(el: HTMLDivElement | null) => {
+          if (el) setTooltip(el, tooltip, { placement: "top" });
+        }}
         /* Declared after the spread so it wins: a granularity Periodic Notes
            has switched off leaves the cell inert for note actions, but adding
            an event is this plugin's own feature and must stay reachable. */
@@ -372,13 +415,7 @@ const Calendar: React.FC<CalendarProps> = ({
             ))}
           </div>
         )}
-        <EventBars
-          events={dayEvents}
-          hasNote={hasNote}
-          inline={inlineReminders.filter((item) => item.date === iso)}
-          ignoredDuplicates={ignoredDuplicates}
-          tasks={taskProgress && hasNote ? taskStats[iso] : undefined}
-        />
+        <EventBars events={dayEvents} hasNote={hasNote} inline={dayInline} tasks={dayTasks} />
       </div>
     );
   };

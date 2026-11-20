@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import classNames from "classnames";
-import { setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import type { InlineReminder } from "../event/inlineReminders";
 import { findDuplicates } from "../event/duplicates";
@@ -40,10 +39,39 @@ const MAX_DOTS = 4;
  * it a property means styles.css stays in charge of how a dot is drawn — size,
  * radius, opacity — while this component only says which hue.
  *
- * The titles live in the tooltip. Obsidian's native `setTooltip` is used rather
+ * The titles live in the day cell's tooltip (see entryTooltipLines), not on
+ * this row: the row is pointer-events: none so clicks reach the cell, which
+ * also means a tooltip here could never be hovered. Obsidian's native
+ * `setTooltip` is used rather
  * than `title` for the same reason CellLabel gives: the native one follows the
  * theme, and `title` is an operating-system box that is slow and does not.
  */
+/**
+ * The entry lines of a day's tooltip: to-do progress, each entry (with its
+ * range, a bell for reminders and a warning when it duplicates an inline
+ * reminder), then the inline reminders. The cell owns the tooltip; this only
+ * says what goes in it.
+ */
+export const entryTooltipLines = (
+  events: CalendarEvent[],
+  inline: InlineReminder[] = [],
+  ignoredDuplicates: string[] = [],
+  tasks?: TaskCount
+): string[] => [
+  ...(tasks ? [t("calendar.taskProgress", { open: tasks.open, total: tasks.open + tasks.done })] : []),
+  ...events.map((event) => {
+    const range =
+      event.start === event.end
+        ? ""
+        : `（${t("event.dateRange", { start: shortDate(event.start), end: shortDate(event.end) })}）`;
+    const line = `${event.reminder ? "🔔 " : "• "}${event.title}${range}`;
+    return findDuplicates(event, inline, ignoredDuplicates).length > 0
+      ? t("duplicate.tooltipLine", { line })
+      : line;
+  }),
+  ...inline.map((item) => t("inline.tooltipLine", { text: item.text, time: item.time ?? "" }).trim()),
+];
+
 const EventBars: React.FC<{
   events: CalendarEvent[];
   /**
@@ -56,47 +84,15 @@ const EventBars: React.FC<{
   hasNote: boolean;
   /** The Reminder plugin's inline marks on this day; drawn as diamonds. */
   inline?: InlineReminder[];
-  /** Pairs the user muted, so their tooltip lines carry no warning. */
-  ignoredDuplicates?: string[];
   /** The day's to-do counts, when progress is shown and the note has any. */
   tasks?: TaskCount;
-}> = ({ events, hasNote, inline = [], ignoredDuplicates = [], tasks }) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    setTooltip(
-      ref.current,
-      [
-        ...(tasks
-          ? [t("calendar.taskProgress", { open: tasks.open, total: tasks.open + tasks.done })]
-          : []),
-        ...events.map((event) => {
-          const line =
-            event.start === event.end
-              ? event.title
-              : `${event.title}（${t("event.dateRange", {
-                  start: shortDate(event.start),
-                  end: shortDate(event.end),
-                })}）`;
-          return findDuplicates(event, inline, ignoredDuplicates).length > 0
-            ? t("duplicate.tooltipLine", { line })
-            : line;
-        }),
-        ...inline.map((item) =>
-          t("inline.tooltipLine", { text: item.text, time: item.time ?? "" }).trim()
-        ),
-      ].join("\n")
-    );
-  }, [events, inline, ignoredDuplicates, tasks]);
-
+}> = ({ events, hasNote, inline = [], tasks }) => {
   if (events.length === 0 && inline.length === 0 && !hasNote) return null;
 
   const shown = events.slice(0, MAX_DOTS);
 
   return (
     <div
-      ref={ref}
       className={classNames("otc-event-marks", {
         "is-truncated": events.length > shown.length,
       })}
