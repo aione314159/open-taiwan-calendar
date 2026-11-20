@@ -422,6 +422,16 @@ export const en = {
   "command.addLineAsEvent": "Add this line as an event",
   "settings.markSourceLineName": "Mark the line after adding",
   "settings.markSourceLineDesc": "When an entry is added from a line in a note, append 🔔 (reminder) or 🗓 (event) and the date to that line.",
+  "command.findDatedTasks": "Find to-dos with a date and no reminder",
+  "datedTasks.title": "To-dos with a date and no reminder",
+  "datedTasks.scanning": "Scanning {done} / {total} notes…",
+  "datedTasks.found": "{count} found",
+  "datedTasks.empty": "No open to-do names an upcoming date without a matching entry.",
+  "datedTasks.meta": "{date} · from {note}",
+  "datedTasks.skip": "Skip",
+  "datedTasks.add": "Add as reminder",
+  "datedTasks.addAll": "Add all {count} as reminders",
+  "datedTasks.addAllConfirm": "{count} reminders will be added with the default time and days before. Continue?",
 } as const;
 
 export type TranslationKey = keyof typeof en;
