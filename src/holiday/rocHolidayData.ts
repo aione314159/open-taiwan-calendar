@@ -83,6 +83,36 @@ export const ROC_HOLIDAY_TABLE: Record<number, RocHolidayEntry[]> = {
     { date: "10-26", name: "補假", isHoliday: true, isMakeupWorkday: false },
     { date: "12-25", name: "行憲紀念日", isHoliday: true, isMakeupWorkday: false },
   ],
+  // 2027 is taken directly from the DGPA's announcement of the 2027 government
+  // working-day calendar (dgpa.gov.tw) rather than from the data set above.
+  // 12-31 is the day off in lieu for New Year's Day 2028,
+  // a Saturday, so it belongs to this year's table.
+  2027: [
+    { date: "01-01", name: "開國紀念日", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-04", name: "小年夜", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-05", name: "農曆除夕", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-06", name: "春節", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-07", name: "春節", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-08", name: "春節", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-09", name: "補假", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-10", name: "補假", isHoliday: true, isMakeupWorkday: false },
+    { date: "02-28", name: "和平紀念日", isHoliday: true, isMakeupWorkday: false },
+    { date: "03-01", name: "補假", isHoliday: true, isMakeupWorkday: false },
+    { date: "04-04", name: "兒童節", isHoliday: true, isMakeupWorkday: false },
+    { date: "04-05", name: "清明節", isHoliday: true, isMakeupWorkday: false },
+    { date: "04-06", name: "補假", isHoliday: true, isMakeupWorkday: false },
+    { date: "04-30", name: "補假", isHoliday: true, isMakeupWorkday: false },
+    { date: "05-01", name: "勞動節", isHoliday: true, isMakeupWorkday: false },
+    { date: "06-09", name: "端午節", isHoliday: true, isMakeupWorkday: false },
+    { date: "09-15", name: "中秋節", isHoliday: true, isMakeupWorkday: false },
+    { date: "09-28", name: "孔子誕辰紀念日/教師節", isHoliday: true, isMakeupWorkday: false },
+    { date: "10-10", name: "國慶日", isHoliday: true, isMakeupWorkday: false },
+    { date: "10-11", name: "補假", isHoliday: true, isMakeupWorkday: false },
+    { date: "10-25", name: "臺灣光復暨金門古寧頭大捷紀念日", isHoliday: true, isMakeupWorkday: false },
+    { date: "12-24", name: "補假", isHoliday: true, isMakeupWorkday: false },
+    { date: "12-25", name: "行憲紀念日", isHoliday: true, isMakeupWorkday: false },
+    { date: "12-31", name: "補假", isHoliday: true, isMakeupWorkday: false },
+  ],
 };
 
 /**
