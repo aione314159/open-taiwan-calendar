@@ -213,6 +213,17 @@ const findEntry = (
   Array.isArray(entries) ? entries.find((e) => e.date === mmdd) : undefined;
 
 /**
+ * The holiday entries in force for a year, by the precedence getRocHoliday
+ * documents. Exposed so a caller walking a whole year resolves the table once
+ * instead of once a day — the algorithmic fallback runs lunar conversions.
+ */
+export const holidayEntriesOf = (
+  year: number,
+  overrides?: Record<number, RocHolidayEntry[]>
+): RocHolidayEntry[] =>
+  overrides?.[year] ?? ROC_HOLIDAY_TABLE[year] ?? computeAlgorithmicHolidays(year);
+
+/**
  * ROC holiday information for a given date.
  * Precedence: the user's override from the settings page (an official
  * announcement for a future year) > the bundled table (years already announced)
@@ -225,9 +236,7 @@ export const getRocHoliday = (
   overrides?: Record<number, RocHolidayEntry[]>
 ): RocHolidayResult => {
   const mmdd = `${pad2(month)}-${pad2(day)}`;
-  const table = overrides?.[year] ?? ROC_HOLIDAY_TABLE[year];
-  const entries = table ?? computeAlgorithmicHolidays(year);
-  const entry = findEntry(entries, mmdd);
+  const entry = findEntry(holidayEntriesOf(year, overrides), mmdd);
   if (!entry) {
     return { isHoliday: false, isMakeupWorkday: false };
   }

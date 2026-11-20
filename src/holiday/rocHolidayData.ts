@@ -120,4 +120,10 @@ export const ROC_HOLIDAY_NAMES = {
   confuciusBirthday: "孔子誕辰紀念日",
   taiwanRetrocessionDay: "臺灣光復暨金門古寧頭大捷紀念日",
   constitutionDay: "行憲紀念日",
+  /**
+   * The generic name of a day off given in lieu of a holiday that fell on a
+   * weekend. Not used by the algorithm; the holiday statistics skip it when
+   * naming a long weekend, since it says nothing about which holiday it is.
+   */
+  dayOffInLieu: "補假",
 } as const;
