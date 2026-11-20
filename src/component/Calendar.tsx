@@ -608,7 +608,11 @@ const Calendar: React.FC<CalendarProps> = ({
         />
       </div>
 
-      <div className="otc-body">
+      <div
+        className={classNames("otc-body", {
+          "no-week-column": mode === "month" && !showWeekColumn,
+        })}
+      >
         {mode === "month" ? (
           showWeekColumn && (
             <div className="otc-side">

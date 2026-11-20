@@ -1969,3 +1969,9 @@ body {
 .otc-day-panel-create {
   margin: 4px 8px;
 }
+
+/* Without the week column the grid has the room; the day cells take it,
+   up to a size that still reads as a grid rather than as wide bars */
+.otc-body.no-week-column .otc-day {
+  width: min(100%, 50px);
+}
