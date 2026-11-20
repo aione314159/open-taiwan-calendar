@@ -27,6 +27,13 @@ export interface FitScaleOptions {
    *   leftover height evenly above and below, leaving a large gap at the top.
    */
   align?: "center" | "top";
+  /**
+   * "width" scales by the width alone and sizes the container to the scaled
+   * content's height, so whatever comes after the container in the page sits
+   * right under the content. Without it the container keeps its own height
+   * (the sidebar's full height) and pushes everything after it out of view.
+   */
+  fitBy?: "both" | "width";
 }
 
 export interface FitScaleController {
@@ -84,16 +91,21 @@ export const fitScale = (
     const paddingY =
       parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
     const availWidth = containerEl.clientWidth - paddingX;
+    const byWidth = options.fitBy === "width";
     const availHeight = containerEl.clientHeight - paddingY;
-    if (availWidth <= 0 || availHeight <= 0) return;
-    const fitRatio = Math.min(
-      availWidth / contentWidth,
-      availHeight / contentHeight
-    );
+    if (availWidth <= 0 || (!byWidth && availHeight <= 0)) return;
+    const fitRatio = byWidth
+      ? availWidth / contentWidth
+      : Math.min(availWidth / contentWidth, availHeight / contentHeight);
     // Shrinking always applies (that is what guarantees no overflow); only
     // enlarging is gated by allowUpscale
     const ratio = options.allowUpscale ? fitRatio : Math.min(1, fitRatio);
     contentEl.style.transform = `scale(${ratio})`;
+    if (byWidth) {
+      // Same value on a repeat call, so the observer this triggers settles
+      const height = `${Math.ceil(contentHeight * ratio + paddingY)}px`;
+      if (containerEl.style.height !== height) containerEl.style.height = height;
+    }
   };
 
   const observer = new ResizeObserver(() => update());
