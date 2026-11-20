@@ -381,6 +381,11 @@ export const en = {
   "reminder.missedMeta": "Was on {date} · {count} d ago",
   "reminder.remindToday": "Move to today and remind me",
   "reminder.openNote": "Open that day’s note",
+  "reminder.snoozeMenu": "Remind me later…",
+  "reminder.snoozeAll": "Remind me later (all)…",
+  "reminder.snoozeHour": "In 1 hour",
+  "reminder.snoozeLaterToday": "Later today, {time}",
+  "reminder.snoozeTomorrow": "Tomorrow, {time}",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -1,4 +1,6 @@
-import { App, Modal, Setting, setIcon, setTooltip } from "obsidian";
+import { App, Menu, Modal, Setting, setIcon, setTooltip } from "obsidian";
+import { settingsStore } from "../state/settings";
+import { moment } from "../util/moment";
 import { shortDate } from "../event/dateMath";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
@@ -24,17 +26,66 @@ export interface DueReminder {
  * reminders landing at 09:00 would otherwise stack three modals on top of one
  * another, and Obsidian gives the user no way to see past the top one.
  */
+/** What the dialog can ask its owner to do. */
+export interface ReminderActions {
+  /** Push these items back until `until` (epoch ms). */
+  onSnooze: (items: DueReminder[], until: number) => void;
+  /** Mark one item handled, so its later occurrences stay silent. */
+  onDone: (event: CalendarEvent) => Promise<void>;
+  /** Open the daily note of the item's start date. */
+  onOpenNote: (event: CalendarEvent) => Promise<void>;
+}
+
+/** "Later today" is this hour, offered only while it is still ahead. */
+const LATER_TODAY_HOUR = 18;
+
 export class ReminderModal extends Modal {
   constructor(
     app: App,
     private readonly items: DueReminder[],
     private readonly snoozeMinutes: number,
-    /** Called instead of a plain dismissal; the scheduler re-arms the items. */
-    private readonly onSnooze: () => void,
-    /** Marks one item handled, so its later occurrences stay silent. */
-    private readonly onDone: (event: CalendarEvent) => Promise<void>
+    private readonly actions: ReminderActions
   ) {
     super(app);
+  }
+
+  /** The snooze choices, as label and end time; "later today" drops out once past. */
+  private snoozeChoices(): Array<[string, number]> {
+    const now = moment();
+    const choices: Array<[string, number]> = [
+      [
+        t("reminder.snooze", { minutes: this.snoozeMinutes }),
+        now.clone().add(this.snoozeMinutes, "minutes").valueOf(),
+      ],
+      [t("reminder.snoozeHour"), now.clone().add(1, "hour").valueOf()],
+    ];
+    const laterToday = now.clone().startOf("day").add(LATER_TODAY_HOUR, "hours");
+    if (laterToday.isAfter(now)) {
+      choices.push([
+        t("reminder.snoozeLaterToday", { time: laterToday.format("HH:mm") }),
+        laterToday.valueOf(),
+      ]);
+    }
+    const [hour, minute] = settingsStore.read().reminder.defaultTime.split(":").map(Number);
+    const tomorrow = now.clone().add(1, "day").startOf("day").add(hour, "hours").add(minute, "minutes");
+    choices.push([
+      t("reminder.snoozeTomorrow", { time: tomorrow.format("HH:mm") }),
+      tomorrow.valueOf(),
+    ]);
+    return choices;
+  }
+
+  private showSnoozeMenu(event: MouseEvent, items: DueReminder[], after: () => void): void {
+    const menu = new Menu();
+    for (const [label, until] of this.snoozeChoices()) {
+      menu.addItem((item) =>
+        item.setTitle(label).onClick(() => {
+          this.actions.onSnooze(items, until);
+          after();
+        })
+      );
+    }
+    menu.showAtMouseEvent(event);
   }
 
   onOpen(): void {
@@ -42,7 +93,8 @@ export class ReminderModal extends Modal {
     this.modalEl.addClass("otc-reminder-modal");
 
     const list = this.contentEl.createDiv({ cls: "otc-reminder-list" });
-    for (const { event, daysUntil } of this.items) {
+    for (const item of this.items) {
+      const { event, daysUntil } = item;
       const row = list.createDiv({ cls: "otc-reminder-row" });
       // The colour is the same one the calendar draws, so the reminder and the
       // bar the user has been looking at are recognisably the same thing. It is
@@ -58,23 +110,40 @@ export class ReminderModal extends Modal {
         cls: "otc-reminder-meta",
         text: this.metaLine(event, daysUntil),
       });
-      const done = row.createEl("button", { cls: "clickable-icon otc-reminder-done" });
-      setIcon(done, "check-circle");
-      setTooltip(done, t("eventList.markDone"));
-      done.addEventListener("click", () => {
-        done.disabled = true;
-        void this.onDone(event).then(() => row.addClass("is-done"));
-      });
+
+      const buttons: HTMLButtonElement[] = [];
+      const settle = (cls: string) => {
+        row.addClass(cls);
+        buttons.forEach((b) => (b.disabled = true));
+      };
+      const rowActions: Array<[string, string, (e: MouseEvent) => void]> = [
+        ["file-text", t("reminder.openNote"), () => void this.actions.onOpenNote(event)],
+        [
+          "alarm-clock",
+          t("reminder.snoozeMenu"),
+          (e) => this.showSnoozeMenu(e, [item], () => settle("is-snoozed")),
+        ],
+        [
+          "check-circle",
+          t("eventList.markDone"),
+          () => void this.actions.onDone(event).then(() => settle("is-done")),
+        ],
+      ];
+      for (const [icon, label, run] of rowActions) {
+        const button = row.createEl("button", { cls: "clickable-icon otc-reminder-done" });
+        setIcon(button, icon);
+        setTooltip(button, label);
+        button.setAttr("aria-label", label);
+        button.addEventListener("click", (e) => run(e));
+        buttons.push(button);
+      }
     }
 
     new Setting(this.contentEl)
       .addButton((button) =>
-        button
-          .setButtonText(t("reminder.snooze", { minutes: this.snoozeMinutes }))
-          .onClick(() => {
-            this.onSnooze();
-            this.close();
-          })
+        button.setButtonText(t("reminder.snoozeAll")).onClick((e) =>
+          this.showSnoozeMenu(e, this.items, () => this.close())
+        )
       )
       .addButton((button) =>
         button

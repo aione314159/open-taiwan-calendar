@@ -1810,3 +1810,7 @@ body {
 .otc-day.is-flash {
   box-shadow: 0 0 0 2px var(--interactive-accent);
 }
+
+.otc-reminder-row.is-snoozed {
+  opacity: 0.5;
+}

@@ -147,6 +147,12 @@ export type PluginSetting = Record<NoteType, NoteConfig> & {
    */
   lastSweepDate: string;
   /**
+   * Snoozes of an hour or more, keyed like `reminderState`, holding the epoch
+   * ms they end at. Short snoozes stay in memory on purpose (a restart brings
+   * the reminder straight back); "tomorrow" has to survive the restart.
+   */
+  snoozeState: Record<string, number>;
+  /**
    * Calendars the Directorate-General of Personnel Administration has announced
    * but this plugin does not bundle yet, keyed by year. They take precedence
    * over the built-in table.
@@ -202,6 +208,7 @@ export const defaultSetting: PluginSetting = {
   },
   reminderState: {},
   lastSweepDate: "",
+  snoozeState: {},
   holidayOverrides: {},
 };
 
@@ -235,6 +242,11 @@ export const replaceHolidayOverrides = (
  */
 export const replaceReminderState = (value: Record<string, string>): void => {
   settingsStore.write({ ...settingsStore.read(), reminderState: value });
+};
+
+/** Swap the persisted snoozes out wholesale; same reason as above. */
+export const replaceSnoozeState = (value: Record<string, number>): void => {
+  settingsStore.write({ ...settingsStore.read(), snoozeState: value });
 };
 
 export function useSetting<S>(select: (setting: PluginSetting) => S): S {

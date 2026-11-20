@@ -5,7 +5,12 @@ import { readEvents } from "../event/store";
 import { ReminderChannel } from "../event/types";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
-import { patchSettings, replaceReminderState, settingsStore } from "../state/settings";
+import {
+  patchSettings,
+  replaceReminderState,
+  replaceSnoozeState,
+  settingsStore,
+} from "../state/settings";
 import { moment } from "../util/moment";
 import { commitEventEdit } from "../event/commands";
 import { openDailyNote } from "../event/noteStore";
@@ -56,11 +61,42 @@ export interface SchedulerHost {
 const snoozedUntil = new Map<string, number>();
 
 const isSnoozed = (key: string, now: number): boolean => {
+  const persisted = settingsStore.read().snoozeState[key];
+  if (persisted !== undefined && persisted > now) return true;
   const until = snoozedUntil.get(key);
   if (until === undefined) return false;
   if (until > now) return true;
   snoozedUntil.delete(key);
   return false;
+};
+
+/** Snoozes at least this long are written to data.json and survive a restart. */
+const PERSIST_SNOOZE_MS = 60 * 60_000;
+
+/**
+ * Push occurrences back until `until` (epoch ms).
+ *
+ * The fired record is cleared so the sweep picks them up again once the snooze
+ * ends.
+ */
+const snooze = (host: SchedulerHost, keys: string[], until: number): void => {
+  const settings = settingsStore.read();
+  const reminderState = { ...settings.reminderState };
+  const snoozeState = { ...settings.snoozeState };
+  const persist = until - Date.now() >= PERSIST_SNOOZE_MS;
+  for (const key of keys) {
+    delete reminderState[key];
+    if (persist) {
+      snoozeState[key] = until;
+      snoozedUntil.delete(key);
+    } else {
+      snoozedUntil.set(key, until);
+      delete snoozeState[key];
+    }
+  }
+  replaceReminderState(reminderState);
+  replaceSnoozeState(snoozeState);
+  host.saveOptions();
 };
 
 /** Every occurrence key an event currently defines. */
@@ -93,7 +129,7 @@ const announce = (
   due: DueReminder[],
   channels: ReminderChannel[],
   snoozeMinutes: number,
-  onSnooze: (keys: string[]) => void
+  onSnooze: (keys: string[], until: number) => void
 ): void => {
   // One global choice, so every due item goes through the same channels
   const wants = (channel: ReminderChannel) => () => channels.includes(channel);
@@ -118,13 +154,15 @@ const announce = (
 
   const modalItems = due.filter(wants(ReminderChannel.MODAL));
   if (modalItems.length === 0) return;
-  new ReminderModal(
-    app,
-    modalItems,
-    snoozeMinutes,
-    () => onSnooze(modalItems.map((item) => fireKey(item.event.id, item.offset))),
-    (event) => setEventDone(app, event, true)
-  ).open();
+  new ReminderModal(app, modalItems, snoozeMinutes, {
+    onSnooze: (items, until) =>
+      onSnooze(
+        items.map((item) => fireKey(item.event.id, item.offset)),
+        until
+      ),
+    onDone: (event) => setEventDone(app, event, true),
+    onOpenNote: (event) => openDailyNote(app, event.start),
+  }).open();
 };
 
 /**
@@ -222,7 +260,18 @@ export const runReminderSweep = (
     }
   }
 
-  if (changed) replaceReminderState(state);
+  // Persisted snoozes that have ended, or whose entry is gone
+  const snoozes = { ...settings.snoozeState };
+  for (const [key, until] of Object.entries(snoozes)) {
+    if (until <= nowMs || !live.has(key)) {
+      delete snoozes[key];
+      changed = true;
+    }
+  }
+  if (changed) {
+    replaceReminderState(state);
+    replaceSnoozeState(snoozes);
+  }
   if (sweepDateChanged) patchSettings({ lastSweepDate: today });
   if (changed || sweepDateChanged) host.saveOptions();
 
@@ -236,18 +285,9 @@ export const runReminderSweep = (
   }
   if (due.length === 0) return;
 
-  announce(host.app, due, settings.reminder.channels, settings.reminder.snoozeMinutes, (keys) => {
-    const until = Date.now() + settings.reminder.snoozeMinutes * 60_000;
-    const next = { ...settingsStore.read().reminderState };
-    for (const key of keys) {
-      snoozedUntil.set(key, until);
-      // Clearing the fired record is what lets the sweep pick the occurrence up
-      // again once the snooze expires
-      delete next[key];
-    }
-    replaceReminderState(next);
-    host.saveOptions();
-  });
+  announce(host.app, due, settings.reminder.channels, settings.reminder.snoozeMinutes, (keys, until) =>
+    snooze(host, keys, until)
+  );
 };
 
 /** Start sweeping. The interval is owned by Obsidian and cleared on unload. */
