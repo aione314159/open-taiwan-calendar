@@ -368,4 +368,8 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "notice.batchNothing": "到那天為止的每日筆記都已存在。",
   "confirm.batchTitle": "建立每日筆記",
   "confirm.batchText": "將建立 {count} 篇每日筆記：{dates}",
+  "command.addLineAsReminder": "把這一行加為提醒",
+  "command.addLineAsEvent": "把這一行加為活動",
+  "settings.markSourceLineName": "儲存後標記原行",
+  "settings.markSourceLineDesc": "從筆記中的一行新增項目後，在該行行尾加上 🔔（提醒）或 🗓（活動）與日期。",
 };

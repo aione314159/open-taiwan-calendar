@@ -520,6 +520,11 @@ export default class MainSettingTable extends PluginSettingTab {
           control: { type: "color", key: "eventDefaults.eventColor" },
         },
         {
+          name: t("settings.markSourceLineName"),
+          desc: t("settings.markSourceLineDesc"),
+          control: { type: "toggle", key: "eventDefaults.markSourceLine" },
+        },
+        {
           name: t("settings.reminderEnabledName"),
           desc: t("settings.reminderEnabledDesc"),
           control: { type: "toggle", key: "reminder.enabled" },
