@@ -158,6 +158,8 @@ const Calendar: React.FC<CalendarProps> = ({
   const inlineReminders = useInlineReminders((state) => state);
   const ignoredDuplicates = useSetting((state) => state.ignoredDuplicates);
   const taskProgress = useSetting((state) => state.appearance.taskProgress);
+  const toolbar = useSetting((state) => state.appearance.toolbar);
+  const anyToolbarButton = Object.values(toolbar).some(Boolean);
   const weekColumnSetting = useSetting((state) => state.appearance.weekColumn);
   // A column of numbers that cannot be clicked is only noise, so "auto" shows
   // it only while weekly notes are on
@@ -490,13 +492,19 @@ const Calendar: React.FC<CalendarProps> = ({
         {/* Grouped so the three sit together on the left. Left loose in a
             space-between row, the middle one drifts to the centre and reads as
             unrelated to the other two. */}
+        {/* Each button can be switched off in the settings; with none left the
+            group is not drawn at all, so the mode switch keeps its place */}
+        {anyToolbarButton && (
         <div className="otc-toolbar-actions">
+          {toolbar.settings && (
           <IconButton
             icon="settings"
             label={t("calendar.settings")}
             className="otc-settings-button"
             onClick={onOpenSettings}
           />
+          )}
+          {toolbar.addEvent && (
           <IconButton
             icon="calendar-plus"
             label={t("command.quickAddEvent")}
@@ -507,28 +515,36 @@ const Calendar: React.FC<CalendarProps> = ({
             // way to add one on a specific day.
             onClick={() => onAddEvent(moment())}
           />
+          )}
+          {toolbar.eventList && (
           <IconButton
             icon="list-checks"
             label={t("command.showEventList")}
             className="otc-settings-button"
             onClick={onShowEventList}
           />
+          )}
+          {toolbar.jump && (
           <IconButton
             icon="calendar-search"
             label={t("jump.title")}
             className="otc-settings-button otc-jump-button"
             onClick={() => setJumpOpen((open) => !open)}
           />
+          )}
           {/* The icon shows what the click switches to, not what is on now: a
               sun while dark reads as "go light", which is the question the user
               is answering when they reach for it. */}
+          {toolbar.theme && (
           <IconButton
             icon={isDark ? "sun" : "moon"}
             label={t("calendar.toggleColorScheme")}
             className="otc-settings-button"
             onClick={onToggleColorScheme}
           />
+          )}
         </div>
+        )}
         <div className="otc-modes" role="group">
           {modeButtons.map(([key, label, onPick, active]) => (
             <button

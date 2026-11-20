@@ -73,6 +73,8 @@ export interface AppearanceSetting {
    * means scanning the vault's open tasks.
    */
   inlineReminders: boolean;
+  /** Which toolbar buttons are drawn; all on by default. */
+  toolbar: ToolbarSetting;
   /**
    * The week-number column of the month view: always, never, or only while
    * Periodic Notes has weekly notes on (auto).
@@ -91,6 +93,22 @@ export interface AppearanceSetting {
   /** Whether that list is folded to its heading. */
   upcomingCollapsed: boolean;
 }
+
+export interface ToolbarSetting {
+  settings: boolean;
+  addEvent: boolean;
+  eventList: boolean;
+  jump: boolean;
+  theme: boolean;
+}
+
+export const TOOLBAR_BUTTONS: Array<keyof ToolbarSetting> = [
+  "settings",
+  "addEvent",
+  "eventList",
+  "jump",
+  "theme",
+];
 
 export interface FloatingWindowSetting {
   visible: boolean;
@@ -227,6 +245,7 @@ export const defaultSetting: PluginSetting = {
     hoverPreview: true,
     readingViewEvents: true,
     inlineReminders: false,
+    toolbar: { settings: true, addEvent: true, eventList: true, jump: true, theme: true },
     weekColumn: "auto",
     taskProgress: true,
     dayPanel: true,

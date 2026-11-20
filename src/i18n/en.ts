@@ -510,6 +510,12 @@ export const en = {
   "quickAdd.offsetsCustom": "Custom, e.g. 14",
   "quickAdd.errorTooLong": "An entry can span at most {max} days",
   "notice.eventSavePartial": "{title}: written to {ok} days, {failed} failed (first: {first}). Check that the daily-notes folder is writable.",
+  "settings.toolbarSettings": "Toolbar: settings button",
+  "settings.toolbarAddEvent": "Toolbar: add button",
+  "settings.toolbarEventList": "Toolbar: list button",
+  "settings.toolbarJump": "Toolbar: go-to-date button",
+  "settings.toolbarTheme": "Toolbar: light/dark button",
+  "settings.toolbarButtonDesc": "Off removes the button from the calendar toolbar. The plugin settings stay reachable from Obsidian’s settings.",
 } as const;
 
 export type TranslationKey = keyof typeof en;
