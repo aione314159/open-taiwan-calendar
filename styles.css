@@ -2208,3 +2208,28 @@ body {
   color: var(--text-on-accent);
   background: var(--interactive-accent);
 }
+
+/* ---------- a day whose entries are all over: no wash, a neutral dashed
+   frame, dimmer dots. Today, day-off and make-up frames keep priority. */
+.otc-day.has-event.events-past:not(.is-today):not(.is-holiday):not(.is-workday) {
+  border-color: var(--background-modifier-border);
+  border-style: dashed;
+  background: transparent;
+}
+
+.theme-dark .otc-day.has-event.events-past:not(.is-today):not(.is-holiday):not(.is-workday) {
+  background: transparent;
+}
+
+.otc-day.has-event.events-past .otc-event-dot:not(.is-note) {
+  opacity: 0.6;
+}
+
+/* The band joins still drop the border on the joined side */
+.otc-day.has-event.events-past.span-left {
+  border-left-color: transparent;
+}
+
+.otc-day.has-event.events-past.span-right {
+  border-right-color: transparent;
+}
