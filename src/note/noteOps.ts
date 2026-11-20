@@ -5,6 +5,7 @@ import * as dni from "obsidian-daily-notes-interface";
 import { NoteType } from "../enum";
 import { noteTypeLabel } from "../enum/noteConfig";
 import { t } from "../i18n";
+import { resolveNote } from "../state/notes";
 import type { Notes } from "../state/notes";
 import { settingsStore } from "../state/settings";
 import { createConfirmationDialog } from "../view/ConfirmModal";
@@ -298,7 +299,11 @@ export const openOrCreateNote = async (
   confirmBeforeCreate = true
 ) => {
   const { workspace } = ctx;
-  const existingFile = noteExists(date, type, notes);
+  const existingFile = resolveNote(
+    type,
+    (index) => NOTE_API[type].find(date, index),
+    notes
+  );
   if (!existingFile) {
     /**
      * A granularity that is not enabled must not create a file.

@@ -1,16 +1,8 @@
 import { Root } from "react-dom/client";
-import {
-  Events,
-  ItemView,
-  TAbstractFile,
-  TFile,
-  WorkspaceLeaf,
-} from "obsidian";
-import { refreshAllNotes, refreshNotes } from "../state/notes";
+import { Events, ItemView, WorkspaceLeaf } from "obsidian";
+import { refreshAllNotes } from "../state/notes";
 import { mountCalendarRoot } from "../component/CalendarRoot";
 import { fitScale, FitScaleController } from "../util/fitScale";
-import { getDateFromFile } from "obsidian-daily-notes-interface";
-import { GRANULARITY, NOTE_TYPES } from "src/enum";
 import { t } from "src/i18n";
 // Type-only import: it produces no require at runtime, so it is not a module dependency
 import type OpenTaiwanCalendarPlugin from "src/main";
@@ -26,44 +18,13 @@ export class CalendarView extends ItemView {
     super(leaf);
     this.plugin = plugin;
 
-    // Arrow functions rather than bound methods: `this` is captured by the
-    // closure, so there is nothing to bind and nothing to forget to bind.
-    const onVaultChange = (file: TAbstractFile) => {
-      // Before the layout is ready there is no root to update, and vault
-      // events fire in bulk while Obsidian indexes the vault at startup
-      if (this.app.workspace.layoutReady && this.root) {
-        this.reloadTouchedGranularity(file);
-      }
-    };
-
+    // The vault listeners that keep the note index current live on the plugin,
+    // not here: the floating panel reads the same index, and it has to stay
+    // current while this view is closed or deferred.
     const workspace = this.app.workspace as Events;
-    this.registerEvent(
-      workspace.on("periodic-notes:settings-updated", () => refreshAllNotes())
-    );
     this.registerEvent(
       workspace.on("open-taiwan-calendar:settings-updated", () => this.render())
     );
-    this.registerEvent(this.app.vault.on("create", onVaultChange));
-    this.registerEvent(this.app.vault.on("delete", onVaultChange));
-    this.registerEvent(this.app.vault.on("rename", onVaultChange));
-  }
-
-  /**
-   * Work out which granularity a file belongs to and re-read just that one.
-   *
-   * A file matches at most one granularity, so the first hit ends the search;
-   * a file that matches none is somebody else's note and needs no reload.
-   */
-  private reloadTouchedGranularity(file: TAbstractFile): void {
-    if (!(file instanceof TFile)) {
-      return;
-    }
-    const touched = NOTE_TYPES.find((type) =>
-      getDateFromFile(file, GRANULARITY[type])
-    );
-    if (touched) {
-      refreshNotes(touched);
-    }
   }
 
   // The ResizeObserver already covers container size changes; this adds one

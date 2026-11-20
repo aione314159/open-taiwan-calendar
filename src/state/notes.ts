@@ -4,9 +4,11 @@ import {
   getAllMonthlyNotes,
   getAllQuarterlyNotes,
   getAllYearlyNotes,
+  getDateFromFile,
+  getDateFromPath,
 } from "obsidian-daily-notes-interface";
-import type { TFile } from "obsidian";
-import { NOTE_TYPES, NoteType } from "../enum";
+import { TAbstractFile, TFile } from "obsidian";
+import { GRANULARITY, NOTE_TYPES, NoteType } from "../enum";
 import { Store, useStoreValue } from "./store";
 
 /** The notes that already exist for one granularity, keyed by their date string. */
@@ -54,6 +56,63 @@ export const refreshNotes = (type: NoteType): void => {
 
 export const refreshAllNotes = (): void => {
   NOTE_TYPES.forEach(refreshNotes);
+};
+
+/**
+ * Re-read the granularities a created, deleted or renamed file belongs to.
+ *
+ * On a rename the old path is checked as well: a note renamed away from its
+ * date format leaves the granularity it used to belong to, and that index has
+ * to drop it. A file that matches nothing is somebody else's note and needs no
+ * reload.
+ */
+export const refreshNotesTouchedBy = (
+  file: TAbstractFile,
+  oldPath?: string
+): NoteType[] => {
+  if (!(file instanceof TFile)) {
+    return [];
+  }
+  const touched = NOTE_TYPES.filter(
+    (type) =>
+      getDateFromFile(file, GRANULARITY[type]) ||
+      (oldPath && getDateFromPath(oldPath, GRANULARITY[type]))
+  );
+  touched.forEach(refreshNotes);
+  return touched;
+};
+
+/**
+ * Whether a file taken out of the index is still the file at its path.
+ *
+ * The index holds `TFile` objects. When a note is deleted and written again —
+ * a sync client or an external editor replacing it — the vault hands out a new
+ * `TFile` and the old one is orphaned. Opening the orphan shows an empty tab
+ * named after the date instead of the note.
+ */
+const isLive = (file: TFile): boolean =>
+  file.vault.getAbstractFileByPath(file.path) === file;
+
+/**
+ * Find the note for a date, re-reading the vault when the index cannot be
+ * trusted.
+ *
+ * The index is refreshed by vault events, and a missed event leaves it stale
+ * until Obsidian restarts. Checking at the moment of the click costs one walk
+ * of one folder and turns a stale index into a correct answer.
+ */
+export const resolveNote = (
+  type: NoteType,
+  find: (index: Record<string, TFile>) => TFile | null,
+  index: NoteIndex
+): TFile | null => {
+  const cached = index ? find(index) : null;
+  if (cached && isLive(cached)) {
+    return cached;
+  }
+  refreshNotes(type);
+  const fresh = notesStore.read()[type];
+  return fresh ? find(fresh) : null;
 };
 
 /**

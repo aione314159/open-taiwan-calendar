@@ -1,7 +1,7 @@
 // Import order carries no meaning any more: the module dependencies form a
 // strict DAG (api -> store -> slice, view -> api), guarded by import/no-cycle in
 // .eslintrc.json. The list below is deliberately alphabetical.
-import { Notice, Plugin, TFile } from "obsidian";
+import { Events, Notice, Plugin, TAbstractFile, TFile } from "obsidian";
 import { openEventList, openQuickAddEvent } from "./event/commands";
 import { isDailyNote, refreshEvents } from "./event/noteStore";
 import { sanitizeOverrides } from "./holiday/rocHoliday";
@@ -11,7 +11,7 @@ import type { TranslationKey } from "./i18n";
 import { HOVER_LINK_SOURCE } from "./note/noteMenu";
 import { registerReadingViewEvents } from "./note/readingViewEvents";
 import { runReminderSweep, startReminderScheduler } from "./reminder/scheduler";
-import { refreshAllNotes } from "./state/notes";
+import { refreshAllNotes, refreshNotesTouchedBy } from "./state/notes";
 import {
   DeepPartial,
   PluginSetting,
@@ -166,6 +166,23 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
           }
         })
       );
+
+      // The note index behind the "has a note" dots and the cell clicks is
+      // shared by the sidebar view and the floating panel, so it is kept current
+      // here for as long as the plugin runs. Registered after the layout is
+      // ready: before that the vault fires a create for every file it indexes.
+      this.registerEvent(
+        (this.app.workspace as Events).on(
+          "periodic-notes:settings-updated",
+          () => refreshAllNotes()
+        )
+      );
+      const onVaultChange = (file: TAbstractFile, oldPath?: string) => {
+        refreshNotesTouchedBy(file, oldPath);
+      };
+      this.registerEvent(this.app.vault.on("create", (file) => onVaultChange(file)));
+      this.registerEvent(this.app.vault.on("delete", (file) => onVaultChange(file)));
+      this.registerEvent(this.app.vault.on("rename", onVaultChange));
     });
   }
 
