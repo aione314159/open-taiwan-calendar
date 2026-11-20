@@ -316,4 +316,11 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "eventList.markDone": "標記完成",
   "eventList.markUndone": "取消完成",
   "eventList.badgeUnhandled": "未處理",
+  "notice.entryProblems": "每日筆記中有 {count} 筆項目格式不符，詳情請看「提醒與活動」清單。",
+  "eventList.problemsSummary": "{count} 筆項目格式不符",
+  "eventList.problemWhere": "{path} 第 {index} 筆：",
+  "problem.notObject": "不是含欄位的項目，已略過",
+  "problem.title": "缺少標題或標題為空，已略過",
+  "problem.start": "開始日期不是 YYYY-MM-DD，已略過",
+  "problem.colorDefaulted": "顏色不是 #rrggbb，已套用預設色",
 };
