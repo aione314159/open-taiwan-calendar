@@ -50,6 +50,8 @@ export const parseProtocolParams = (params: Params, today: string): Parsed => {
     preset.date = parsed.start;
     preset.end = parsed.end;
     if (parsed.isReminder) preset.remind = true;
+    if (parsed.time) preset.time = parsed.time;
+    if (parsed.offsets) preset.offsets = parsed.offsets;
   }
   if (params.title !== undefined) preset.title = params.title;
   if (preset.title !== undefined) {
