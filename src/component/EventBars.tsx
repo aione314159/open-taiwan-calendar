@@ -3,6 +3,7 @@ import classNames from "classnames";
 import { setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import type { InlineReminder } from "../event/inlineReminders";
+import { findDuplicates } from "../event/duplicates";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 
@@ -54,7 +55,9 @@ const EventBars: React.FC<{
   hasNote: boolean;
   /** The Reminder plugin's inline marks on this day; drawn as diamonds. */
   inline?: InlineReminder[];
-}> = ({ events, hasNote, inline = [] }) => {
+  /** Pairs the user muted, so their tooltip lines carry no warning. */
+  ignoredDuplicates?: string[];
+}> = ({ events, hasNote, inline = [], ignoredDuplicates = [] }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,20 +65,24 @@ const EventBars: React.FC<{
     setTooltip(
       ref.current,
       [
-        ...events.map((event) =>
-          event.start === event.end
-            ? event.title
-            : `${event.title}（${t("event.dateRange", {
-                start: shortDate(event.start),
-                end: shortDate(event.end),
-              })}）`
-        ),
+        ...events.map((event) => {
+          const line =
+            event.start === event.end
+              ? event.title
+              : `${event.title}（${t("event.dateRange", {
+                  start: shortDate(event.start),
+                  end: shortDate(event.end),
+                })}）`;
+          return findDuplicates(event, inline, ignoredDuplicates).length > 0
+            ? t("duplicate.tooltipLine", { line })
+            : line;
+        }),
         ...inline.map((item) =>
           t("inline.tooltipLine", { text: item.text, time: item.time ?? "" }).trim()
         ),
       ].join("\n")
     );
-  }, [events, inline]);
+  }, [events, inline, ignoredDuplicates]);
 
   if (events.length === 0 && inline.length === 0 && !hasNote) return null;
 
