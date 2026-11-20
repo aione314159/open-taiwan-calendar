@@ -41,6 +41,11 @@ const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
+	// The diagnostic log (src/util/debugLog.ts) is compiled in only when asked
+	// for; release builds never set OTC_DEBUG_LOG, so they carry no log writer
+	define: {
+		__OTC_DEBUG_LOG__: JSON.stringify(process.env.OTC_DEBUG_LOG === "1"),
+	},
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	minify: prod,

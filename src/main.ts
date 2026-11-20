@@ -1,7 +1,7 @@
 // Import order carries no meaning any more: the module dependencies form a
 // strict DAG (api -> store -> slice, view -> api), guarded by import/no-cycle in
 // .eslintrc.json. The list below is deliberately alphabetical.
-import { Events, Notice, Plugin, TAbstractFile, TFile } from "obsidian";
+import { Events, Notice, Plugin, TAbstractFile, TFile, TFolder } from "obsidian";
 import { openEventList, openQuickAddEvent } from "./event/commands";
 import { isDailyNote, refreshEvents } from "./event/noteStore";
 import { sanitizeOverrides } from "./holiday/rocHoliday";
@@ -20,6 +20,7 @@ import {
   replaceHolidayOverrides,
   settingsStore,
 } from "./state/settings";
+import { debugLog, flushDebugLog, initDebugLog } from "./util/debugLog";
 import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
@@ -32,6 +33,13 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
 
   // Initialisation performed when the plugin is enabled
   onload(): void {
+    initDebugLog(
+      this.app.vault.adapter,
+      this.manifest.dir ?? `${this.app.vault.configDir}/plugins/${this.manifest.id}`
+    );
+    debugLog("plugin-load", { version: this.manifest.version });
+    this.register(() => void flushDebugLog());
+
     this.register(
       settingsStore.watch(() => {
         this.options = settingsStore.read();
@@ -174,15 +182,46 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       this.registerEvent(
         (this.app.workspace as Events).on(
           "periodic-notes:settings-updated",
-          () => refreshAllNotes()
+          () => {
+            debugLog("periodic-notes-settings-updated");
+            refreshAllNotes();
+          }
         )
       );
-      const onVaultChange = (file: TAbstractFile, oldPath?: string) => {
-        refreshNotesTouchedBy(file, oldPath);
+      const onVaultChange = (
+        kind: string,
+        file: TAbstractFile,
+        oldPath?: string
+      ) => {
+        const types = refreshNotesTouchedBy(file, oldPath);
+        // Only the events that can move the index: a periodic note, or a
+        // folder, whose move or deletion takes every note inside it along
+        if (types.length > 0 || file instanceof TFolder) {
+          debugLog(`vault-${kind}`, {
+            path: file.path,
+            oldPath: oldPath ?? null,
+            folder: file instanceof TFolder,
+            types,
+          });
+        }
       };
-      this.registerEvent(this.app.vault.on("create", (file) => onVaultChange(file)));
-      this.registerEvent(this.app.vault.on("delete", (file) => onVaultChange(file)));
-      this.registerEvent(this.app.vault.on("rename", onVaultChange));
+      this.registerEvent(
+        this.app.vault.on("create", (file) => onVaultChange("create", file))
+      );
+      this.registerEvent(
+        this.app.vault.on("delete", (file) => onVaultChange("delete", file))
+      );
+      this.registerEvent(
+        this.app.vault.on("rename", (file, oldPath) =>
+          onVaultChange("rename", file, oldPath)
+        )
+      );
+
+      debugLog("layout-ready", {
+        sidebarViews:
+          this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR).length,
+        floatingPanel: this.floatingPanel !== null,
+      });
     });
   }
 

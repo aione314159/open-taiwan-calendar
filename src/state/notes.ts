@@ -9,6 +9,7 @@ import {
 } from "obsidian-daily-notes-interface";
 import { TAbstractFile, TFile } from "obsidian";
 import { GRANULARITY, NOTE_TYPES, NoteType } from "../enum";
+import { debugLog, describeError } from "../util/debugLog";
 import { Store, useStoreValue } from "./store";
 
 /** The notes that already exist for one granularity, keyed by their date string. */
@@ -48,9 +49,11 @@ export const refreshNotes = (type: NoteType): void => {
   let index: Record<string, TFile>;
   try {
     index = READERS[type]();
-  } catch {
+  } catch (err) {
     index = {};
+    debugLog("index-read-failed", { type, ...describeError(err) });
   }
+  debugLog("index-refreshed", { type, count: Object.keys(index).length });
   notesStore.write({ ...notesStore.read(), [type]: index });
 };
 
@@ -107,12 +110,22 @@ export const resolveNote = (
   index: NoteIndex
 ): TFile | null => {
   const cached = index ? find(index) : null;
-  if (cached && isLive(cached)) {
+  const cachedLive = cached ? isLive(cached) : false;
+  if (cached && cachedLive) {
+    debugLog("resolve-note", { type, cached: cached.path, cachedLive });
     return cached;
   }
   refreshNotes(type);
   const fresh = notesStore.read()[type];
-  return fresh ? find(fresh) : null;
+  const found = fresh ? find(fresh) : null;
+  // The interesting line: the index was wrong, and this says how
+  debugLog("resolve-note-reread", {
+    type,
+    cached: cached?.path ?? null,
+    cachedLive,
+    found: found?.path ?? null,
+  });
+  return found;
 };
 
 /**
