@@ -442,4 +442,12 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.weekColumnAuto": "自動",
   "settings.weekColumnShow": "顯示",
   "settings.weekColumnHide": "隱藏",
+  "settings.systemStatusName": "系統通知權限",
+  "settings.systemGranted": "已允許。可按按鈕送出測試通知。",
+  "settings.systemDefault": "尚未決定。開啟系統桌面通知或按下按鈕時會詢問。",
+  "settings.systemDenied": "已被拒絕。請到作業系統的通知設定允許 Obsidian（macOS：系統設定 → 通知 → Obsidian），再重新啟動 Obsidian。",
+  "settings.systemUnsupported": "此環境不支援系統通知。",
+  "settings.systemTest": "送出測試通知",
+  "settings.systemTestTitle": "Open Taiwan Calendar",
+  "settings.systemTestBody": "系統通知可以正常顯示。",
 };

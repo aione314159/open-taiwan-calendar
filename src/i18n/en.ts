@@ -492,6 +492,14 @@ export const en = {
   "settings.weekColumnAuto": "Auto",
   "settings.weekColumnShow": "Show",
   "settings.weekColumnHide": "Hide",
+  "settings.systemStatusName": "Desktop notification permission",
+  "settings.systemGranted": "Allowed. Use the button to send a test notification.",
+  "settings.systemDefault": "Not decided yet. Turning on desktop notifications, or the button, asks for it.",
+  "settings.systemDenied": "Blocked. Allow Obsidian in the operating system’s notification settings (macOS: System Settings → Notifications → Obsidian), then restart Obsidian.",
+  "settings.systemUnsupported": "Not available in this environment.",
+  "settings.systemTest": "Send a test notification",
+  "settings.systemTestTitle": "Open Taiwan Calendar",
+  "settings.systemTestBody": "Desktop notifications are working.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

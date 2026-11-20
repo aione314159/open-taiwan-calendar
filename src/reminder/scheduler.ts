@@ -103,6 +103,8 @@ const snooze = (host: SchedulerHost, keys: string[], until: number): void => {
 const keysOf = (event: CalendarEvent): string[] =>
   event.reminder ? event.reminder.offsets.map((o) => fireKey(event.id, o)) : [];
 
+let deniedNoticeShown = false;
+
 /** The desktop notification channel, guarded on both sides. */
 const notifySystem = (event: CalendarEvent, meta: string): void => {
   // Notification is a browser API the Electron renderer provides; it is a local
@@ -111,7 +113,12 @@ const notifySystem = (event: CalendarEvent, meta: string): void => {
   // exactly that). It is still absent in some embeddings, hence the guard.
   if (typeof Notification === "undefined") return;
   if (Notification.permission === "denied") {
-    new Notice(t("reminder.systemPermissionDenied"));
+    // Once per session: three reminders at 09:00 must not raise three
+    // identical complaints
+    if (!deniedNoticeShown) {
+      deniedNoticeShown = true;
+      new Notice(t("reminder.systemPermissionDenied"));
+    }
     return;
   }
   const show = () => new Notification(event.title, { body: meta });
