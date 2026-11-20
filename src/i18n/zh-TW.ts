@@ -421,4 +421,13 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "calendar.taskProgress": "未完成 {open}／共 {total}",
   "settings.taskProgressName": "顯示待辦進度",
   "settings.taskProgressDesc": "每日筆記仍有未完成待辦時筆記圓點為空心，全部完成時為實心綠點。數量取自 Obsidian 的快取，不讀取檔案。",
+  "dayPanel.title": "{date} · {lunar}",
+  "dayPanel.dateFormat": "M/D（dd）",
+  "dayPanel.noEvents": "這天沒有提醒或活動。",
+  "dayPanel.noTasks": "這天的筆記沒有未完成的待辦。",
+  "dayPanel.openTasks": "未完成待辦 {count} 筆",
+  "dayPanel.more": "另有 {count} 筆",
+  "dayPanel.createNote": "建立筆記",
+  "settings.dayPanelName": "顯示當日面板",
+  "settings.dayPanelDesc": "在側欄日曆下方顯示所選日期的行程與筆記中的未完成待辦。點擊日期即選取該日。",
 };

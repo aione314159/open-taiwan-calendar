@@ -75,6 +75,10 @@ export interface AppearanceSetting {
   inlineReminders: boolean;
   /** Whether a day's note dot shows if its to-dos are all done. */
   taskProgress: boolean;
+  /** Whether the sidebar shows the selected day's panel below the grid. */
+  dayPanel: boolean;
+  /** Whether that panel is folded to its heading. */
+  dayPanelCollapsed: boolean;
   /** Whether the sidebar lists what is coming up below the grid. */
   upcoming: boolean;
   /** How many days ahead that list looks, today included. */
@@ -213,6 +217,8 @@ export const defaultSetting: PluginSetting = {
     readingViewEvents: true,
     inlineReminders: false,
     taskProgress: true,
+    dayPanel: true,
+    dayPanelCollapsed: false,
     upcoming: true,
     upcomingDays: 14,
     upcomingCollapsed: false,

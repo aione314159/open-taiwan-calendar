@@ -1,7 +1,11 @@
 import { Root } from "react-dom/client";
 import { Events, ItemView, WorkspaceLeaf } from "obsidian";
 import { refreshAllNotes } from "../state/notes";
-import { mountCalendarRoot, mountUpcomingRoot } from "../component/CalendarRoot";
+import {
+  mountCalendarRoot,
+  mountDayPanelRoot,
+  mountUpcomingRoot,
+} from "../component/CalendarRoot";
 import { fitScale, FitScaleController } from "../util/fitScale";
 import { t } from "src/i18n";
 // Type-only import: it produces no require at runtime, so it is not a module dependency
@@ -12,6 +16,7 @@ export const VIEW_TYPE_CALENDAR = "open-taiwan-calendar-view";
 export class CalendarView extends ItemView {
   private root: Root | null = null;
   private upcomingRoot: Root | null = null;
+  private dayPanelRoot: Root | null = null;
   private scaleController: FitScaleController | null = null;
   readonly plugin: OpenTaiwanCalendarPlugin | null = null;
 
@@ -70,6 +75,8 @@ export class CalendarView extends ItemView {
     this.root = null;
     this.upcomingRoot?.unmount();
     this.upcomingRoot = null;
+    this.dayPanelRoot?.unmount();
+    this.dayPanelRoot = null;
     mountEl.empty();
 
     // Fit-to-container scaling is always applied and is not a setting: in a
@@ -90,6 +97,7 @@ export class CalendarView extends ItemView {
       allowUpscale: true,
       align: "top",
     });
+    this.dayPanelRoot = mountDayPanelRoot(this.app, mountEl.createDiv());
     this.upcomingRoot = mountUpcomingRoot(this.app, mountEl.createDiv());
   }
 
@@ -99,5 +107,6 @@ export class CalendarView extends ItemView {
     this.scaleController = null;
     this.root?.unmount();
     this.upcomingRoot?.unmount();
+    this.dayPanelRoot?.unmount();
   }
 }
