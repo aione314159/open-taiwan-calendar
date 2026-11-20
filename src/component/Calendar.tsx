@@ -223,6 +223,10 @@ const Calendar: React.FC<CalendarProps> = ({
   const [jumpOpen, setJumpOpen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
   const [flashIso, setFlashIso] = useState<string | null>(null);
+  // Roving tabindex: the one day (or month, in the year view) the grid's single
+  // tab stop sits on, and whether the last move came from the keyboard
+  const [focusIso, setFocusIso] = useState<string | null>(null);
+  const keyboardMove = useRef(false);
   const rootRef = useRef<HTMLDivElement>(null);
   // Unique per calendar: the sidebar and the floating panel can both be open
   const labelPrefix = `otc-day-${useId().replace(/:/g, "")}`;
@@ -232,6 +236,60 @@ const Calendar: React.FC<CalendarProps> = ({
     const timer = window.setTimeout(() => setFlashIso(null), FLASH_MS);
     return () => window.clearTimeout(timer);
   }, [flashIso]);
+
+  // After a keyboard move the grid may have re-rendered for another month;
+  // put the focus back on the cell that now holds the tab stop
+  useEffect(() => {
+    if (!keyboardMove.current || !focusIso) return;
+    keyboardMove.current = false;
+    rootRef.current
+      ?.querySelector<HTMLElement>(`[data-iso="${focusIso}"], [data-month="${focusIso.slice(0, 7)}"]`)
+      ?.focus();
+  }, [focusIso, anchor, mode]);
+
+  /** Move the keyboard focus to a day, paging the grid when it leaves the month. */
+  const moveFocus = (next: Moment, unit: "month" | "year" = "month"): void => {
+    keyboardMove.current = true;
+    if (!next.isSame(anchor, unit)) setAnchor(next.clone());
+    setFocusIso(next.format("YYYY-MM-DD"));
+  };
+
+  /** Arrow keys, PageUp/PageDown and Home on a day cell. Returns whether it handled the key. */
+  const dayKey = (event: React.KeyboardEvent, date: Moment): boolean => {
+    const step: Record<string, () => Moment> = {
+      ArrowLeft: () => date.clone().subtract(1, "day"),
+      ArrowRight: () => date.clone().add(1, "day"),
+      ArrowUp: () => date.clone().subtract(1, "week"),
+      ArrowDown: () => date.clone().add(1, "week"),
+      // moment keeps the day of the month and clamps to the month's end
+      PageUp: () => date.clone().subtract(1, "month"),
+      PageDown: () => date.clone().add(1, "month"),
+      Home: () => today.clone(),
+    };
+    const go = step[event.key];
+    if (!go) return false;
+    event.preventDefault();
+    moveFocus(go());
+    return true;
+  };
+
+  /** The same keys on a month cell in the year view: three months to a row. */
+  const monthKey = (event: React.KeyboardEvent, month: Moment): boolean => {
+    const step: Record<string, () => Moment> = {
+      ArrowLeft: () => month.clone().subtract(1, "month"),
+      ArrowRight: () => month.clone().add(1, "month"),
+      ArrowUp: () => month.clone().subtract(3, "month"),
+      ArrowDown: () => month.clone().add(3, "month"),
+      PageUp: () => month.clone().subtract(1, "year"),
+      PageDown: () => month.clone().add(1, "year"),
+      Home: () => today.clone().startOf("month"),
+    };
+    const go = step[event.key];
+    if (!go) return false;
+    event.preventDefault();
+    moveFocus(go().startOf("month"), "year");
+    return true;
+  };
 
   const closeLegend = useCallback(() => {
     setLegendOpen(false);
@@ -291,8 +349,10 @@ const Calendar: React.FC<CalendarProps> = ({
           disabled: true,
           "aria-disabled": true,
           title: granularityDisabledHint(type),
-          // Reachable and announced as disabled, but Enter does nothing
+          // Announced as disabled and never activated; not a tab stop of its
+          // own, so a column of disabled week numbers does not cost six Tabs
           ...keyboard(null, () => undefined),
+          tabIndex: -1,
         };
       }
       return {
@@ -361,6 +421,18 @@ const Calendar: React.FC<CalendarProps> = ({
       first.clone().add(offset, "day")
     );
   }, [anchor]);
+
+  // The day holding the grid's tab stop: the last day moved to, if it is on
+  // screen; otherwise today, if on screen; otherwise the 1st of the month
+  const gridIsos = gridDays.map((d) => d.format("YYYY-MM-DD"));
+  const todayIsoForGrid = today.format("YYYY-MM-DD");
+  const rovingIso =
+    focusIso && gridIsos.includes(focusIso)
+      ? focusIso
+      : gridIsos.includes(todayIsoForGrid) && today.isSame(anchor, "month")
+        ? todayIsoForGrid
+        : anchor.clone().startOf("month").format("YYYY-MM-DD");
+  const rovingMonth = (focusIso ?? todayIsoForGrid).slice(0, 7);
 
   const monthsOfYear = useMemo(() => {
     const january = anchor.clone().startOf("year");
@@ -442,6 +514,11 @@ const Calendar: React.FC<CalendarProps> = ({
         })}
         {...handlers}
         aria-labelledby={labelId}
+        data-iso={iso}
+        tabIndex={iso === rovingIso ? 0 : -1}
+        onKeyDown={(event) => {
+          if (!dayKey(event, date)) handlers.onKeyDown?.(event);
+        }}
         ref={(el: HTMLDivElement | null) => {
           if (el) setTooltip(el, tooltip, { placement: "top" });
         }}
@@ -499,6 +576,18 @@ const Calendar: React.FC<CalendarProps> = ({
           "has-event": hasEventInMonth(events, date.format("YYYY-MM")),
         })}
         {...handlers}
+        data-month={date.format("YYYY-MM")}
+        tabIndex={
+          date.format("YYYY-MM") ===
+          (monthsOfYear.some((m) => m.format("YYYY-MM") === rovingMonth)
+            ? rovingMonth
+            : monthsOfYear[0].format("YYYY-MM"))
+            ? 0
+            : -1
+        }
+        onKeyDown={(event) => {
+          if (!monthKey(event, date)) handlers.onKeyDown?.(event);
+        }}
       >
         {t("calendar.monthCell", {
           month: date.format(t("calendar.monthCellFormat")),
