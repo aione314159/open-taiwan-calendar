@@ -386,6 +386,18 @@ export const en = {
   "reminder.snoozeHour": "In 1 hour",
   "reminder.snoozeLaterToday": "Later today, {time}",
   "reminder.snoozeTomorrow": "Tomorrow, {time}",
+  "command.captureTask": "Note a to-do on a day",
+  "menu.captureTask": "Note a to-do on this day",
+  "capture.title": "Note a to-do",
+  "capture.text": "To-do",
+  "capture.date": "Day",
+  "capture.section": "Section",
+  "capture.submit": "Add",
+  "capture.errorEmpty": "Write the to-do first",
+  "capture.errorNoSection": "No section to write to: the note has no headings",
+  "notice.taskCaptured": "Added to {date}, under {section}.",
+  "notice.taskCapturedNoSection": "{date} has no \"{section}\" section; added at the end of the note.",
+  "notice.openNote": "Open",
 } as const;
 
 export type TranslationKey = keyof typeof en;

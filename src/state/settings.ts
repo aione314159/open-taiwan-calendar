@@ -152,6 +152,8 @@ export type PluginSetting = Record<NoteType, NoteConfig> & {
    * the reminder straight back); "tomorrow" has to survive the restart.
    */
   snoozeState: Record<string, number>;
+  /** The section "note a to-do on this day" last wrote to. */
+  lastCaptureSection: string;
   /**
    * Calendars the Directorate-General of Personnel Administration has announced
    * but this plugin does not bundle yet, keyed by year. They take precedence
@@ -209,6 +211,7 @@ export const defaultSetting: PluginSetting = {
   reminderState: {},
   lastSweepDate: "",
   snoozeState: {},
+  lastCaptureSection: "",
   holidayOverrides: {},
 };
 
