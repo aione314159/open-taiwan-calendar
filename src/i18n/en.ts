@@ -59,7 +59,7 @@ export const en = {
    * the second line is not rendered at all.
    */
   "calendar.quarterCellUnit": "",
-  "calendar.monthDaysOff": "{count} off",
+  "calendar.monthLongWeekends": "Long weekends: {count}",
   "holidayStats.title": "Days off in {period}",
   "holidayStats.periodMonth": "MMMM YYYY",
   "holidayStats.periodYear": "YYYY",

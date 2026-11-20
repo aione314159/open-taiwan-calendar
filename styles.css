@@ -1449,13 +1449,13 @@ body {
   content: none;
 }
 
-/* Year view: the day-off count under each month. Room is left along the
+/* Year view: the long-weekend count under each month. Room is left along the
    bottom edge for the event dot, the same way a day cell leaves it. */
 .otc-month {
   padding-bottom: calc(var(--otc-dot-size) + 6px);
 }
 
-.otc-month-days-off {
+.otc-month-long-weekends {
   font-size: 11px;
   line-height: 14px;
   color: var(--otc-text-red);

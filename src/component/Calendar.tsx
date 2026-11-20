@@ -460,14 +460,17 @@ const Calendar: React.FC<CalendarProps> = ({
     );
   }, [anchor]);
 
-  /** Days off per month, shown under each month in the year view. */
-  const monthDaysOff = useMemo(
+  /**
+   * Long weekends per month, shown under each month in the year view. One that
+   * crosses into the next month counts in both, as it does in the month view.
+   */
+  const monthLongWeekends = useMemo(
     () =>
       mode === "year"
         ? monthsOfYear.map(
             (m) =>
               holidayStats(m.toDate(), m.clone().endOf("month").toDate(), holidayOverrides)
-                .daysOff
+                .runs.length
           )
         : [],
     [mode, monthsOfYear, holidayOverrides]
@@ -628,8 +631,12 @@ const Calendar: React.FC<CalendarProps> = ({
           // A solar month straddles two lunar months; the earlier one wins
           lunar: formatMonth(date),
         })}
-        <span className="otc-month-days-off">
-          {t("calendar.monthDaysOff", { count: monthDaysOff[date.month()] ?? 0 })}
+        {/* Left empty rather than left out for a month without one, so every
+            cell keeps the same height and the rows stay level */}
+        <span className="otc-month-long-weekends">
+          {monthLongWeekends[date.month()]
+            ? t("calendar.monthLongWeekends", { count: monthLongWeekends[date.month()] })
+            : "\u00a0"}
         </span>
       </div>
     );
