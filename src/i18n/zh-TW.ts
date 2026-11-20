@@ -468,6 +468,6 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.toolbarButtonDesc": "關閉後日曆工具列不顯示此按鈕。插件設定仍可從 Obsidian 的設定頁進入。",
   "quickAdd.summaryDay": "讀成 {date}（{weekday}，{distance}）",
   "quickAdd.summaryRange": "讀成 {start} 到 {end}，共 {days} 天",
-  "quickAdd.summaryNoDate": "沒有讀到日期，已使用：{used}",
+  "quickAdd.summaryNoDate": "沒有讀到日期，已使用 {date}（{weekday}）",
   "quickAdd.daysAgo": "{count} 天前",
 };

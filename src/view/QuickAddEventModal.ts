@@ -412,7 +412,9 @@ export class QuickAddEventModal extends Modal {
         ? t("quickAdd.summaryDay", { date: start, weekday: day.format("dddd"), distance })
         : t("quickAdd.summaryRange", { start, end, days: diffDays(start, end) + 1 });
     el.setText(
-      this.sentenceMatchedDate ? text : t("quickAdd.summaryNoDate", { used: text })
+      this.sentenceMatchedDate
+        ? text
+        : t("quickAdd.summaryNoDate", { date: start, weekday: day.format("dddd") })
     );
     el.toggleClass("is-warning", !this.sentenceMatchedDate);
   }
