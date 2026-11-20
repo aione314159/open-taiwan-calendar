@@ -2167,3 +2167,25 @@ body {
   width: 8px;
   height: 8px;
 }
+
+/* ---------- multi-day entries: one band across the days of a week row.
+   A joined cell fills its grid column so it meets its neighbour, and loses
+   the corners and the border on the joined side. Height, dots and labels
+   are untouched; nothing is drawn over them. */
+.otc-day.has-event.span-left,
+.otc-day.has-event.span-right {
+  width: 100%;
+  max-width: none;
+}
+
+.otc-day.has-event.span-left {
+  border-left-color: transparent;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.otc-day.has-event.span-right {
+  border-right-color: transparent;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
