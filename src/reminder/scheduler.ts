@@ -13,7 +13,9 @@ import {
 } from "../state/settings";
 import { moment } from "../util/moment";
 import { commitEventEdit } from "../event/commands";
-import { openDailyNote } from "../event/noteStore";
+import { openDailyNote, openExistingDailyNote } from "../event/noteStore";
+import { selectDate } from "../state/selection";
+import { shortDate } from "../event/dateMath";
 import { MissedReminderModal, ReminderModal } from "../view/ReminderModal";
 import type { DueReminder } from "../view/ReminderModal";
 
@@ -108,8 +110,31 @@ let deniedNoticeShown = false;
 /** The reminder dialog on screen, if any. */
 let openReminderModal: ReminderModal | null = null;
 
+/** "Today · 12/01" or "In 1 d · 12/01 – 12/03": when it is due, and its dates. */
+const dueLine = (item: DueReminder): string => {
+  const { event, daysUntil } = item;
+  const when =
+    daysUntil <= 0 ? t("reminder.dueToday") : t("reminder.dueInDays", { count: daysUntil });
+  const range =
+    event.start === event.end
+      ? shortDate(event.start)
+      : t("event.dateRange", { start: shortDate(event.start), end: shortDate(event.end) });
+  return `${when} · ${range}`;
+};
+
+/**
+ * Go to the entry's day: open its daily note if there is one, never create
+ * it. Without a note the day is selected instead, so the calendar's day panel
+ * shows it.
+ */
+const goToDay = (app: App, day: string): void => {
+  void openExistingDailyNote(app, day).then((opened) => {
+    if (!opened) selectDate(day);
+  });
+};
+
 /** The desktop notification channel, guarded on both sides. */
-const notifySystem = (event: CalendarEvent, meta: string): void => {
+const notifySystem = (app: App, event: CalendarEvent, meta: string): void => {
   // Notification is a browser API the Electron renderer provides; it is a local
   // call and reaches no network, so it does not breach the plugin's zero
   // outbound requests promise (cli/check_network_gate.sh checks the bundle for
@@ -124,7 +149,14 @@ const notifySystem = (event: CalendarEvent, meta: string): void => {
     }
     return;
   }
-  const show = () => new Notification(event.title, { body: meta });
+  const show = () => {
+    const notification = new Notification(event.title, { body: meta });
+    // Clicking it brings Obsidian forward on the entry's day
+    notification.onclick = () => {
+      window.focus();
+      goToDay(app, event.start);
+    };
+  };
   if (Notification.permission === "granted") {
     show();
     return;
@@ -145,21 +177,25 @@ const announce = (
   const wants = (channel: ReminderChannel) => () => channels.includes(channel);
 
   for (const item of due.filter(wants(ReminderChannel.NOTICE))) {
+    const fragment = createFragment();
+    const line = fragment.createSpan({ cls: "otc-reminder-notice" });
+    line.createSpan({ cls: "otc-reminder-dot" }).style.setProperty(
+      "--otc-event-color",
+      item.event.color
+    );
+    line.createSpan({ cls: "otc-reminder-notice-title", text: item.event.title });
+    line.createSpan({ cls: "otc-reminder-notice-meta", text: dueLine(item) });
+    const notice = new Notice(fragment, NOTICE_TIMEOUT_MS);
+    notice.messageEl.addEventListener("click", () => goToDay(app, item.event.start));
     // Times out rather than waiting to be clicked away. A sticky notice was the
     // first attempt — the reasoning being that a toast which fades can be
     // missed — but several due at once then stack up in the corner and stay
     // there over the calendar until each is dismissed by hand. The channel that
     // is meant to be impossible to miss is the dialog; this one is the glance.
-    new Notice(item.event.title, NOTICE_TIMEOUT_MS);
   }
 
   for (const item of due.filter(wants(ReminderChannel.SYSTEM))) {
-    notifySystem(
-      item.event,
-      item.daysUntil <= 0
-        ? t("reminder.dueToday")
-        : t("reminder.dueInDays", { count: item.daysUntil })
-    );
+    notifySystem(app, item.event, dueLine(item));
   }
 
   const modalItems = due.filter(wants(ReminderChannel.MODAL));
