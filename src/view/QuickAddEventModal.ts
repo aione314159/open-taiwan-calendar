@@ -128,6 +128,11 @@ export class QuickAddEventModal extends Modal {
   private offsetsPicker: OffsetPicker | null = null;
   private timeField: TextComponent | null = null;
   private notesInfo: HTMLElement | null = null;
+  private parseSummary: HTMLElement | null = null;
+  /** Whether the sentence box has text; with none the summary stays empty. */
+  private hasSentence = false;
+  /** Whether the last sentence named a date. */
+  private sentenceMatchedDate = true;
   /** Set once the duplicate warning has been shown; the next Add goes through. */
   private duplicateAcknowledged = false;
 
@@ -175,7 +180,11 @@ export class QuickAddEventModal extends Modal {
       .addText((text) => {
         text
           .setPlaceholder(t("quickAdd.inputPlaceholder"))
-          .onChange((value) => this.applySentence(value));
+          .onChange((value) => {
+            this.applySentence(value);
+            this.hasSentence = value.trim().length > 0;
+            this.updateSummary();
+          });
         // Text selected in the editor arrives as the sentence, already parsed,
         // so "select the line, right-click, add" is one gesture
         if (this.preset.sentence) {
@@ -187,6 +196,17 @@ export class QuickAddEventModal extends Modal {
         // mouse
         window.setTimeout(() => text.inputEl.focus(), 0);
       });
+
+    // What the sentence was read as, under the box. Always present with a
+    // fixed height, so it appearing never moves the fields below
+    this.parseSummary = this.contentEl.createDiv({
+      cls: "otc-quick-add-summary",
+      attr: { "aria-live": "polite" },
+    });
+    if (this.preset.sentence) {
+      this.hasSentence = true;
+      this.updateSummary();
+    }
 
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldTitle"))
@@ -222,6 +242,7 @@ export class QuickAddEventModal extends Modal {
               ? this.draft.start
               : next;
           if (this.draft.end !== next) this.endField?.setValue(this.draft.end);
+          this.sentenceMatchedDate = true;
           this.updateNotesInfo();
         });
       });
@@ -344,6 +365,8 @@ export class QuickAddEventModal extends Modal {
    * and silently shortening the entry — or worse, ending up before the start.
    */
   private moveStart(next: string): void {
+    // A date set by hand is not the parser's guess any more
+    this.sentenceMatchedDate = true;
     const previous = this.draft.start;
     this.draft.start = next;
     if (this.endField) this.endField.inputEl.min = next;
@@ -358,11 +381,50 @@ export class QuickAddEventModal extends Modal {
   }
 
   /**
+   * One line on what the dates are now: the parsed or edited start, its
+   * weekday and distance, or the range and its length; a warning when the
+   * sentence named no date and today was used.
+   */
+  private updateSummary(): void {
+    const el = this.parseSummary;
+    if (!el) return;
+    if (!this.hasSentence) {
+      el.setText("");
+      el.removeClass("is-warning");
+      return;
+    }
+    const { start, end } = this.draft;
+    if (!ISO_DATE_PATTERN.test(start) || !ISO_DATE_PATTERN.test(end)) {
+      el.setText("");
+      return;
+    }
+    const day = moment(start, "YYYY-MM-DD");
+    const today = moment().format("YYYY-MM-DD");
+    const away = diffDays(today, start);
+    const distance =
+      away === 0
+        ? t("reminder.dueToday")
+        : away > 0
+          ? t("upcoming.inDays", { count: away })
+          : t("quickAdd.daysAgo", { count: -away });
+    const text =
+      start === end
+        ? t("quickAdd.summaryDay", { date: start, weekday: day.format("dddd"), distance })
+        : t("quickAdd.summaryRange", { start, end, days: diffDays(start, end) + 1 });
+    el.setText(
+      this.sentenceMatchedDate ? text : t("quickAdd.summaryNoDate", { used: text })
+    );
+    el.toggleClass("is-warning", !this.sentenceMatchedDate);
+  }
+
+  /**
    * Say how many daily notes the entry covers and which ones saving creates.
    *
    * Reads the note index only; nothing is created until the user saves.
    */
   private updateNotesInfo(): void {
+    // Edited dates are reflected in the summary too
+    this.updateSummary();
     const el = this.notesInfo;
     if (!el) return;
     const { start, end } = this.draft;
@@ -402,6 +464,7 @@ export class QuickAddEventModal extends Modal {
       sentence,
       moment().format("YYYY-MM-DD")
     );
+    this.sentenceMatchedDate = parsed.matchedDate;
     this.draft.title = parsed.title;
     this.draft.start = parsed.start;
     this.draft.end = parsed.end;
