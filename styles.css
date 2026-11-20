@@ -1145,8 +1145,8 @@ body {
 
 /* Faded by colour, not by opacity. Whole-cell opacity took the 12px lunar
    text far below a readable contrast and multiplied where a cell was both
-   past and outside. --text-muted keeps 4.5:1 or better in the default light
-   and dark themes; red weekend and holiday text keeps its own colour.
+   past and outside. The faded colour keeps 4.5:1 or better in the default
+   light and dark themes; red weekend and holiday text keeps its own colour.
 
    Belongs to the month either side of the one on screen: muted text on a
    faint panel, so it reads as "not this month" next to a past day. */
@@ -1154,14 +1154,21 @@ body {
   background: var(--background-secondary);
 }
 
-.otc-cell.is-outside,
-.otc-cell.is-past {
-  color: var(--text-muted);
+.otc-calendar {
+  /* Mixed from the theme's own text and background rather than taken from
+     --text-muted, which some themes set lighter than 4.5:1 (#7f7f7f on white
+     is 3.9:1). 65% of the text colour measures 5.9:1 light, 4.9:1 dark. */
+  --otc-text-faded: color-mix(in srgb, var(--text-normal) 65%, var(--background-primary));
+}
+
+.otc-cell.is-outside:not(.is-weekend):not(.is-holiday),
+.otc-cell.is-past:not(.is-weekend):not(.is-holiday) {
+  color: var(--otc-text-faded);
 }
 
 .otc-cell.is-outside:not(.is-weekend):not(.is-holiday) .otc-lunar,
 .otc-cell.is-past:not(.is-weekend):not(.is-holiday) .otc-lunar {
-  color: var(--text-muted);
+  color: var(--otc-text-faded);
 }
 
 /* Already in the past: as clickable as any day — of course a past day's note
