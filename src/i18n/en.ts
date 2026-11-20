@@ -518,7 +518,7 @@ export const en = {
   "settings.toolbarButtonDesc": "Off removes the button from the calendar toolbar. The plugin settings stay reachable from Obsidian’s settings.",
   "quickAdd.summaryDay": "Read as {date}, {weekday} ({distance})",
   "quickAdd.summaryRange": "Read as {start} to {end}, {days} days",
-  "quickAdd.summaryNoDate": "No date found in the sentence; using {used}",
+  "quickAdd.summaryNoDate": "No date found in the sentence; using {date} ({weekday})",
   "quickAdd.daysAgo": "{count} d ago",
 } as const;
 
