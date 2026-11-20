@@ -108,13 +108,22 @@ export const fitScale = (
     }
   };
 
-  const observer = new ResizeObserver(() => update());
+  // Updated on the next frame: resizing the container from inside the
+  // callback (fitBy "width") would otherwise report a ResizeObserver loop
+  let frame = 0;
+  const observer = new ResizeObserver(() => {
+    window.cancelAnimationFrame(frame);
+    frame = window.requestAnimationFrame(update);
+  });
   observer.observe(containerEl);
   observer.observe(contentEl);
   update();
 
   return {
     update,
-    destroy: () => observer.disconnect(),
+    destroy: () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    },
   };
 };
