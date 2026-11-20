@@ -418,4 +418,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.ribbonFloating": "切換懸浮面板",
   "settings.ribbonSidebar": "顯示側欄日曆",
   "settings.ribbonHidden": "不顯示圖示",
+  "calendar.taskProgress": "未完成 {open}／共 {total}",
+  "settings.taskProgressName": "顯示待辦進度",
+  "settings.taskProgressDesc": "每日筆記仍有未完成待辦時筆記圓點為空心，全部完成時為實心綠點。數量取自 Obsidian 的快取，不讀取檔案。",
 };

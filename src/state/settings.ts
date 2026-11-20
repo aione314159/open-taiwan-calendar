@@ -73,6 +73,8 @@ export interface AppearanceSetting {
    * means scanning the vault's open tasks.
    */
   inlineReminders: boolean;
+  /** Whether a day's note dot shows if its to-dos are all done. */
+  taskProgress: boolean;
   /** Whether the sidebar lists what is coming up below the grid. */
   upcoming: boolean;
   /** How many days ahead that list looks, today included. */
@@ -210,6 +212,7 @@ export const defaultSetting: PluginSetting = {
     hoverPreview: true,
     readingViewEvents: true,
     inlineReminders: false,
+    taskProgress: true,
     upcoming: true,
     upcomingDays: 14,
     upcomingCollapsed: false,

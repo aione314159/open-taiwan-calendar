@@ -468,6 +468,9 @@ export const en = {
   "settings.ribbonFloating": "Toggle the floating panel",
   "settings.ribbonSidebar": "Show the sidebar calendar",
   "settings.ribbonHidden": "Hide the icon",
+  "calendar.taskProgress": "{open} open of {total} to-dos",
+  "settings.taskProgressName": "Show to-do progress",
+  "settings.taskProgressDesc": "A day whose note still has open to-dos gets a hollow note dot; one where all are done gets a filled green dot. Counts come from Obsidian’s cache, no files are read.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

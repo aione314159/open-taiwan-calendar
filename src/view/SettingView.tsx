@@ -227,6 +227,9 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { hoverPreview: value as boolean },
         }));
         break;
+      case "appearance.taskProgress":
+        this.plugin.writeOptions(() => ({ appearance: { taskProgress: value as boolean } }));
+        break;
       case "appearance.upcoming":
         this.plugin.writeOptions(() => ({ appearance: { upcoming: value as boolean } }));
         break;
@@ -424,6 +427,11 @@ export default class MainSettingTable extends PluginSettingTab {
           name: t("settings.pastTransparentName"),
           desc: t("settings.pastTransparentDesc"),
           control: { type: "toggle", key: "appearance.pastTimeTransparent" },
+        },
+        {
+          name: t("settings.taskProgressName"),
+          desc: t("settings.taskProgressDesc"),
+          control: { type: "toggle", key: "appearance.taskProgress" },
         },
         {
           name: t("settings.upcomingName"),

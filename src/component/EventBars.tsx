@@ -4,6 +4,7 @@ import { setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import type { InlineReminder } from "../event/inlineReminders";
 import { findDuplicates } from "../event/duplicates";
+import type { TaskCount } from "../note/taskStats";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 
@@ -57,7 +58,9 @@ const EventBars: React.FC<{
   inline?: InlineReminder[];
   /** Pairs the user muted, so their tooltip lines carry no warning. */
   ignoredDuplicates?: string[];
-}> = ({ events, hasNote, inline = [], ignoredDuplicates = [] }) => {
+  /** The day's to-do counts, when progress is shown and the note has any. */
+  tasks?: TaskCount;
+}> = ({ events, hasNote, inline = [], ignoredDuplicates = [], tasks }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,6 +68,9 @@ const EventBars: React.FC<{
     setTooltip(
       ref.current,
       [
+        ...(tasks
+          ? [t("calendar.taskProgress", { open: tasks.open, total: tasks.open + tasks.done })]
+          : []),
         ...events.map((event) => {
           const line =
             event.start === event.end
@@ -82,7 +88,7 @@ const EventBars: React.FC<{
         ),
       ].join("\n")
     );
-  }, [events, inline, ignoredDuplicates]);
+  }, [events, inline, ignoredDuplicates, tasks]);
 
   if (events.length === 0 && inline.length === 0 && !hasNote) return null;
 
@@ -98,7 +104,14 @@ const EventBars: React.FC<{
       {/* The note dot leads, because it is about the day itself rather than
           about anything on it, and a fixed position keeps the row from
           reshuffling as events come and go */}
-      {hasNote && <span className="otc-event-dot is-note" />}
+      {hasNote && (
+        <span
+          className={classNames("otc-event-dot", "is-note", {
+            "has-open-tasks": !!tasks && tasks.open > 0,
+            "is-all-done": !!tasks && tasks.open === 0,
+          })}
+        />
+      )}
       {inline.length > 0 && <span className="otc-event-dot is-inline" />}
       {shown.map((event) => (
         <span
