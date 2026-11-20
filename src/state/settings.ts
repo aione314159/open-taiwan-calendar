@@ -155,6 +155,11 @@ export type PluginSetting = Record<NoteType, NoteConfig> & {
   /** The section "note a to-do on this day" last wrote to. */
   lastCaptureSection: string;
   /**
+   * What carrying open to-dos into today does to the originals: leave them, or
+   * mark them `[>]` (moved).
+   */
+  carryOverSource: "keep" | "migrate";
+  /**
    * Calendars the Directorate-General of Personnel Administration has announced
    * but this plugin does not bundle yet, keyed by year. They take precedence
    * over the built-in table.
@@ -212,6 +217,7 @@ export const defaultSetting: PluginSetting = {
   lastSweepDate: "",
   snoozeState: {},
   lastCaptureSection: "",
+  carryOverSource: "keep",
   holidayOverrides: {},
 };
 

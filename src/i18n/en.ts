@@ -398,6 +398,19 @@ export const en = {
   "notice.taskCaptured": "Added to {date}, under {section}.",
   "notice.taskCapturedNoSection": "{date} has no \"{section}\" section; added at the end of the note.",
   "notice.openNote": "Open",
+  "command.carryOver": "Carry open to-dos into today",
+  "carryOver.title": "Carry open to-dos into today",
+  "carryOver.from": "From {note}",
+  "carryOver.children": " (+{count} sub-items)",
+  "carryOver.submit": "Carry into today",
+  "notice.carryOverNoSource": "There is no daily note before today.",
+  "notice.carryOverNothing": "{note} has no open to-dos.",
+  "notice.carriedOver": "Carried {inserted} to-dos into today, skipped {skipped} already there.",
+  "notice.carriedOverMissing": "Today has no section {sections}; those went to the end of the note.",
+  "settings.carryOverName": "After carrying a to-do over",
+  "settings.carryOverDesc": "What \"Carry open to-dos into today\" does to the to-do in the earlier note.",
+  "settings.carryOverKeep": "Leave it as it is",
+  "settings.carryOverMigrate": "Mark it moved: [>]",
 } as const;
 
 export type TranslationKey = keyof typeof en;
