@@ -361,4 +361,11 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.carryOverDesc": "「帶入未完成的待辦」完成後，前一篇筆記中的原待辦要怎麼處理。",
   "settings.carryOverKeep": "不變動",
   "settings.carryOverMigrate": "標記為已轉移 [>]",
+  "menu.createWithoutOpening": "建立筆記但不開啟",
+  "menu.createUntilHere": "建立到這天為止的每日筆記",
+  "notice.noteCreatedQuietly": "已建立 {name}。",
+  "notice.batchCreated": "已建立 {count} 篇每日筆記。",
+  "notice.batchNothing": "到那天為止的每日筆記都已存在。",
+  "confirm.batchTitle": "建立每日筆記",
+  "confirm.batchText": "將建立 {count} 篇每日筆記：{dates}",
 };

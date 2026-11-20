@@ -411,6 +411,13 @@ export const en = {
   "settings.carryOverDesc": "What \"Carry open to-dos into today\" does to the to-do in the earlier note.",
   "settings.carryOverKeep": "Leave it as it is",
   "settings.carryOverMigrate": "Mark it moved: [>]",
+  "menu.createWithoutOpening": "Create note, don’t open it",
+  "menu.createUntilHere": "Create daily notes up to this day",
+  "notice.noteCreatedQuietly": "Created {name}.",
+  "notice.batchCreated": "Created {count} daily notes.",
+  "notice.batchNothing": "Every daily note up to that day already exists.",
+  "confirm.batchTitle": "Create daily notes",
+  "confirm.batchText": "{count} daily notes will be created: {dates}",
 } as const;
 
 export type TranslationKey = keyof typeof en;
