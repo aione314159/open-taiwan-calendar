@@ -2804,3 +2804,22 @@ body {
 .otc-event-list-panel .otc-event-list-empty {
   padding: 12px 4px;
 }
+
+/* The sticky header takes the leaf's own background, not a lighter band:
+   a leaf in a side dock is painted --background-secondary */
+.mod-sidedock .otc-panel-head {
+  background: var(--background-secondary);
+}
+
+/* The chevron hangs in the gutter, so every header's text starts on the same
+   line as the rows below it */
+.otc-day-panel .otc-upcoming-head,
+.otc-upcoming .otc-upcoming-head {
+  gap: 0;
+  padding-left: 0;
+}
+
+.otc-day-panel .otc-upcoming-head::before,
+.otc-upcoming .otc-upcoming-head::before {
+  margin: 0 3px 0 0;
+}
