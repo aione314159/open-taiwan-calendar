@@ -5,6 +5,8 @@ import { noteTypeLabel } from "../enum/noteConfig";
 import { t } from "../i18n";
 import type { Notes } from "../state/notes";
 import { buildLunarFields } from "./format";
+import { shortDate } from "../event/dateMath";
+import type { CalendarEvent } from "../event/types";
 import {
   createDailyNotesUntil,
   createNoteWithoutOpening,
@@ -16,6 +18,9 @@ import { moment } from "src/util/moment";
 
 /** The source identifier handed to Obsidian when triggering the native page preview; main.ts registers the same string */
 export const HOVER_LINK_SOURCE = "open-taiwan-calendar";
+
+/** How many of a day's entries the menu lists before "show all". */
+const MAX_MENU_EVENTS = 8;
 
 /**
  * Obsidian's page preview attaches its popover to hoverParent.hoverPopover.
@@ -74,8 +79,16 @@ export const showNoteContextMenu = (
   type: NoteType,
   notes: Notes[NoteType],
   options: {
-    /** Opens the quick-add dialog with this date already filled in. */
-    onAddEvent?: (date: Moment) => void;
+    /**
+     * Opens the quick-add dialog with this date filled in, as a reminder or as
+     * a plain event — the same two choices the editor menu offers.
+     */
+    onAddEvent?: (date: Moment, remind: boolean) => void;
+    /** The entries on this day, listed so they can be opened for editing. */
+    dayEvents?: CalendarEvent[];
+    onEditEvent?: (event: CalendarEvent) => void;
+    /** Opens the full list, when the day has more entries than the menu shows. */
+    onShowAll?: () => void;
     /** Opens "note a to-do on this day" for this date. */
     onCaptureTask?: (date: Moment) => void;
     /**
@@ -87,7 +100,14 @@ export const showNoteContextMenu = (
   } = {}
 ): void => {
   const menu = new Menu();
-  const { onAddEvent, onCaptureTask, noteActionsDisabled = false } = options;
+  const {
+    onAddEvent,
+    onCaptureTask,
+    dayEvents = [],
+    onEditEvent,
+    onShowAll,
+    noteActionsDisabled = false,
+  } = options;
   const file: TFile | null = noteActionsDisabled
     ? null
     : noteExists(date, type, notes);
@@ -97,9 +117,15 @@ export const showNoteContextMenu = (
   if (onAddEvent) {
     menu.addItem((item) =>
       item
+        .setTitle(t("menu.addReminderOnDay"))
+        .setIcon("bell-plus")
+        .onClick(() => onAddEvent(date, true))
+    );
+    menu.addItem((item) =>
+      item
         .setTitle(t("menu.addEvent"))
         .setIcon("calendar-plus")
-        .onClick(() => onAddEvent(date))
+        .onClick(() => onAddEvent(date, false))
     );
     if (onCaptureTask) {
       menu.addItem((item) =>
@@ -107,6 +133,32 @@ export const showNoteContextMenu = (
           .setTitle(t("menu.captureTask"))
           .setIcon("list-plus")
           .onClick(() => onCaptureTask(date))
+      );
+    }
+    menu.addSeparator();
+  }
+
+  // The day's own entries, each opening the edit dialog (which can delete).
+  // Left out entirely on an empty day, separator included.
+  if (onEditEvent && dayEvents.length > 0) {
+    for (const event of dayEvents.slice(0, MAX_MENU_EVENTS)) {
+      const range =
+        event.start === event.end
+          ? ""
+          : ` (${t("event.dateRange", { start: shortDate(event.start), end: shortDate(event.end) })})`;
+      menu.addItem((item) =>
+        item
+          .setTitle(`${event.title}${range}`)
+          .setIcon(event.reminder ? "bell" : "calendar")
+          .onClick(() => onEditEvent(event))
+      );
+    }
+    if (dayEvents.length > MAX_MENU_EVENTS && onShowAll) {
+      menu.addItem((item) =>
+        item
+          .setTitle(t("menu.showAllEvents", { count: dayEvents.length }))
+          .setIcon("list")
+          .onClick(onShowAll)
       );
     }
     menu.addSeparator();
