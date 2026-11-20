@@ -67,6 +67,12 @@ export interface AppearanceSetting {
    * take it away again.
    */
   readingViewEvents: boolean;
+  /**
+   * Whether the calendar also shows the Reminder plugin's inline marks,
+   * `(@2026-12-29 09:30)` on open to-dos. Read-only; off by default because it
+   * means scanning the vault's open tasks.
+   */
+  inlineReminders: boolean;
 }
 
 export interface FloatingWindowSetting {
@@ -193,6 +199,7 @@ export const defaultSetting: PluginSetting = {
     pastTimeTransparent: false,
     hoverPreview: true,
     readingViewEvents: true,
+    inlineReminders: false,
   },
   floatingWindow: {
     visible: false,

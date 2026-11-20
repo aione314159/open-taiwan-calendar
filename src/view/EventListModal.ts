@@ -3,13 +3,15 @@ import { shortDate } from "../event/dateMath";
 import { formatReminderSummary } from "../event/offsets";
 import { PHASE_ORDER, phaseOf } from "../event/phase";
 import { eventsStore, problemsStore, readEvents } from "../event/store";
+import { inlineRemindersStore } from "../event/inlineReminders";
+import { settingsStore } from "../state/settings";
 import type { EntryProblemReason } from "../event/sanitize";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 import type { TranslationKey } from "../i18n";
 import { moment } from "../util/moment";
 
-type TabKey = "reminders" | "events";
+type TabKey = "reminders" | "events" | "inline";
 
 const PROBLEM_LABELS: Record<EntryProblemReason, TranslationKey> = {
   notObject: "problem.notObject",
@@ -63,6 +65,10 @@ export class EventListModal extends Modal {
     const buttons: Array<[TabKey, string]> = [
       ["reminders", t("eventList.tabReminders")],
       ["events", t("eventList.tabEvents")],
+      // Only while the setting is on; otherwise there is nothing to list
+      ...(settingsStore.read().appearance.inlineReminders
+        ? ([["inline", t("eventList.tabInline")]] as Array<[TabKey, string]>)
+        : []),
     ];
     const rendered = buttons.map(([key, label]) => {
       const button = tabs.createEl("button", {
@@ -127,6 +133,11 @@ export class EventListModal extends Modal {
     const el = this.listEl;
     if (!el) return;
     el.empty();
+
+    if (this.tab === "inline") {
+      this.renderInline(el);
+      return;
+    }
 
     const today = moment().format("YYYY-MM-DD");
     const rows = readEvents()
@@ -205,6 +216,35 @@ export class EventListModal extends Modal {
           run();
         });
       }
+    }
+  }
+
+  /** The Reminder plugin's inline marks: read-only rows that open the source line. */
+  private renderInline(el: HTMLElement): void {
+    const items = inlineRemindersStore.read();
+    if (items.length === 0) {
+      el.createDiv({ cls: "otc-event-list-empty", text: t("eventList.empty") });
+      return;
+    }
+    for (const item of items) {
+      const row = el.createDiv({ cls: "otc-event-row is-inline" });
+      row.createDiv({ cls: "otc-event-row-dot otc-event-dot is-inline" });
+      const text = row.createDiv({ cls: "otc-event-row-text" });
+      const title = text.createEl("a", { cls: "otc-event-row-title", text: item.text });
+      text.createDiv({
+        cls: "otc-event-row-meta",
+        text: t("eventList.inlineMeta", {
+          date: shortDate(item.date),
+          time: item.time ?? "",
+          note: item.path.replace(/\.md$/, ""),
+        }),
+      });
+      title.addEventListener("click", () => {
+        this.close();
+        void this.app.workspace.openLinkText(item.path, "", false, {
+          eState: { line: item.line },
+        });
+      });
     }
   }
 

@@ -5,6 +5,7 @@ import { Events, Notice, Plugin, TAbstractFile, TFile, TFolder } from "obsidian"
 import { openEventList, openQuickAddEvent } from "./event/commands";
 import { isDailyNote, refreshEvents } from "./event/noteStore";
 import { handleProtocol, PROTOCOL_ACTION } from "./event/protocol";
+import { startInlineReminders } from "./event/inlineReminders";
 import { sanitizeOverrides } from "./holiday/rocHoliday";
 import type { RocHolidayEntry } from "./holiday/types";
 import { t } from "./i18n";
@@ -209,6 +210,7 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
         this.showFloatingPanel();
       }
       refreshEvents(this.app);
+      startInlineReminders(this);
       // A reminder due at 09:00 in a vault that was not open at 09:00 has to
       // appear on opening rather than be skipped for the day
       runReminderSweep(this, { startup: true });

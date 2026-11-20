@@ -432,6 +432,11 @@ export const en = {
   "datedTasks.add": "Add as reminder",
   "datedTasks.addAll": "Add all {count} as reminders",
   "datedTasks.addAllConfirm": "{count} reminders will be added with the default time and days before. Continue?",
+  "settings.inlineRemindersName": "Show inline reminder marks",
+  "settings.inlineRemindersDesc": "Also show the Reminder plugin’s (@2026-12-29 09:30) marks on open to-dos, as diamonds. Read-only: this plugin does not notify for them.",
+  "inline.tooltipLine": "◆ {text} {time}",
+  "eventList.tabInline": "Inline",
+  "eventList.inlineMeta": "{date} {time} · {note}",
 } as const;
 
 export type TranslationKey = keyof typeof en;

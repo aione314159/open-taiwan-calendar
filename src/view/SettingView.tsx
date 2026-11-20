@@ -227,6 +227,11 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { hoverPreview: value as boolean },
         }));
         break;
+      case "appearance.inlineReminders":
+        this.plugin.writeOptions(() => ({
+          appearance: { inlineReminders: value as boolean },
+        }));
+        break;
       case "appearance.readingViewEvents":
         this.plugin.writeOptions(() => ({
           appearance: { readingViewEvents: value as boolean },
@@ -405,6 +410,11 @@ export default class MainSettingTable extends PluginSettingTab {
           name: t("settings.pastTransparentName"),
           desc: t("settings.pastTransparentDesc"),
           control: { type: "toggle", key: "appearance.pastTimeTransparent" },
+        },
+        {
+          name: t("settings.inlineRemindersName"),
+          desc: t("settings.inlineRemindersDesc"),
+          control: { type: "toggle", key: "appearance.inlineReminders" },
         },
         {
           name: t("settings.hoverPreviewName"),
