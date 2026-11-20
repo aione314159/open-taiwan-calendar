@@ -462,6 +462,12 @@ export const en = {
   "settings.upcomingDesc": "List the reminders and events of the next days below the sidebar calendar.",
   "settings.upcomingDaysName": "Days ahead",
   "settings.upcomingDaysDesc": "How many days the list covers, today included (1–90).",
+  "command.revealSidebar": "Show the sidebar calendar",
+  "settings.ribbonActionName": "Ribbon icon",
+  "settings.ribbonActionDesc": "What clicking the calendar icon in the left ribbon does.",
+  "settings.ribbonFloating": "Toggle the floating panel",
+  "settings.ribbonSidebar": "Show the sidebar calendar",
+  "settings.ribbonHidden": "Hide the icon",
 } as const;
 
 export type TranslationKey = keyof typeof en;

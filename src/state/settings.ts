@@ -178,6 +178,8 @@ export type PluginSetting = Record<NoteType, NoteConfig> & {
   carryOverSource: "keep" | "migrate";
   /** Reminder / inline-mark pairs the user said not to warn about again. */
   ignoredDuplicates: string[];
+  /** What the ribbon icon does: toggle the floating panel, reveal the sidebar calendar, or nothing (hidden). */
+  ribbonAction: "floating" | "sidebar" | "hidden";
   /**
    * Calendars the Directorate-General of Personnel Administration has announced
    * but this plugin does not bundle yet, keyed by year. They take precedence
@@ -243,6 +245,7 @@ export const defaultSetting: PluginSetting = {
   lastCaptureSection: "",
   carryOverSource: "keep",
   ignoredDuplicates: [],
+  ribbonAction: "floating",
   holidayOverrides: {},
 };
 

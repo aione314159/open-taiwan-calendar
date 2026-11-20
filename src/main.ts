@@ -1,7 +1,7 @@
 // Import order carries no meaning any more: the module dependencies form a
 // strict DAG (api -> store -> slice, view -> api), guarded by import/no-cycle in
 // .eslintrc.json. The list below is deliberately alphabetical.
-import { Events, Notice, Plugin, TAbstractFile, TFile, TFolder } from "obsidian";
+import { Events, Notice, Plugin, TAbstractFile, TFile, TFolder, setTooltip } from "obsidian";
 import { openEventList, openQuickAddEvent } from "./event/commands";
 import { isDailyNote, refreshEvents } from "./event/noteStore";
 import { handleProtocol, PROTOCOL_ACTION } from "./event/protocol";
@@ -44,6 +44,7 @@ import SettingView from "./view/SettingView";
 export default class OpenTaiwanCalendarPlugin extends Plugin {
   public options: PluginSetting = defaultSetting;
   private floatingPanel: FloatingCalendarPanel | null = null;
+  private ribbonEl: HTMLElement | null = null;
 
   // Initialisation performed when the plugin is enabled
   onload(): void {
@@ -81,10 +82,21 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       },
     });
 
-    this.addRibbonIcon(
-      "calendar-with-checkmark",
-      t("command.toggleFloatingPanel"),
-      () => this.toggleFloatingPanel()
+    // One icon whose action, tooltip and visibility follow the setting, so a
+    // change applies at once without re-registering anything
+    this.ribbonEl = this.addRibbonIcon("calendar-with-checkmark", "", () => {
+      if (this.options.ribbonAction === "sidebar") void this.revealSidebar();
+      else this.toggleFloatingPanel();
+    });
+    this.applyRibbon();
+    let lastRibbonAction = this.options.ribbonAction;
+    this.register(
+      settingsStore.watch(() => {
+        const action = settingsStore.read().ribbonAction;
+        if (action === lastRibbonAction) return;
+        lastRibbonAction = action;
+        this.applyRibbon();
+      })
     );
     this.addCommand({
       id: "toggle-floating-calendar",
@@ -403,6 +415,33 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
         this.app.workspace.trigger("open-taiwan-calendar:settings-updated")
       )
       .catch(() => new Notice(t("notice.saveFailed")));
+  }
+
+  /** Tooltip and visibility of the ribbon icon, from the setting. */
+  private applyRibbon(): void {
+    const el = this.ribbonEl;
+    if (!el) return;
+    const action = settingsStore.read().ribbonAction;
+    const label =
+      action === "sidebar" ? t("command.revealSidebar") : t("command.toggleFloatingPanel");
+    el.setAttr("aria-label", label);
+    setTooltip(el, label);
+    el.toggle(action !== "hidden");
+  }
+
+  /**
+   * Bring the sidebar calendar to the front: create it if missing, then
+   * reveal its leaf, which expands a collapsed sidebar and selects the tab.
+   */
+  private async revealSidebar(): Promise<void> {
+    let leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR)[0];
+    if (!leaf) {
+      const created = this.app.workspace.getRightLeaf(false);
+      if (!created) return;
+      await created.setViewState({ type: VIEW_TYPE_CALENDAR });
+      leaf = created;
+    }
+    await this.app.workspace.revealLeaf(leaf);
   }
 
   initLeaf(): void {
