@@ -83,6 +83,11 @@ export interface EventDefaultsSetting {
   reminderColor: string;
   /** `#rrggbb` for an entry that is only marked on the calendar. */
   eventColor: string;
+  /**
+   * Whether adding an entry from a line in a note appends a mark to that line
+   * (🔔 or 🗓 and the date), so the note shows it has been scheduled.
+   */
+  markSourceLine: boolean;
 }
 
 export interface ReminderSetting {
@@ -202,6 +207,7 @@ export const defaultSetting: PluginSetting = {
     // whole job of a coloured dot.
     reminderColor: "#e07a5f",
     eventColor: "#3d5a80",
+    markSourceLine: false,
   },
   reminder: {
     enabled: true,

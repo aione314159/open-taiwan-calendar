@@ -135,11 +135,14 @@ const activeNoteDate = (app: App): string | undefined => {
  */
 export const openQuickAddEvent = (
   app: App,
-  preset: QuickAddPreset = {}
+  preset: QuickAddPreset = {},
+  /** Runs once the entry is written, e.g. to mark the line it came from. */
+  afterSave?: (event: CalendarEvent) => void
 ): void => {
   new QuickAddEventModal(
     app,
-    (event) => void commitNewEvent(app, event),
+    (event) =>
+      void commitNewEvent(app, event).then(() => afterSave?.(event)),
     { date: activeNoteDate(app), ...preset }
   ).open();
 };

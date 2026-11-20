@@ -418,6 +418,10 @@ export const en = {
   "notice.batchNothing": "Every daily note up to that day already exists.",
   "confirm.batchTitle": "Create daily notes",
   "confirm.batchText": "{count} daily notes will be created: {dates}",
+  "command.addLineAsReminder": "Add this line as a reminder",
+  "command.addLineAsEvent": "Add this line as an event",
+  "settings.markSourceLineName": "Mark the line after adding",
+  "settings.markSourceLineDesc": "When an entry is added from a line in a note, append 🔔 (reminder) or 🗓 (event) and the date to that line.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

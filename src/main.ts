@@ -26,6 +26,7 @@ import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
 import { CaptureTaskModal } from "./view/CaptureTaskModal";
+import { addLineAsEntry } from "./note/lineToEvent";
 import { CarryOverModal } from "./view/CarryOverModal";
 import { extractOpenTasks, previousDailyNote } from "./note/carryOver";
 import SettingView from "./view/SettingView";
@@ -89,6 +90,17 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "add-line-as-reminder",
+      name: t("command.addLineAsReminder"),
+      editorCallback: (editor) => addLineAsEntry(this.app, editor, true),
+    });
+    this.addCommand({
+      id: "add-line-as-event",
+      name: t("command.addLineAsEvent"),
+      editorCallback: (editor) => addLineAsEntry(this.app, editor, false),
+    });
+
+    this.addCommand({
       id: "capture-task",
       name: t("command.captureTask"),
       callback: () => new CaptureTaskModal(this.app).open(),
@@ -126,9 +138,9 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
     // and picking from the menu is what saves the user from setting it twice.
     this.registerEvent(
       this.app.workspace.on("editor-menu", (menu, editor) => {
-        // The selection becomes the sentence, so "select the line, right-click,
-        // add" reads the date straight out of what is already written
-        const sentence = editor.getSelection().trim() || undefined;
+        // The selection becomes the sentence, or the cursor's line when nothing
+        // is selected, so "right-click, add" reads the date straight out of
+        // what is already written
         const items: Array<[TranslationKey, string, boolean]> = [
           ["menu.addReminderHere", "bell-plus", true],
           ["menu.addEventHere", "calendar-plus", false],
@@ -138,7 +150,7 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
             item
               .setTitle(t(key))
               .setIcon(icon)
-              .onClick(() => openQuickAddEvent(this.app, { sentence, remind }))
+              .onClick(() => addLineAsEntry(this.app, editor, remind))
           );
         }
       })
