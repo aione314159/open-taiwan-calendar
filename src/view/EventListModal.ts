@@ -139,6 +139,8 @@ export class EventListBody {
     this.unwatch = eventsStore.watch(() => this.renderList());
     this.unwatchInline = inlineRemindersStore.watch(() => this.renderList());
 
+    // The sidebar panel carries its own "+" in its header
+    if (this.compact) return;
     const footer = this.root.createDiv({ cls: "otc-event-list-footer" });
     const add = footer.createEl("button", {
       cls: "mod-cta",
@@ -243,7 +245,9 @@ export class EventListBody {
               phaseOf(e, today) !== "past"
           ).length;
     for (const [button, key] of this.tabButtons) {
-      button.setText(`${button.dataset.label ?? ""} (${openCount(key)})`);
+      button.empty();
+      button.createSpan({ text: button.dataset.label ?? "" });
+      button.createSpan({ cls: "otc-event-tab-count", text: String(openCount(key)) });
     }
 
     if (this.tab === "inline") {

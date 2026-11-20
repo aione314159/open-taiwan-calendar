@@ -6,13 +6,15 @@ import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 import { patchSettings, useSetting } from "../state/settings";
 import { useToday } from "./Calendar";
+import { useCalendarView } from "../state/view";
+import { moment } from "../util/moment";
 
 const MAX_DAYS = 90;
 
 /** "Today", "Tomorrow", "In 11 d", or "Ongoing" for an entry that has begun. */
-const distanceLabel = (event: CalendarEvent, today: string): string => {
-  if (event.start < today) return t("upcoming.ongoing");
-  const days = diffDays(today, event.start);
+/** How far a date is from today, for the group's date line. */
+const dateDistance = (date: string, today: string): string => {
+  const days = diffDays(today, date);
   if (days === 0) return t("reminder.dueToday");
   if (days === 1) return t("upcoming.tomorrow");
   return t("upcoming.inDays", { count: days });
@@ -34,7 +36,9 @@ const Upcoming: React.FC<{
   const rawDays = useSetting((state) => state.appearance.upcomingDays);
   const collapsed = useSetting((state) => state.appearance.upcomingCollapsed);
   const today = useToday().format("YYYY-MM-DD");
-  if (!show) return null;
+  // The open list panel above already shows these entries
+  const listOpen = useCalendarView().listOpen;
+  if (!show || listOpen) return null;
 
   const days = Math.min(MAX_DAYS, Math.max(1, Math.round(Number(rawDays) || 14)));
   const last = addDays(today, days - 1);
@@ -62,7 +66,10 @@ const Upcoming: React.FC<{
         ) : (
           dates.map((date) => (
             <div key={date} className="otc-upcoming-group">
-              <div className="otc-upcoming-date">{shortDate(date)}</div>
+              <div className="otc-upcoming-date">
+                {moment(date, "YYYY-MM-DD").format(t("dayPanel.dateFormat"))}
+                <span className="otc-upcoming-distance">{dateDistance(date, today)}</span>
+              </div>
               {(groups.get(date) ?? []).map((event) => (
                 <button
                   key={event.id}
@@ -79,8 +86,8 @@ const Upcoming: React.FC<{
                     {event.start === event.end
                       ? ""
                       : `${t("event.dateRange", { start: shortDate(event.start), end: shortDate(event.end) })} · `}
-                    {distanceLabel(event, today)}
-                    {event.reminder ? ` · ${t("upcoming.reminds", { time: event.reminder.time })}` : ""}
+                    {event.start < today ? `${t("upcoming.ongoing")}${event.reminder ? " · " : ""}` : ""}
+                    {event.reminder ? t("upcoming.reminds", { time: event.reminder.time }) : ""}
                   </span>
                 </button>
               ))}

@@ -72,7 +72,9 @@ const DayPanel: React.FC<DayPanelActions> = (actions) => {
 
   if (!show) return null;
 
-  const { lunar } = buildLunarFields(date.toDate());
+  // Month and day only: the calendar header right above already names the year
+  const { chineseMonth, chineseDay, solarTerm } = buildLunarFields(date.toDate());
+  const lunar = [`${chineseMonth}${chineseDay}`, solarTerm].filter(Boolean).join(" ");
   const festival = getRocFestivalLabel(date.toDate(), overrides);
   const dayEvents = eventsOnDate(events, day);
   const toggle = () => {
@@ -127,7 +129,7 @@ const DayPanel: React.FC<DayPanelActions> = (actions) => {
                   className="otc-upcoming-row"
                   onClick={() => file && actions.onOpenLine(file, task.line)}
                 >
-                  <span className="otc-day-panel-box">☐</span>
+                  <span className="otc-day-panel-box" aria-hidden="true" />
                   <span className="otc-upcoming-title">{task.text}</span>
                 </button>
               ))}

@@ -457,7 +457,7 @@ export const en = {
   "upcoming.ongoing": "Ongoing",
   "upcoming.tomorrow": "Tomorrow",
   "upcoming.inDays": "In {count} d",
-  "upcoming.reminds": "🔔 {time}",
+  "upcoming.reminds": "remind {time}",
   "settings.upcomingName": "Show what is coming up",
   "settings.upcomingDesc": "List the reminders and events of the next days below the sidebar calendar.",
   "settings.upcomingDaysName": "Days ahead",
@@ -505,8 +505,8 @@ export const en = {
   "notice.eventRestored": "Restored: {title}",
   "eventList.search": "Search titles",
   "eventList.noMatch": "Nothing matches \"{query}\".",
-  "eventList.pastFolded": "▸ Finished ({count})",
-  "eventList.pastOpen": "▾ Finished ({count})",
+  "eventList.pastFolded": "Finished ({count})",
+  "eventList.pastOpen": "Finished ({count})",
   "quickAdd.offsetsCustom": "Custom, e.g. 14",
   "quickAdd.errorTooLong": "An entry can span at most {max} days",
   "notice.eventSavePartial": "{title}: written to {ok} days, {failed} failed (first: {first}). Check that the daily-notes folder is writable.",
@@ -555,6 +555,7 @@ export const en = {
   "settings.followActiveNoteName": "Follow the open note",
   "settings.followActiveNoteDesc": "When a daily note from another month becomes the active file, the calendar pages to that month.",
   "eventList.moreActions": "More actions",
+  "eventList.close": "Close the list",
 } as const;
 
 export type TranslationKey = keyof typeof en;

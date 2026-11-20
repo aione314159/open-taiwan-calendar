@@ -1,7 +1,7 @@
 import { Root } from "react-dom/client";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, WorkspaceLeaf, setIcon, setTooltip } from "obsidian";
 import { openEditEvent, openQuickAddEvent, removeEvent, setEventDone } from "../event/commands";
-import { calendarViewStore } from "../state/view";
+import { calendarViewStore, toggleListPanel } from "../state/view";
 import { EventListBody } from "./EventListModal";
 import { refreshAllNotes } from "../state/notes";
 import {
@@ -108,7 +108,6 @@ export class CalendarView extends ItemView {
     this.upcomingRoot = mountUpcomingRoot(this.app, mountEl.createDiv());
   }
 
-  // Release resources when the view closes
   /**
    * The reminders-and-events list under the grid, opened by the toolbar's
    * list button. Mounted only while open; it scrolls inside a capped height so
@@ -116,6 +115,20 @@ export class CalendarView extends ItemView {
    */
   private mountListPanel(el: HTMLElement): void {
     this.unwatchList?.();
+    // Same header shape as the day panel and the upcoming list below it
+    const head = el.createDiv({ cls: "otc-panel-head" });
+    head.createSpan({ cls: "otc-panel-title", text: t("eventList.title") });
+    const add = head.createEl("button", { cls: "clickable-icon otc-panel-action" });
+    setIcon(add, "plus");
+    setTooltip(add, t("settings.eventListAdd"));
+    add.setAttr("aria-label", t("settings.eventListAdd"));
+    add.addEventListener("click", () => openQuickAddEvent(this.app));
+    const close = head.createEl("button", { cls: "clickable-icon otc-panel-action" });
+    setIcon(close, "x");
+    setTooltip(close, t("eventList.close"));
+    close.setAttr("aria-label", t("eventList.close"));
+    close.addEventListener("click", () => toggleListPanel());
+    const bodyEl = el.createDiv({ cls: "otc-event-list-panel-body" });
     let body: EventListBody | null = null;
     const sync = () => {
       const open = calendarViewStore.read().listOpen;
@@ -123,7 +136,7 @@ export class CalendarView extends ItemView {
         el.addClass("is-open");
         body = new EventListBody(
           this.app,
-          el,
+          bodyEl,
           (event) => openEditEvent(this.app, event),
           (event) => void removeEvent(this.app, event.id),
           () => openQuickAddEvent(this.app),

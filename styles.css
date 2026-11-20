@@ -2523,3 +2523,284 @@ body {
   padding: 3px 10px;
   font-size: var(--font-ui-smaller);
 }
+
+/* ============================================================
+   Under the sidebar grid: the list panel, the day panel and the upcoming
+   list read as three sections of one column — same gutter, same header,
+   same rows. Obsidian paints every <button> with a grey fill
+   (button:not(.clickable-icon)), which outranks a single class; each rule
+   below is scoped by its section so the transparent rows actually win.
+   ============================================================ */
+.otc-event-list-panel,
+.otc-day-panel,
+.otc-upcoming {
+  --otc-panel-gutter: 8px;
+  margin: 0;
+  padding: 6px 0 4px;
+  border-top: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-event-list-panel.is-open {
+  margin: 4px 0 0;
+  padding: 0;
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  border-radius: 0;
+  max-height: 45vh;
+}
+
+/* Section header: one line, muted, no fill; the chevron is drawn, not typed */
+.otc-panel-head,
+.otc-day-panel .otc-upcoming-head,
+.otc-upcoming .otc-upcoming-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 28px;
+  padding: 0 4px 0 var(--otc-panel-gutter);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  text-align: left;
+}
+
+.otc-panel-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--background-primary);
+}
+
+.otc-panel-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.otc-panel-action {
+  flex: 0 0 auto;
+  padding: 2px;
+  height: auto;
+}
+
+.otc-day-panel .otc-upcoming-head:hover,
+.otc-upcoming .otc-upcoming-head:hover {
+  background: transparent;
+  color: var(--text-normal);
+}
+
+.otc-day-panel .otc-upcoming-head::before,
+.otc-upcoming .otc-upcoming-head::before,
+.otc-event-past-toggle::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  margin: 0 3px 0 1px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 120ms ease;
+}
+
+.otc-day-panel.is-collapsed .otc-upcoming-head::before,
+.otc-upcoming.is-collapsed .otc-upcoming-head::before,
+.otc-event-past-toggle[aria-expanded="false"]::before {
+  content: "";
+  transform: rotate(-45deg);
+}
+
+/* Body of each section: the one horizontal gutter */
+.otc-event-list-panel-body {
+  padding: 0 var(--otc-panel-gutter) 6px;
+}
+
+.otc-day-panel .otc-upcoming-empty,
+.otc-upcoming .otc-upcoming-empty,
+.otc-day-panel .otc-upcoming-date,
+.otc-upcoming .otc-upcoming-date {
+  margin: 0;
+  padding: 2px var(--otc-panel-gutter);
+}
+
+.otc-day-panel .otc-upcoming-date,
+.otc-upcoming .otc-upcoming-date {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-weight: var(--font-medium);
+}
+
+.otc-upcoming-distance {
+  margin-left: auto;
+  font-weight: var(--font-normal);
+  color: var(--text-faint);
+}
+
+/* Rows: transparent, hover tint, same height and dot column in all three */
+.otc-day-panel .otc-upcoming-row,
+.otc-upcoming .otc-upcoming-row {
+  height: auto;
+  min-height: 24px;
+  padding: 2px var(--otc-panel-gutter);
+  gap: 8px;
+  border-radius: var(--radius-s);
+  background: transparent;
+  box-shadow: none;
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-day-panel .otc-upcoming-row:hover,
+.otc-upcoming .otc-upcoming-row:hover,
+.otc-event-list-panel .otc-event-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.otc-day-panel .otc-upcoming-row:focus-visible,
+.otc-upcoming .otc-upcoming-row:focus-visible,
+.otc-event-list-panel .otc-event-row-text:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.otc-upcoming-title {
+  color: var(--text-normal);
+}
+
+.otc-day-panel-box {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 2px;
+}
+
+.otc-day-panel-create {
+  margin: 2px var(--otc-panel-gutter);
+}
+
+/* List panel: underline tabs with a count chip, no grey fills */
+.otc-event-list-panel .otc-event-search {
+  width: 100%;
+  height: 26px;
+  margin: 2px 0 4px;
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-event-list-panel .otc-event-tabs {
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.otc-event-list-panel .otc-event-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-event-list-panel .otc-event-tab:hover {
+  background: transparent;
+  color: var(--text-normal);
+}
+
+.otc-event-list-panel .otc-event-tab.is-active {
+  color: var(--text-accent);
+}
+
+.otc-event-tab-count {
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--background-modifier-hover);
+  font-size: 10px;
+  line-height: 15px;
+  text-align: center;
+}
+
+.otc-event-tab.is-active .otc-event-tab-count {
+  background: color-mix(in srgb, var(--text-accent) 18%, transparent);
+}
+
+/* Rows: no borders or rounded separators; whitespace and hover do the work */
+.otc-event-list-panel .otc-event-row {
+  gap: 8px;
+  padding: 4px 4px;
+  border-radius: var(--radius-s);
+}
+
+.otc-event-list-panel .otc-event-row + .otc-event-row {
+  border-top: none;
+}
+
+.otc-event-list-panel .otc-event-row-dot {
+  margin-top: 4px;
+}
+
+.otc-event-list-panel .otc-event-row-dot.is-event {
+  margin-top: 6px;
+}
+
+.otc-event-list-panel .otc-event-row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--font-ui-smaller);
+  line-height: 1.4;
+}
+
+.otc-event-list-panel .otc-event-row-meta {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+/* The "⋯" stays quiet until the row is pointed at or focused */
+.otc-event-list-panel .otc-event-row-more {
+  opacity: 0.45;
+  color: var(--text-muted);
+}
+
+.otc-event-list-panel .otc-event-row:hover .otc-event-row-more,
+.otc-event-list-panel .otc-event-row-more:focus-visible {
+  opacity: 1;
+}
+
+/* "Finished (n)": a fold line, not a grey button */
+.otc-event-past-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.otc-event-list-panel .otc-event-past-toggle,
+.otc-event-list-modal .otc-event-past-toggle {
+  height: 24px;
+  margin: 4px 0 0;
+  padding: 0 4px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-event-list-panel .otc-event-past-toggle:hover,
+.otc-event-list-modal .otc-event-past-toggle:hover {
+  background: var(--background-modifier-hover);
+}
+
+.otc-event-list-panel .otc-event-list-empty {
+  padding: 12px 4px;
+}
