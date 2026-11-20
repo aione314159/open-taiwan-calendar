@@ -7,6 +7,11 @@ import { inlineRemindersStore } from "../event/inlineReminders";
 import { duplicateKey, findDuplicates } from "../event/duplicates";
 import { convertInline } from "../event/inlineConvert";
 import { patchSettings } from "../state/settings";
+import { setDisplayMonth } from "../state/view";
+import { selectDate } from "../state/selection";
+import { readNotes } from "../state/notes";
+import { openOrCreateNote } from "../note/noteOps";
+import { NoteType } from "../enum";
 import { settingsStore } from "../state/settings";
 import type { EntryProblemReason } from "../event/sanitize";
 import type { CalendarEvent } from "../event/types";
@@ -249,6 +254,26 @@ export class EventListModal extends Modal {
       rowDot.toggleClass("is-event", event.reminder === null);
 
       const text = row.createDiv({ cls: "otc-event-row-text" });
+      // The text is the way to the day: close the list, page the calendar to
+      // the start date and open that day's note (Ctrl/Cmd: in a split)
+      text.setAttr("role", "button");
+      text.tabIndex = 0;
+      const jump = (split: boolean) => {
+        this.close();
+        setDisplayMonth(event.start);
+        selectDate(event.start);
+        void openOrCreateNote(
+          moment(event.start, "YYYY-MM-DD"),
+          NoteType.DAILY,
+          readNotes(NoteType.DAILY),
+          this.app,
+          split ? "split" : false
+        );
+      };
+      text.addEventListener("click", (e) => jump(e.ctrlKey || e.metaKey));
+      text.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") jump(e.ctrlKey || e.metaKey);
+      });
       const head = text.createDiv({ cls: "otc-event-row-head" });
       head.createSpan({ cls: "otc-event-row-title", text: event.title });
       if (phase === "current") {
@@ -285,6 +310,16 @@ export class EventListModal extends Modal {
       });
 
       const actions = row.createDiv({ cls: "otc-event-row-actions" });
+      // Page the calendar only, opening nothing
+      const show = actions.createEl("button", { cls: "clickable-icon" });
+      setIcon(show, "calendar-search");
+      setTooltip(show, t("eventList.showOnCalendar"));
+      show.setAttr("aria-label", t("eventList.showOnCalendar"));
+      show.addEventListener("click", () => {
+        this.close();
+        setDisplayMonth(event.start);
+        selectDate(event.start);
+      });
       if (duplicates.length > 0) {
         const mute = actions.createEl("button", { cls: "clickable-icon" });
         setIcon(mute, "bell-off");

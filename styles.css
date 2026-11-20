@@ -2253,3 +2253,8 @@ body {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* A list row's text opens its day */
+.otc-event-list-modal .otc-event-row-text[role="button"] {
+  cursor: pointer;
+}
