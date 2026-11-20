@@ -1,10 +1,11 @@
 import type { Moment } from "src/util/moment";
-import { App, Notice, TFile } from "obsidian";
-import type { PaneType } from "obsidian";
+import { App, FileView, MarkdownView, Notice, TFile } from "obsidian";
+import type { PaneType, WorkspaceLeaf } from "obsidian";
 import * as dni from "obsidian-daily-notes-interface";
 import { NoteType } from "../enum";
 import { noteTypeLabel } from "../enum/noteConfig";
 import { t } from "../i18n";
+import { resolveNote } from "../state/notes";
 import type { Notes } from "../state/notes";
 import { settingsStore } from "../state/settings";
 import { createConfirmationDialog } from "../view/ConfirmModal";
@@ -12,6 +13,7 @@ import { getRocFestivalLabel } from "../holiday/rocHoliday";
 import { buildLunarFields } from "./format";
 import { granularityDisabledHint, granularityEnabled } from "./periodicNotes";
 import { stripTemplateSyntax } from "../util/templateSafe";
+import { DEBUG_LOG_ENABLED, debugLog, describeError } from "../util/debugLog";
 
 /**
  * Everything obsidian-daily-notes-interface offers, gathered per granularity.
@@ -281,6 +283,26 @@ export const applyLunarTokens = async (
 export const createNote = async (date: Moment, type: NoteType) =>
   NOTE_API[type].create(date);
 
+/**
+ * Record what actually ended up on screen after a note was opened.
+ *
+ * `contentLength` is the number to look at when a click "opened an empty
+ * note": a requested file with a non-zero size shown as zero characters means
+ * the view was handed a file object that no longer reads back.
+ */
+const logOpened = (leaf: WorkspaceLeaf, file: TFile): void => {
+  if (!DEBUG_LOG_ENABLED) return;
+  const view = leaf.view;
+  debugLog("note-opened", {
+    requested: file.path,
+    size: file.stat.size,
+    viewType: view.getViewType(),
+    shown: view instanceof FileView ? (view.file?.path ?? null) : null,
+    contentLength:
+      view instanceof MarkdownView ? view.getViewData().length : null,
+  });
+};
+
 export const openOrCreateNote = async (
   date: Moment,
   type: NoteType,
@@ -298,7 +320,18 @@ export const openOrCreateNote = async (
   confirmBeforeCreate = true
 ) => {
   const { workspace } = ctx;
-  const existingFile = noteExists(date, type, notes);
+  debugLog("note-click", {
+    date: date.format("YYYY-MM-DD"),
+    type,
+    newLeaf,
+    indexSize: notes ? Object.keys(notes).length : null,
+    settings: NOTE_API[type].settings(),
+  });
+  const existingFile = resolveNote(
+    type,
+    (index) => NOTE_API[type].find(date, index),
+    notes
+  );
   if (!existingFile) {
     /**
      * A granularity that is not enabled must not create a file.
@@ -308,6 +341,7 @@ export const openOrCreateNote = async (
      * letting that through conjures a file in the vault root out of nowhere.
      */
     if (!granularityEnabled(ctx, type)) {
+      debugLog("note-click-disabled", { type });
       new Notice(granularityDisabledHint(type));
       return;
     }
@@ -318,16 +352,24 @@ export const openOrCreateNote = async (
     const createFile = async () => {
       // Decide whether to go through QuickAdd
       if (useQuickAdd && quickAddChoice) {
+        debugLog("note-create-quickadd", { type, filename, quickAddChoice });
         await createNoteQuickAdd(date, type, filename, quickAddChoice, ctx);
         return;
       }
-      const note = await createNote(date, type);
-      // Substitute the tokens before opening the file: the other way round the
-      // user sees the raw template first and it then flashes to real content
-      await applyLunarTokens(ctx, note, buildNoteParams(date, type, filename));
-      const leaf = workspace.getLeaf(newLeaf);
+      try {
+        const note = await createNote(date, type);
+        debugLog("note-created", { type, filename, path: note?.path ?? null });
+        // Substitute the tokens before opening the file: the other way round the
+        // user sees the raw template first and it then flashes to real content
+        await applyLunarTokens(ctx, note, buildNoteParams(date, type, filename));
+        const leaf = workspace.getLeaf(newLeaf);
 
-      await leaf.openFile(note, { active: true });
+        await leaf.openFile(note, { active: true });
+        logOpened(leaf, note);
+      } catch (err) {
+        debugLog("note-create-failed", { type, filename, ...describeError(err) });
+        throw err;
+      }
     };
 
     if (!confirmBeforeCreate) {
@@ -335,6 +377,7 @@ export const openOrCreateNote = async (
       return;
     }
 
+    debugLog("note-create-confirm", { type, filename });
     createConfirmationDialog({
       cta: t("common.create"),
       onAccept: createFile,
@@ -347,4 +390,5 @@ export const openOrCreateNote = async (
 
   const leaf = workspace.getLeaf(newLeaf);
   await leaf.openFile(existingFile, { active: true });
+  logOpened(leaf, existingFile);
 };
