@@ -484,4 +484,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "legend.holiday": "徽章：放假",
   "legend.workday": "徽章：補班",
   "settings.toolbarLegend": "工具列：圖例按鈕",
+  "tooltip.dateFormat": "YYYY-MM-DD dddd",
+  "tooltip.lunar": "農曆：{lunar}",
+  "tooltip.solarTerm": "節氣：{term}",
+  "tooltip.dayOff": "放假",
+  "tooltip.workday": "補班",
 };

@@ -534,6 +534,11 @@ export const en = {
   "legend.holiday": "Badge: day off",
   "legend.workday": "Badge: make-up workday",
   "settings.toolbarLegend": "Toolbar: legend button",
+  "tooltip.dateFormat": "YYYY-MM-DD dddd",
+  "tooltip.lunar": "Lunar: {lunar}",
+  "tooltip.solarTerm": "Solar term: {term}",
+  "tooltip.dayOff": "Day off",
+  "tooltip.workday": "Make-up workday",
 } as const;
 
 export type TranslationKey = keyof typeof en;
