@@ -47,6 +47,15 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "calendar.quarterCell3": "第三",
   "calendar.quarterCell4": "第四",
   "calendar.quarterCellUnit": "季",
+  "calendar.monthDaysOff": "放假 {count} 天",
+  "holidayStats.title": "{period}假日統計",
+  "holidayStats.periodMonth": "YYYY[年]M[月]",
+  "holidayStats.periodYear": "YYYY[年]",
+  "holidayStats.summary": "放假 {total} 天・週末 {weekend} 天・節日與補假 {holiday} 天",
+  "holidayStats.longWeekends": "連假 {count} 次（3 天以上）",
+  "holidayStats.noLongWeekends": "沒有連假",
+  "holidayStats.runDays": "{count} 天",
+  "holidayStats.runDateFormat": "M/D（dd）",
 
   // ---------------------------------------------------------------- note types
   "noteType.daily": "每日筆記",

@@ -1449,6 +1449,60 @@ body {
   content: none;
 }
 
+/* Year view: the day-off count under each month. Room is left along the
+   bottom edge for the event dot, the same way a day cell leaves it. */
+.otc-month {
+  padding-bottom: calc(var(--otc-dot-size) + 6px);
+}
+
+.otc-month-days-off {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--otc-text-red);
+  white-space: nowrap;
+}
+
+/* ---------- holiday statistics under the grid */
+.otc-holiday-stats {
+  margin-top: 6px;
+  padding: 6px 4px 2px;
+  border-top: var(--divider-width) solid var(--divider-color);
+  font-size: var(--font-ui-small);
+}
+
+.otc-holiday-stats-title {
+  margin-bottom: 2px;
+  font-weight: var(--font-semibold);
+}
+
+.otc-holiday-stats-summary {
+  color: var(--text-muted);
+}
+
+.otc-holiday-stats-runs {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.otc-holiday-stats-run {
+  display: flex;
+  gap: 8px;
+  padding: 1px 0;
+  white-space: nowrap;
+}
+
+.otc-holiday-stats-days {
+  color: var(--otc-text-red);
+}
+
+.otc-holiday-stats-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+
 /* Year view: a month with anything in it gets a dot, since a month cell has no
    room for a band and the year view is for navigating rather than reading */
 .otc-month.has-event::after {

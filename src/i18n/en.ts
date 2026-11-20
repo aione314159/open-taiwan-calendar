@@ -59,6 +59,15 @@ export const en = {
    * the second line is not rendered at all.
    */
   "calendar.quarterCellUnit": "",
+  "calendar.monthDaysOff": "{count} off",
+  "holidayStats.title": "Days off in {period}",
+  "holidayStats.periodMonth": "MMMM YYYY",
+  "holidayStats.periodYear": "YYYY",
+  "holidayStats.summary": "Days off: {total} · weekends {weekend} · holidays {holiday}",
+  "holidayStats.longWeekends": "Long weekends (3+ days): {count}",
+  "holidayStats.noLongWeekends": "No long weekends",
+  "holidayStats.runDays": "{count} days",
+  "holidayStats.runDateFormat": "ddd D MMM",
 
   // ---------------------------------------------------------------- note types
   "noteType.daily": "Daily note",
