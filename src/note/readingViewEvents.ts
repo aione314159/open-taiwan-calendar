@@ -1,5 +1,6 @@
 import { App, MarkdownView, Plugin, TFile, setIcon, setTooltip } from "obsidian";
-import { setEventDone } from "../event/commands";
+import { openEditEvent, openQuickAddEvent, setEventDone } from "../event/commands";
+import { getDateFromFile } from "obsidian-daily-notes-interface";
 import { shortDate } from "../event/dateMath";
 import { formatReminderSummary } from "../event/offsets";
 import { phaseOf } from "../event/phase";
@@ -71,12 +72,17 @@ const eventsOf = (frontmatter: unknown): CalendarEvent[] => {
   return sortEvents(events);
 };
 
-const renderBlock = (app: App, events: CalendarEvent[]): HTMLElement => {
+const renderBlock = (app: App, events: CalendarEvent[], noteDate: string | null): HTMLElement => {
   const block = createDiv({ cls: BLOCK_CLASS });
-  block.createDiv({
-    cls: "otc-note-events-heading",
-    text: t("noteEvents.heading"),
-  });
+  const heading = block.createDiv({ cls: "otc-note-events-heading" });
+  heading.createSpan({ text: t("noteEvents.heading") });
+  const add = heading.createEl("button", { cls: "clickable-icon otc-note-events-add" });
+  setIcon(add, "plus");
+  setTooltip(add, t("noteEvents.add"));
+  add.setAttr("aria-label", t("noteEvents.add"));
+  add.addEventListener("click", () =>
+    openQuickAddEvent(app, noteDate ? { date: noteDate } : {})
+  );
 
   const today = moment().format("YYYY-MM-DD");
   for (const event of events) {
@@ -102,6 +108,13 @@ const renderBlock = (app: App, events: CalendarEvent[]): HTMLElement => {
       cls: "otc-event-row-meta",
       text: `${rangeOf(event)} · ${formatReminderSummary(event.reminder)}`,
     });
+    // Through the same dialog as the list, so a multi-day entry is still
+    // written to every one of its notes by the single write path
+    const editButton = row.createEl("button", { cls: "clickable-icon otc-note-events-edit" });
+    setIcon(editButton, "pencil");
+    setTooltip(editButton, t("settings.eventEditAction"));
+    editButton.setAttr("aria-label", t("settings.eventEditAction"));
+    editButton.addEventListener("click", () => openEditEvent(app, event));
     if (event.reminder !== null) {
       const toggle = row.createEl("button", { cls: "clickable-icon" });
       setIcon(toggle, event.done ? "rotate-ccw" : "check-circle");
@@ -136,7 +149,13 @@ const syncView = (view: MarkdownView): void => {
   const events = eventsOf(frontmatter);
   if (events.length === 0) return;
 
-  scroller.prepend(renderBlock(view.app, events));
+  let noteDate: string | null = null;
+  try {
+    noteDate = getDateFromFile(file, "day")?.format("YYYY-MM-DD") ?? null;
+  } catch {
+    noteDate = null;
+  }
+  scroller.prepend(renderBlock(view.app, events, noteDate));
 };
 
 /**

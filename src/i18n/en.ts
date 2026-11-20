@@ -500,6 +500,7 @@ export const en = {
   "settings.systemTest": "Send a test notification",
   "settings.systemTestTitle": "Open Taiwan Calendar",
   "settings.systemTestBody": "Desktop notifications are working.",
+  "noteEvents.add": "Add an entry on this day",
 } as const;
 
 export type TranslationKey = keyof typeof en;

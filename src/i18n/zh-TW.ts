@@ -450,4 +450,5 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.systemTest": "送出測試通知",
   "settings.systemTestTitle": "Open Taiwan Calendar",
   "settings.systemTestBody": "系統通知可以正常顯示。",
+  "noteEvents.add": "在這天新增項目",
 };
