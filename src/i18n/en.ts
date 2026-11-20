@@ -544,6 +544,13 @@ export const en = {
   "a11y.hasNote": "has a note",
   "a11y.entries": "{count} entries",
   "a11y.disabled": "disabled",
+  "command.revealCalendar": "Show the calendar",
+  "command.previousMonth": "Calendar: previous month",
+  "command.nextMonth": "Calendar: next month",
+  "command.goToToday": "Calendar: back to today",
+  "command.openTodayNote": "Open today’s daily note",
+  "command.openTomorrowNote": "Open tomorrow’s daily note",
+  "command.openYesterdayNote": "Open yesterday’s daily note",
 } as const;
 
 export type TranslationKey = keyof typeof en;

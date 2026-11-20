@@ -494,4 +494,11 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "a11y.hasNote": "已有筆記",
   "a11y.entries": "{count} 筆項目",
   "a11y.disabled": "停用",
+  "command.revealCalendar": "顯示日曆",
+  "command.previousMonth": "日曆：上個月",
+  "command.nextMonth": "日曆：下個月",
+  "command.goToToday": "日曆：回到今天",
+  "command.openTodayNote": "開啟今天的每日筆記",
+  "command.openTomorrowNote": "開啟明天的每日筆記",
+  "command.openYesterdayNote": "開啟昨天的每日筆記",
 };
