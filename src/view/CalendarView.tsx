@@ -100,6 +100,8 @@ export class CalendarView extends ItemView {
     this.scaleController = fitScale(outer, inner, {
       allowUpscale: true,
       align: "top",
+      // The list, day panel and upcoming list go right under the grid
+      fitBy: "width",
     });
     this.mountListPanel(mountEl.createDiv({ cls: "otc-event-list-panel" }));
     this.dayPanelRoot = mountDayPanelRoot(this.app, mountEl.createDiv());
