@@ -35,6 +35,7 @@ import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
 import { CaptureTaskModal } from "./view/CaptureTaskModal";
+import { setDisplayMonth } from "./state/view";
 import { DatedTasksModal } from "./view/DatedTasksModal";
 import { addLineAsEntry } from "./note/lineToEvent";
 import { CarryOverModal } from "./view/CarryOverModal";
@@ -46,6 +47,8 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
   public options: PluginSetting = defaultSetting;
   private floatingPanel: FloatingCalendarPanel | null = null;
   private ribbonEl: HTMLElement | null = null;
+  /** For other plugins and scripts: move the calendar to a month. */
+  public readonly api = { setDisplayMonth };
 
   // Initialisation performed when the plugin is enabled
   onload(): void {
