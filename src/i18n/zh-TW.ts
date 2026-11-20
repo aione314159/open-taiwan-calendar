@@ -15,25 +15,25 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "common.create": "建立",
 
   // ---------------------------------------------------------------- commands and plugin chrome
-  "command.openSidebar": "打開日曆側邊欄視圖",
-  "command.toggleFloatingPanel": "切換懸浮農民曆",
-  "hoverSource.display": "農民曆",
-  "view.calendarTitle": "日曆",
+  "command.openSidebar": "在側欄開啟台灣行事曆",
+  "command.toggleFloatingPanel": "切換台灣行事曆懸浮面板",
+  "hoverSource.display": "台灣行事曆",
+  "view.calendarTitle": "台灣行事曆",
   "notice.overridesDropped": "假日覆蓋資料已忽略 {count} 筆格式不符的資料",
   "notice.saveFailed": "設定儲存失敗，請確認保管庫可寫入",
   "notice.loadFailed": "讀取已儲存的設定失敗，改用預設值",
 
   // ---------------------------------------------------------------- calendar
-  "calendar.settings": "農民曆設定",
+  "calendar.settings": "台灣行事曆設定",
   "calendar.toggleColorScheme": "切換淺色／深色模式",
   "calendar.modeToday": "今",
   "calendar.modeMonth": "月",
   "calendar.modeYear": "年",
-  "calendar.prevYear": "前一年",
-  "calendar.prevMonth": "前一月",
-  "calendar.nextMonth": "後一月",
-  "calendar.nextYear": "後一年",
-  "calendar.weekColumnHeader": "周",
+  "calendar.prevYear": "上一年",
+  "calendar.prevMonth": "上個月",
+  "calendar.nextMonth": "下個月",
+  "calendar.nextYear": "下一年",
+  "calendar.weekColumnHeader": "週",
   "calendar.badgeToday": "今",
   "calendar.badgeHoliday": "休",
   "calendar.badgeWorkday": "班",
@@ -69,7 +69,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "confirm.createNoteText": "檔案 {filename} 不存在，是否建立？",
 
   // ---------------------------------------------------------------- floating panel
-  "floating.title": "行事曆",
+  "floating.title": "台灣行事曆",
   "floating.dock": "嵌入角落",
   "floating.settings": "設定",
   "floating.close": "關閉",
@@ -118,10 +118,10 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.readingViewEventsName": "在閱讀模式顯示項目",
   "settings.readingViewEventsDesc":
     "在閱讀模式的筆記最上方，把這篇的提醒與活動排成一塊。關掉不會動到 frontmatter，項目仍然存在、仍然在日曆上。",
-  "settings.floatingCardTitle": "懸浮農民曆",
+  "settings.floatingCardTitle": "懸浮面板",
   "settings.floatingDesc":
     "在 Obsidian 主視窗上疊加可拖曳、可縮放的完整月曆懸浮面板",
-  "settings.floatingVisibleName": "顯示懸浮視窗",
+  "settings.floatingVisibleName": "顯示懸浮面板",
   "settings.floatingWidthName": "寬度",
   "settings.floatingWidthDesc":
     "懸浮視窗寬度（像素），高度依比例自動換算；已開啟的視窗會即時跟著變。拖曳右下角同樣可調整並記住新大小",
@@ -212,7 +212,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "dailySetup.errorNoCoreOptions": "核心「每日筆記」沒有可用的設定物件，無法寫入",
 
   // ---------------------------------------------------------------- events and reminders
-  "command.quickAddEvent": "新增活動／提醒",
+  "command.quickAddEvent": "新增提醒或活動",
   "notice.eventSaved": "已儲存：{title}",
   "notice.dailyNoteCreateFailed":
     "無法建立 {date} 的每日筆記，請確認每日筆記已設定且資料夾可寫入。",
@@ -236,7 +236,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "event.offsetSeparator": "、",
 
   // ---------------------------------------------------------------- quick add modal
-  "quickAdd.title": "新增活動／提醒",
+  "quickAdd.title": "新增提醒或活動",
   "quickAdd.inputLabel": "用你自己的話打一句",
   "quickAdd.inputPlaceholder": "提醒我週六要把 macbook pro 16 寸帶回家",
   "quickAdd.inputHint":
@@ -245,7 +245,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "quickAdd.fieldStart": "開始",
   "quickAdd.fieldEnd": "結束",
   "quickAdd.pickDate": "選擇日期",
-  "quickAdd.fieldColor": "行事曆上的顏色",
+  "quickAdd.fieldColor": "日曆上的顏色",
   "quickAdd.fieldReminder": "要提醒我",
   "quickAdd.fieldOffsets": "提前幾天",
   "quickAdd.fieldOffsetsDesc":
@@ -271,16 +271,16 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
 
 
   // ---------------------------------------------------------------- settings: events and reminders
-  "settings.eventsCardTitle": "活動與提醒",
+  "settings.eventsCardTitle": "提醒與活動",
   "settings.reminderColorName": "提醒圓點顏色",
   "settings.reminderColorDesc": "會提醒你的項目，圓點用這個顏色",
   "settings.eventColorName": "活動圓點顏色",
-  "settings.eventColorDesc": "只標在行事曆上、不提醒的項目，圓點用這個顏色",
+  "settings.eventColorDesc": "只標在日曆上、不提醒的項目，圓點用這個顏色",
   "settings.eventsCardSubtitle":
-    "項目就存在每日筆記裡——寫進所涵蓋每一天的屬性，並在最上方生成可打勾的清單",
+    "項目就存在每日筆記裡——寫進所涵蓋每一天的屬性，在 Obsidian 的屬性面板就能看到與編輯",
   "settings.reminderEnabledName": "提醒功能",
   "settings.reminderEnabledDesc":
-    "關閉後所有提醒都不會出現。活動仍會顯示在行事曆與每日筆記上。",
+    "關閉後所有提醒都不會出現。活動仍會顯示在日曆與每日筆記上。",
   "settings.reminderTimeName": "預設提醒時間",
   "settings.reminderTimeDesc":
     "HH:mm。若 Obsidian 開啟時該時間已過，會在開啟當下補提醒，不會直接跳過。",
@@ -296,9 +296,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
     "作業系統的通知中心，Obsidian 沒開在前景也看得到",
   "settings.snoozeName": "稍後提醒間隔",
   "settings.snoozeDesc": "按「稍後再提醒」時往後延幾分鐘",
-  "settings.eventListTitle": "你的活動",
+  "settings.eventListTitle": "你的提醒與活動",
   "settings.eventListEmpty":
-    "還沒有任何項目。用「新增活動／提醒」命令，或在行事曆日期上按右鍵。",
+    "還沒有任何項目。用「新增提醒或活動」命令，或在日曆的日期上按右鍵。",
   "settings.eventListAdd": "新增活動",
   "settings.eventEditAction": "編輯",
   "settings.eventDeleteAction": "刪除",
