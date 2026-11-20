@@ -11,7 +11,7 @@ import {
   refreshEvents,
   upsertEvent,
 } from "./noteStore";
-import type { TouchedNote } from "./noteStore";
+import type { TouchedNote, WriteResult } from "./noteStore";
 import type { CalendarEvent } from "./types";
 
 /**
@@ -38,7 +38,24 @@ const settle = (app: App): void => refreshEvents(app);
 const createdCount = (touched: TouchedNote[]): number =>
   touched.filter((note) => note.created).length;
 
-const savedNotice = (title: string, created: number): void => {
+/**
+ * One notice for a whole write: saved (with how many notes were created), or
+ * which days failed. Never "saved" when any day failed.
+ */
+const savedNotice = (title: string, result: WriteResult): void => {
+  if (result.failed.length > 0) {
+    new Notice(
+      t("notice.eventSavePartial", {
+        title,
+        ok: result.touched.length,
+        failed: result.failed.length,
+        first: [...result.failed].sort()[0],
+      }),
+      10_000
+    );
+    return;
+  }
+  const created = createdCount(result.touched);
   new Notice(
     created > 0
       ? t("notice.eventSavedCreated", { title, count: created })
@@ -51,9 +68,9 @@ export const commitNewEvent = async (
   app: App,
   event: CalendarEvent
 ): Promise<void> => {
-  const touched = await upsertEvent(app, event);
+  const result = await upsertEvent(app, event);
   settle(app);
-  savedNotice(event.title, createdCount(touched));
+  savedNotice(event.title, result);
 };
 
 /**
@@ -68,9 +85,9 @@ export const commitEventEdit = async (
   previous: CalendarEvent,
   edited: CalendarEvent
 ): Promise<void> => {
-  const touched = await upsertEvent(app, edited, previous);
+  const result = await upsertEvent(app, edited, previous);
   settle(app);
-  savedNotice(edited.title, createdCount(touched));
+  savedNotice(edited.title, result);
 };
 
 /**

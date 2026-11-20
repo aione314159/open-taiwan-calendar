@@ -508,6 +508,8 @@ export const en = {
   "eventList.pastFolded": "▸ Finished ({count})",
   "eventList.pastOpen": "▾ Finished ({count})",
   "quickAdd.offsetsCustom": "Custom, e.g. 14",
+  "quickAdd.errorTooLong": "An entry can span at most {max} days",
+  "notice.eventSavePartial": "{title}: written to {ok} days, {failed} failed (first: {first}). Check that the daily-notes folder is writable.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

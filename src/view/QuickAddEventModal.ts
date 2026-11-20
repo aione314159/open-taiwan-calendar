@@ -454,6 +454,12 @@ export class QuickAddEventModal extends Modal {
       this.showError(t("quickAdd.errorEndBeforeStart"), this.endField?.inputEl);
       return;
     }
+    // The store writes at most this many notes; a longer entry would be cut
+    // short without a word, so it is refused here instead
+    if (diffDays(start, end) + 1 > MAX_EVENT_DAYS) {
+      this.showError(t("quickAdd.errorTooLong", { max: MAX_EVENT_DAYS }), this.endField?.inputEl);
+      return;
+    }
 
     let reminder: CalendarEvent["reminder"] = null;
     if (remind) {

@@ -155,14 +155,18 @@ const notifyProblems = (problems: EntryProblem[]): void => {
  * folder and filename format the vault is configured with.
  */
 export const ensureDailyNote = async (
-  date: Moment
+  date: Moment,
+  /** Leave the failure notice to the caller, which reports a whole batch at once. */
+  quiet = false
 ): Promise<{ file: TFile; created: boolean } | null> => {
   const existing = dailyNoteFor(date);
   if (existing) return { file: existing, created: false };
   try {
     return { file: await dni.createDailyNote(date), created: true };
   } catch {
-    new Notice(t("notice.dailyNoteCreateFailed", { date: date.format("YYYY-MM-DD") }));
+    if (!quiet) {
+      new Notice(t("notice.dailyNoteCreateFailed", { date: date.format("YYYY-MM-DD") }));
+    }
     return null;
   }
 };
@@ -195,6 +199,13 @@ export interface TouchedNote {
   created: boolean;
 }
 
+/** What a write did: the notes it changed, and the days it could not write. */
+export interface WriteResult {
+  touched: TouchedNote[];
+  /** `YYYY-MM-DD` days whose note could not be created or written. */
+  failed: string[];
+}
+
 /** The entries of one note, as sanitised events. */
 export const entriesOf = (app: App, file: TFile): CalendarEvent[] =>
   sortEvents(
@@ -214,7 +225,7 @@ export const upsertEvent = async (
   app: App,
   event: CalendarEvent,
   previous?: CalendarEvent
-): Promise<TouchedNote[]> => {
+): Promise<WriteResult> => {
   const nextDays = new Set(daysOf(event));
   const staleDays = previous
     ? daysOf(previous).filter((d) => !nextDays.has(d))
@@ -234,18 +245,26 @@ export const upsertEvent = async (
     touched.push({ file, entries, created: false });
   }
 
+  const failed: string[] = [];
   for (const day of nextDays) {
-    const ensured = await ensureDailyNote(moment(day, "YYYY-MM-DD"));
-    if (!ensured) continue;
+    const ensured = await ensureDailyNote(moment(day, "YYYY-MM-DD"), true);
+    if (!ensured) {
+      failed.push(day);
+      continue;
+    }
     const { file, created } = ensured;
     const entries = sortEvents([
       ...entriesOf(app, file).filter((e) => e.id !== event.id),
       event,
     ]);
-    await writeEntries(app, file, entries);
-    touched.push({ file, entries, created });
+    try {
+      await writeEntries(app, file, entries);
+      touched.push({ file, entries, created });
+    } catch {
+      failed.push(day);
+    }
   }
-  return touched;
+  return { touched, failed };
 };
 
 /** Remove one entry from every note of its range. Never deletes a note. */
