@@ -460,4 +460,10 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "quickAdd.offsetsCustom": "自訂，例如 14",
   "quickAdd.errorTooLong": "一筆項目最多只能跨 {max} 天",
   "notice.eventSavePartial": "{title}：已寫入 {ok} 天，{failed} 天失敗（第一個失敗日期：{first}）。請確認每日筆記資料夾可以寫入。",
+  "settings.toolbarSettings": "工具列：設定按鈕",
+  "settings.toolbarAddEvent": "工具列：新增按鈕",
+  "settings.toolbarEventList": "工具列：清單按鈕",
+  "settings.toolbarJump": "工具列：跳到日期按鈕",
+  "settings.toolbarTheme": "工具列：深淺色切換按鈕",
+  "settings.toolbarButtonDesc": "關閉後日曆工具列不顯示此按鈕。插件設定仍可從 Obsidian 的設定頁進入。",
 };

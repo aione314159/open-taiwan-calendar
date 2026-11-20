@@ -14,7 +14,8 @@ import HolidayOverrideInput from "../component/HolidayOverrideInput";
 // Type-only import: it produces no require at runtime, so it is not a module
 // dependency (and import-x/no-cycle lets it through for the same reason)
 import type OpenTaiwanCalendarPlugin from "src/main";
-import { DotSize, LayoutMode } from "src/state/settings";
+import { DotSize, LayoutMode, TOOLBAR_BUTTONS } from "src/state/settings";
+import type { ToolbarSetting } from "src/state/settings";
 import type { RocHolidayEntry } from "src/holiday/types";
 import { readPath } from "src/util/object";
 import { noteConfigMap, noteTypeLabel } from "src/enum/noteConfig";
@@ -38,6 +39,14 @@ const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
  * A table rather than three copies of the same row, so adding a channel to
  * REMINDER_CHANNELS is the only edit needed to make it appear here.
  */
+const TOOLBAR_LABELS: Record<keyof ToolbarSetting, TranslationKey> = {
+  settings: "settings.toolbarSettings",
+  addEvent: "settings.toolbarAddEvent",
+  eventList: "settings.toolbarEventList",
+  jump: "settings.toolbarJump",
+  theme: "settings.toolbarTheme",
+};
+
 type SystemStatus = "granted" | "default" | "denied" | "unsupported";
 
 const systemNotificationStatus = (): SystemStatus =>
@@ -237,6 +246,17 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { hoverPreview: value as boolean },
         }));
         break;
+      case "appearance.toolbar.settings":
+      case "appearance.toolbar.addEvent":
+      case "appearance.toolbar.eventList":
+      case "appearance.toolbar.jump":
+      case "appearance.toolbar.theme": {
+        const button = key.split(".")[2] as keyof ToolbarSetting;
+        this.plugin.writeOptions(() => ({
+          appearance: { toolbar: { [button]: value as boolean } },
+        }));
+        break;
+      }
       case "appearance.weekColumn":
         this.plugin.writeOptions(() => ({
           appearance: {
@@ -453,6 +473,11 @@ export default class MainSettingTable extends PluginSettingTab {
           desc: t("settings.pastTransparentDesc"),
           control: { type: "toggle", key: "appearance.pastTimeTransparent" },
         },
+        ...TOOLBAR_BUTTONS.map((button) => ({
+          name: t(TOOLBAR_LABELS[button]),
+          desc: t("settings.toolbarButtonDesc"),
+          control: { type: "toggle" as const, key: `appearance.toolbar.${button}` },
+        })),
         {
           name: t("settings.weekColumnName"),
           desc: t("settings.weekColumnDesc"),
