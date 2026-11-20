@@ -453,8 +453,9 @@ export class EventListBody {
 
   /** "10/24" for a single day, "10/24 – 11/01" for a range. */
   private range(event: CalendarEvent): string {
+    // A single day carries its weekday: "which day is the 23rd" is the next question
     return event.start === event.end
-      ? shortDate(event.start)
+      ? moment(event.start, "YYYY-MM-DD").format(t("dayPanel.dateFormat"))
       : t("event.dateRange", {
           start: shortDate(event.start),
           end: shortDate(event.end),
