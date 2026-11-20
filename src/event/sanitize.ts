@@ -170,6 +170,9 @@ export const sanitizeEvent = (
     reminder: readReminder(raw),
     createdAt:
       typeof createdAt === "string" ? createdAt : new Date().toISOString(),
+    // Anything but a literal true is "not done": a hand-typed "yes" must not
+    // silence a reminder
+    done: raw.done === true,
   };
 };
 
@@ -202,4 +205,5 @@ export const toFrontmatterEntry = (
       }
     : {}),
   createdAt: event.createdAt,
+  ...(event.done ? { done: true } : {}),
 });

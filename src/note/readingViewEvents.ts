@@ -1,4 +1,5 @@
-import { MarkdownView, Plugin, TFile } from "obsidian";
+import { App, MarkdownView, Plugin, TFile, setIcon, setTooltip } from "obsidian";
+import { setEventDone } from "../event/commands";
 import { shortDate } from "../event/dateMath";
 import { formatReminderSummary } from "../event/offsets";
 import { phaseOf } from "../event/phase";
@@ -70,7 +71,7 @@ const eventsOf = (frontmatter: unknown): CalendarEvent[] => {
   return sortEvents(events);
 };
 
-const renderBlock = (events: CalendarEvent[]): HTMLElement => {
+const renderBlock = (app: App, events: CalendarEvent[]): HTMLElement => {
   const block = createDiv({ cls: BLOCK_CLASS });
   block.createDiv({
     cls: "otc-note-events-heading",
@@ -83,6 +84,7 @@ const renderBlock = (events: CalendarEvent[]): HTMLElement => {
     // Same classes as EventListModal's rows, minus the action buttons: the two
     // are the same object seen in two places, and they should not drift apart
     const row = block.createDiv({ cls: `otc-event-row is-${phase}` });
+    row.toggleClass("is-done", event.done);
     row
       .createDiv({ cls: "otc-event-row-dot" })
       .style.setProperty("--otc-event-color", event.color);
@@ -100,6 +102,16 @@ const renderBlock = (events: CalendarEvent[]): HTMLElement => {
       cls: "otc-event-row-meta",
       text: `${rangeOf(event)} · ${formatReminderSummary(event.reminder)}`,
     });
+    if (event.reminder !== null) {
+      const toggle = row.createEl("button", { cls: "clickable-icon" });
+      setIcon(toggle, event.done ? "rotate-ccw" : "check-circle");
+      setTooltip(toggle, t(event.done ? "eventList.markUndone" : "eventList.markDone"));
+      toggle.addEventListener("click", () => {
+        toggle.disabled = true;
+        // The metadata cache change redraws the block afterwards
+        void setEventDone(app, event, !event.done);
+      });
+    }
   }
   return block;
 };
@@ -124,7 +136,7 @@ const syncView = (view: MarkdownView): void => {
   const events = eventsOf(frontmatter);
   if (events.length === 0) return;
 
-  scroller.prepend(renderBlock(events));
+  scroller.prepend(renderBlock(view.app, events));
 };
 
 /**

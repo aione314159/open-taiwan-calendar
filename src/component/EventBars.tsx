@@ -89,7 +89,7 @@ const EventBars: React.FC<{
       {shown.map((event) => (
         <span
           key={event.id}
-          className="otc-event-dot"
+          className={classNames("otc-event-dot", { "is-done": event.done })}
           style={{ "--otc-event-color": event.color } as React.CSSProperties}
         />
       ))}

@@ -311,4 +311,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "quickAdd.notesNoneNew": "涵蓋 {days} 天，每日筆記都已存在，不會建立新筆記。",
   "quickAdd.notesMore": " 等，另有 {count} 篇",
   "quickAdd.notesOldRange": " 舊範圍的筆記只會移除此項目，不會刪除筆記。",
+  "notice.eventDone": "已標記完成：{title}",
+  "notice.eventUndone": "已取消完成：{title}",
+  "eventList.markDone": "標記完成",
+  "eventList.markUndone": "取消完成",
+  "eventList.badgeUnhandled": "未處理",
 };

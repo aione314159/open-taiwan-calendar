@@ -413,6 +413,7 @@ export class QuickAddEventModal extends Modal {
       color,
       reminder,
       createdAt: this.preset.existing?.createdAt ?? new Date().toISOString(),
+      done: this.preset.existing?.done ?? false,
     });
     this.close();
   }
