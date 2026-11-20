@@ -91,9 +91,9 @@ const renderBlock = (app: App, events: CalendarEvent[], noteDate: string | null)
     // are the same object seen in two places, and they should not drift apart
     const row = block.createDiv({ cls: `otc-event-row is-${phase}` });
     row.toggleClass("is-done", event.done);
-    row
-      .createDiv({ cls: "otc-event-row-dot" })
-      .style.setProperty("--otc-event-color", event.color);
+    const rowDot = row.createDiv({ cls: "otc-event-row-dot" });
+    rowDot.style.setProperty("--otc-event-color", event.color);
+    rowDot.toggleClass("is-event", event.reminder === null);
 
     const text = row.createDiv({ cls: "otc-event-row-text" });
     const head = text.createDiv({ cls: "otc-event-row-head" });

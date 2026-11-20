@@ -2101,3 +2101,23 @@ body {
 .otc-quick-add-modal .setting-item.is-disabled {
   opacity: 0.5;
 }
+
+/* ---------- reminder or plain event, by shape as well as colour.
+   A reminder is a round dot; a plain event is a short bar. The difference
+   survives the smallest dot size, where a circle and a square would not. */
+.otc-event-dot.is-event {
+  width: calc(var(--otc-dot-size) * 2);
+  border-radius: 1px;
+}
+
+.otc-event-row-dot.is-event,
+.otc-upcoming-dot.is-event {
+  width: 16px;
+  height: 6px;
+  margin-top: 7px;
+  border-radius: 2px;
+}
+
+.otc-upcoming-dot.is-event {
+  margin-top: 0;
+}

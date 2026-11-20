@@ -244,10 +244,9 @@ export class EventListModal extends Modal {
       // need doing
       const unhandled = event.reminder !== null && !event.done && event.end < today;
       row.toggleClass("is-unhandled", unhandled);
-      row.createDiv({ cls: "otc-event-row-dot" }).style.setProperty(
-        "--otc-event-color",
-        event.color
-      );
+      const rowDot = row.createDiv({ cls: "otc-event-row-dot" });
+      rowDot.style.setProperty("--otc-event-color", event.color);
+      rowDot.toggleClass("is-event", event.reminder === null);
 
       const text = row.createDiv({ cls: "otc-event-row-text" });
       const head = text.createDiv({ cls: "otc-event-row-head" });
