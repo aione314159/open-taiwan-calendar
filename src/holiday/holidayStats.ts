@@ -51,7 +51,7 @@ const addDays = (d: Date, n: number) =>
 
 /**
  * The name a long weekend goes by: the holiday covering most of its days.
- * Ties are joined (兒童節・清明節), and a day off in lieu never names one.
+ * Ties are joined into one name, and a day off in lieu never names one.
  */
 const nameOfRun = (days: DayInfo[]): string | undefined => {
   const counts = new Map<string, number>();
@@ -61,7 +61,7 @@ const nameOfRun = (days: DayInfo[]): string | undefined => {
   }
   const top = Math.max(0, ...counts.values());
   const names = [...counts].filter(([, n]) => n === top).map(([name]) => name);
-  return names.length > 0 ? names.join("・") : undefined;
+  return names.length > 0 ? names.join(ROC_HOLIDAY_NAMES.joiner) : undefined;
 };
 
 /**

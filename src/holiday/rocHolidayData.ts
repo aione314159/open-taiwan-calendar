@@ -156,4 +156,6 @@ export const ROC_HOLIDAY_NAMES = {
    * naming a long weekend, since it says nothing about which holiday it is.
    */
   dayOffInLieu: "補假",
+  /** Joins the names of holidays that share a long weekend equally. */
+  joiner: "・",
 } as const;
