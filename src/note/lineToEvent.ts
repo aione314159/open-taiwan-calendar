@@ -16,15 +16,24 @@ import { settingsStore } from "../state/settings";
 const MARK = { reminder: "🔔", event: "🗓" } as const;
 const MARKED = / (?:🔔|🗓) \d{4}-\d{2}-\d{2}$/u;
 
-/** Append the mark to the line if it is still the same line and not marked yet. */
+/**
+ * Append the mark to the source line if it is still there and not marked yet.
+ *
+ * Found again by its text, not its number: saving into the daily note that is
+ * open adds frontmatter lines above it and moves it down. Of the lines that
+ * still read exactly as it did, the one nearest its old position wins; a line
+ * edited while the dialog was open is not marked rather than marked wrongly.
+ */
 const markLine = (editor: Editor, line: number, original: string, event: CalendarEvent): void => {
-  if (line >= editor.lineCount()) return;
-  const current = editor.getLine(line);
-  // The user may have edited the note while the dialog was open; a line that
-  // changed is not marked rather than marked in the wrong place
-  if (current !== original || MARKED.test(current)) return;
+  if (MARKED.test(original) || original.trim() === "") return;
+  let target = -1;
+  for (let i = 0; i < editor.lineCount(); i++) {
+    if (editor.getLine(i) !== original) continue;
+    if (target === -1 || Math.abs(i - line) < Math.abs(target - line)) target = i;
+  }
+  if (target === -1) return;
   const mark = event.reminder ? MARK.reminder : MARK.event;
-  editor.setLine(line, `${current} ${mark} ${event.start}`);
+  editor.setLine(target, `${original} ${mark} ${event.start}`);
 };
 
 export const addLineAsEntry = (app: App, editor: Editor, remind: boolean): void => {
