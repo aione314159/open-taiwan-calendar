@@ -704,12 +704,20 @@ const Calendar: React.FC<CalendarProps> = ({
   ];
 
   /**
-   * "Today" only moves the grid back to today's month (or year, in the year
-   * view). It used to open today's note as well, which created one behind a
-   * confirmation for someone who only wanted to page back; the note is one
-   * click on today's cell away.
+   * "Today" brings the grid back to today's month, in the month view, and
+   * selects and flashes today's cell. Moving the anchor alone did nothing
+   * visible while today's month or year was already on screen, which read as
+   * a dead button — so the click always ends on today's cell. It does not
+   * open today's note: that created one behind a confirmation for someone who
+   * only wanted to page back, and the note is one click on the cell away.
    */
-  const goToToday = (): void => setAnchor(today);
+  const goToToday = (): void => {
+    const iso = today.format("YYYY-MM-DD");
+    setAnchor(today);
+    setMode("month");
+    selectDate(iso);
+    setFlashIso(iso);
+  };
   // Paged away from today: the Today button stands out until the grid is back
   const awayFromToday = !anchor.isSame(today, mode === "month" ? "month" : "year");
 
