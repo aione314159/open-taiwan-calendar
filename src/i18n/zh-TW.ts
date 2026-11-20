@@ -458,4 +458,6 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "eventList.pastFolded": "▸ 已結束（{count}）",
   "eventList.pastOpen": "▾ 已結束（{count}）",
   "quickAdd.offsetsCustom": "自訂，例如 14",
+  "quickAdd.errorTooLong": "一筆項目最多只能跨 {max} 天",
+  "notice.eventSavePartial": "{title}：已寫入 {ok} 天，{failed} 天失敗（第一個失敗日期：{first}）。請確認每日筆記資料夾可以寫入。",
 };
