@@ -2211,14 +2211,16 @@ body {
 
 /* ---------- a day whose entries are all over: no wash, a neutral dashed
    frame, dimmer dots. Today, day-off and make-up frames keep priority. */
-.otc-day.has-event.events-past:not(.is-today):not(.is-holiday):not(.is-workday) {
-  border-color: var(--background-modifier-border);
-  border-style: dashed;
+/* The wash goes on every finished day; only the border colour defers to
+   today, day off and make-up workday */
+.otc-day.has-event.events-past,
+.theme-dark .otc-day.has-event.events-past {
   background: transparent;
 }
 
-.theme-dark .otc-day.has-event.events-past:not(.is-today):not(.is-holiday):not(.is-workday) {
-  background: transparent;
+.otc-day.has-event.events-past:not(.is-today):not(.is-holiday):not(.is-workday) {
+  border-color: var(--background-modifier-border);
+  border-style: dashed;
 }
 
 .otc-day.has-event.events-past .otc-event-dot:not(.is-note) {
