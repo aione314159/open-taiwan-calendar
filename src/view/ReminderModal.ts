@@ -34,6 +34,8 @@ export interface ReminderActions {
   onDone: (event: CalendarEvent) => Promise<void>;
   /** Open the daily note of the item's start date. */
   onOpenNote: (event: CalendarEvent) => Promise<void>;
+  /** The dialog closed; the next due item opens a new one. */
+  onClosed?: () => void;
 }
 
 /** "Later today" is this hour, offered only while it is still ahead. */
@@ -48,6 +50,8 @@ export class ReminderModal extends Modal {
   ) {
     super(app);
   }
+
+  private listEl: HTMLElement | null = null;
 
   /** The snooze choices, as label and end time; "later today" drops out once past. */
   private snoozeChoices(): Array<[string, number]> {
@@ -88,56 +92,73 @@ export class ReminderModal extends Modal {
     menu.showAtMouseEvent(event);
   }
 
+  /** Add items that came due while the dialog is open: on top, marked new. */
+  addItems(items: DueReminder[]): void {
+    const fresh = items.filter(
+      (item) => !this.items.some((o) => o.event.id === item.event.id && o.offset === item.offset)
+    );
+    if (fresh.length === 0) return;
+    this.items.unshift(...fresh);
+    for (const item of [...fresh].reverse()) this.renderRow(item, true);
+  }
+
+  private renderRow(item: DueReminder, isNew = false): void {
+    const list = this.listEl;
+    if (!list) return;
+    const { event, daysUntil } = item;
+    const row = createDiv({ cls: "otc-reminder-row" });
+    row.toggleClass("is-new", isNew);
+    if (isNew) list.prepend(row);
+    else list.appendChild(row);
+    // The colour is the same one the calendar draws, so the reminder and the
+    // bar the user has been looking at are recognisably the same thing. It is
+    // set as a custom property rather than as a colour: styles.css owns how
+    // the dot is drawn, this only says which colour to draw it in.
+    row.createDiv({ cls: "otc-reminder-dot" }).style.setProperty(
+      "--otc-event-color",
+      event.color
+    );
+    const text = row.createDiv({ cls: "otc-reminder-text" });
+    text.createDiv({ cls: "otc-reminder-title", text: event.title });
+    text.createDiv({
+      cls: "otc-reminder-meta",
+      text: this.metaLine(event, daysUntil),
+    });
+
+    const buttons: HTMLButtonElement[] = [];
+    const settle = (cls: string) => {
+      row.addClass(cls);
+      buttons.forEach((b) => (b.disabled = true));
+    };
+    const rowActions: Array<[string, string, (e: MouseEvent) => void]> = [
+      ["file-text", t("reminder.openNote"), () => void this.actions.onOpenNote(event)],
+      [
+        "alarm-clock",
+        t("reminder.snoozeMenu"),
+        (e) => this.showSnoozeMenu(e, [item], () => settle("is-snoozed")),
+      ],
+      [
+        "check-circle",
+        t("eventList.markDone"),
+        () => void this.actions.onDone(event).then(() => settle("is-done")),
+      ],
+    ];
+    for (const [icon, label, run] of rowActions) {
+      const button = row.createEl("button", { cls: "clickable-icon otc-reminder-done" });
+      setIcon(button, icon);
+      setTooltip(button, label);
+      button.setAttr("aria-label", label);
+      button.addEventListener("click", (e) => run(e));
+      buttons.push(button);
+    }
+  }
+
   onOpen(): void {
     this.setTitle(t("reminder.modalTitle"));
     this.modalEl.addClass("otc-reminder-modal");
 
-    const list = this.contentEl.createDiv({ cls: "otc-reminder-list" });
-    for (const item of this.items) {
-      const { event, daysUntil } = item;
-      const row = list.createDiv({ cls: "otc-reminder-row" });
-      // The colour is the same one the calendar draws, so the reminder and the
-      // bar the user has been looking at are recognisably the same thing. It is
-      // set as a custom property rather than as a colour: styles.css owns how
-      // the dot is drawn, this only says which colour to draw it in.
-      row.createDiv({ cls: "otc-reminder-dot" }).style.setProperty(
-        "--otc-event-color",
-        event.color
-      );
-      const text = row.createDiv({ cls: "otc-reminder-text" });
-      text.createDiv({ cls: "otc-reminder-title", text: event.title });
-      text.createDiv({
-        cls: "otc-reminder-meta",
-        text: this.metaLine(event, daysUntil),
-      });
-
-      const buttons: HTMLButtonElement[] = [];
-      const settle = (cls: string) => {
-        row.addClass(cls);
-        buttons.forEach((b) => (b.disabled = true));
-      };
-      const rowActions: Array<[string, string, (e: MouseEvent) => void]> = [
-        ["file-text", t("reminder.openNote"), () => void this.actions.onOpenNote(event)],
-        [
-          "alarm-clock",
-          t("reminder.snoozeMenu"),
-          (e) => this.showSnoozeMenu(e, [item], () => settle("is-snoozed")),
-        ],
-        [
-          "check-circle",
-          t("eventList.markDone"),
-          () => void this.actions.onDone(event).then(() => settle("is-done")),
-        ],
-      ];
-      for (const [icon, label, run] of rowActions) {
-        const button = row.createEl("button", { cls: "clickable-icon otc-reminder-done" });
-        setIcon(button, icon);
-        setTooltip(button, label);
-        button.setAttr("aria-label", label);
-        button.addEventListener("click", (e) => run(e));
-        buttons.push(button);
-      }
-    }
+    this.listEl = this.contentEl.createDiv({ cls: "otc-reminder-list" });
+    for (const item of this.items) this.renderRow(item);
 
     new Setting(this.contentEl)
       .addButton((button) =>
@@ -171,6 +192,7 @@ export class ReminderModal extends Modal {
 
   onClose(): void {
     this.contentEl.empty();
+    this.actions.onClosed?.();
   }
 }
 

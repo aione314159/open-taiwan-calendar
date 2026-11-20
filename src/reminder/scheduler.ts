@@ -105,6 +105,9 @@ const keysOf = (event: CalendarEvent): string[] =>
 
 let deniedNoticeShown = false;
 
+/** The reminder dialog on screen, if any. */
+let openReminderModal: ReminderModal | null = null;
+
 /** The desktop notification channel, guarded on both sides. */
 const notifySystem = (event: CalendarEvent, meta: string): void => {
   // Notification is a browser API the Electron renderer provides; it is a local
@@ -161,7 +164,13 @@ const announce = (
 
   const modalItems = due.filter(wants(ReminderChannel.MODAL));
   if (modalItems.length === 0) return;
-  new ReminderModal(app, modalItems, snoozeMinutes, {
+  // One dialog at a time: items due while it is open join it rather than
+  // stacking a second dialog Obsidian gives no way to look beneath
+  if (openReminderModal) {
+    openReminderModal.addItems(modalItems);
+    return;
+  }
+  openReminderModal = new ReminderModal(app, modalItems, snoozeMinutes, {
     onSnooze: (items, until) =>
       onSnooze(
         items.map((item) => fireKey(item.event.id, item.offset)),
@@ -169,7 +178,11 @@ const announce = (
       ),
     onDone: (event) => setEventDone(app, event, true),
     onOpenNote: (event) => openDailyNote(app, event.start),
-  }).open();
+    onClosed: () => {
+      openReminderModal = null;
+    },
+  });
+  openReminderModal.open();
 };
 
 /**
