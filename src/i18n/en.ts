@@ -13,10 +13,10 @@ export const en = {
   "common.create": "Create",
 
   // ---------------------------------------------------------------- commands and plugin chrome
-  "command.openSidebar": "Open calendar in the sidebar",
-  "command.toggleFloatingPanel": "Toggle floating calendar",
+  "command.openSidebar": "Open Taiwan Calendar in the sidebar",
+  "command.toggleFloatingPanel": "Toggle the Taiwan Calendar floating panel",
   "hoverSource.display": "Taiwan Calendar",
-  "view.calendarTitle": "Calendar",
+  "view.calendarTitle": "Taiwan Calendar",
   "notice.overridesDropped":
     "Holiday overrides: {count} malformed entries were ignored",
   "notice.saveFailed": "Could not save the settings. Check that the vault is writable.",
@@ -83,7 +83,7 @@ export const en = {
   "confirm.createNoteText": "{filename} does not exist. Create it?",
 
   // ---------------------------------------------------------------- floating panel
-  "floating.title": "Calendar",
+  "floating.title": "Taiwan Calendar",
   "floating.dock": "Dock to a corner",
   "floating.settings": "Settings",
   "floating.close": "Close",
@@ -143,7 +143,7 @@ export const en = {
   "settings.readingViewEventsName": "Show entries in reading view",
   "settings.readingViewEventsDesc":
     "Draw this note's reminders and events as a block at the top of reading view. Off leaves the frontmatter untouched; the entries are still there and still on the calendar.",
-  "settings.floatingCardTitle": "Floating calendar",
+  "settings.floatingCardTitle": "Floating panel",
   "settings.floatingDesc":
     "A draggable, resizable full-month calendar panel layered over the Obsidian main window",
   "settings.floatingVisibleName": "Show the floating panel",
@@ -250,7 +250,7 @@ export const en = {
   "dailySetup.errorNoCoreOptions":
     "The core Daily notes plugin exposes no usable options object; it cannot be written",
   // ---------------------------------------------------------------- events and reminders
-  "command.quickAddEvent": "Add an event or reminder",
+  "command.quickAddEvent": "Add a reminder or event",
   "notice.eventSaved": "Saved: {title}",
   "notice.dailyNoteCreateFailed":
     "Could not create the daily note for {date}. Check that daily notes are set up and the folder is writable.",
@@ -276,7 +276,7 @@ export const en = {
   "event.offsetSeparator": ", ",
 
   // ---------------------------------------------------------------- quick add modal
-  "quickAdd.title": "Add an event or reminder",
+  "quickAdd.title": "Add a reminder or event",
   "quickAdd.inputLabel": "Type it in your own words",
   "quickAdd.inputPlaceholder": "Remind me on Saturday to take the laptop home",
   "quickAdd.inputHint":
@@ -317,14 +317,14 @@ export const en = {
 
 
   // ---------------------------------------------------------------- settings: events and reminders
-  "settings.eventsCardTitle": "Events and reminders",
+  "settings.eventsCardTitle": "Reminders and events",
   "settings.reminderColorName": "Reminder colour",
   "settings.reminderColorDesc": "The dot colour for an entry that reminds you",
   "settings.eventColorName": "Event colour",
   "settings.eventColorDesc":
     "The dot colour for an entry that is only marked on the calendar",
   "settings.eventsCardSubtitle":
-    "Your own entries live in the daily notes themselves — in the properties of every day they cover, with a checklist generated at the top",
+    "Your own entries live in the daily notes themselves, in the properties of every day they cover, where Obsidian’s property panel shows and edits them",
   "settings.reminderEnabledName": "Reminders",
   "settings.reminderEnabledDesc":
     "Off silences every reminder. Events stay on the calendar and in the daily note.",
@@ -346,9 +346,9 @@ export const en = {
   "settings.snoozeName": "Snooze length",
   "settings.snoozeDesc":
     "Minutes that \"remind me later\" pushes a dialog reminder back by",
-  "settings.eventListTitle": "Your events",
+  "settings.eventListTitle": "Your reminders and events",
   "settings.eventListEmpty":
-    "Nothing yet. Use the \"Add an event or reminder\" command, or right-click a date on the calendar.",
+    "Nothing yet. Use the \"Add a reminder or event\" command, or right-click a date on the calendar.",
   "settings.eventListAdd": "Add an event",
   "settings.eventEditAction": "Edit",
   "settings.eventDeleteAction": "Delete",
