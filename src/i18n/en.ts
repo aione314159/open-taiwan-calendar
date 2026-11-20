@@ -482,6 +482,11 @@ export const en = {
   "settings.dayPanelDesc": "Below the sidebar calendar, show the selected day’s entries and the open to-dos of its note. Clicking a day selects it.",
   "menu.addReminderOnDay": "Add a reminder on this day",
   "menu.showAllEvents": "Show all {count}",
+  "settings.createConfirmName": "Ask before creating a note",
+  "settings.createConfirmDesc": "When clicking a date whose note does not exist. Choosing \"Create note\" from the menu never asks.",
+  "settings.createConfirmAlways": "Always",
+  "settings.createConfirmPast": "Only for past dates",
+  "settings.createConfirmNever": "Never",
 } as const;
 
 export type TranslationKey = keyof typeof en;

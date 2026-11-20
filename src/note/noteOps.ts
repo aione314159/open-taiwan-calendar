@@ -466,8 +466,15 @@ export const openOrCreateNote = async (
       }
     };
 
-    if (!confirmBeforeCreate) {
+    // The caller can rule the prompt out (a menu item that says "create"); a
+    // plain click asks according to the setting
+    const mode = settingsStore.read().createConfirm;
+    const unit = type === NoteType.DAILY ? "day" : type === NoteType.WEEKLY ? "isoWeek" : type === NoteType.MONTHLY ? "month" : type === NoteType.QUARTERLY ? "quarter" : "year";
+    const isPast = date.clone().endOf(unit).isBefore(moment(), "day");
+    const ask = confirmBeforeCreate && (mode === "always" || (mode === "pastOnly" && isPast));
+    if (!ask) {
       await createFile();
+      new Notice(t("notice.noteCreatedQuietly", { name: filename }));
       return;
     }
 
