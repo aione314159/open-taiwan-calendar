@@ -552,6 +552,11 @@ export default class MainSettingTable extends PluginSettingTab {
           desc: t("settings.snoozeDesc"),
           control: { type: "number", key: "reminder.snoozeMinutes", min: 1 },
         },
+        {
+          name: t("settings.protocolDirectAddName"),
+          desc: t("settings.protocolDirectAddDesc"),
+          control: { type: "toggle", key: "protocol.allowDirectAdd" },
+        },
       ],
     };
   }

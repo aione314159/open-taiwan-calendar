@@ -62,6 +62,16 @@ export interface QuickAddPreset {
    * event"), so the choice the user already made is not one they make twice.
    */
   remind?: boolean;
+  /** From an `obsidian://` link, which can fill every field. */
+  title?: string;
+  /** `YYYY-MM-DD`, inclusive. Defaults to the start date. */
+  end?: string;
+  /** `#rrggbb` */
+  color?: string;
+  /** Days before the start to fire on. */
+  offsets?: number[];
+  /** `HH:mm` */
+  time?: string;
   /**
    * When set, the dialog edits this entry rather than creating one. Every
    * field starts at its current value and the id is carried through, which is
@@ -114,21 +124,24 @@ export class QuickAddEventModal extends Modal {
     const existing = preset.existing;
     const today = existing?.start ?? preset.date ?? moment().format("YYYY-MM-DD");
     this.draft = {
-      title: existing?.title ?? "",
+      title: existing?.title ?? preset.title ?? "",
       start: today,
-      end: existing?.end ?? today,
+      end: existing?.end ?? preset.end ?? today,
       // The colour follows the kind of entry it is, unless the user has already
       // chosen one for this entry
       color:
         existing?.color ??
+        preset.color ??
         ((preset.remind ?? reminder.enabled)
           ? eventDefaults.reminderColor
           : eventDefaults.eventColor),
       remind: existing
         ? existing.reminder !== null
         : (preset.remind ?? reminder.enabled),
-      offsets: formatOffsets(existing?.reminder?.offsets ?? reminder.defaultOffsets),
-      time: existing?.reminder?.time ?? reminder.defaultTime,
+      offsets: formatOffsets(
+        existing?.reminder?.offsets ?? preset.offsets ?? reminder.defaultOffsets
+      ),
+      time: existing?.reminder?.time ?? preset.time ?? reminder.defaultTime,
     };
   }
 

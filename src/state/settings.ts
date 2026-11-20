@@ -110,11 +110,24 @@ export interface ReminderSetting {
   snoozeMinutes: number;
 }
 
+/** What `obsidian://open-taiwan-calendar` links are allowed to do. */
+export interface ProtocolSetting {
+  /**
+   * Whether a link carrying `save=1` writes straight to the vault.
+   *
+   * Off by default: anything on the machine can open an `obsidian://` link,
+   * so without this the link only opens the pre-filled dialog and the user
+   * presses Add.
+   */
+  allowDirectAdd: boolean;
+}
+
 export type PluginSetting = Record<NoteType, NoteConfig> & {
   appearance: AppearanceSetting;
   floatingWindow: FloatingWindowSetting;
   eventDefaults: EventDefaultsSetting;
   reminder: ReminderSetting;
+  protocol: ProtocolSetting;
   /**
    * Which reminders have already fired, keyed by `<event id>#<offset>` and
    * holding the `YYYY-MM-DD` they fired on.
@@ -174,6 +187,9 @@ export const defaultSetting: PluginSetting = {
     defaultTime: "09:00",
     channels: [ReminderChannel.MODAL, ReminderChannel.NOTICE],
     snoozeMinutes: 10,
+  },
+  protocol: {
+    allowDirectAdd: false,
   },
   reminderState: {},
   holidayOverrides: {},

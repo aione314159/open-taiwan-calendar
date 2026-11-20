@@ -302,4 +302,8 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.eventListAdd": "新增活動",
   "settings.eventEditAction": "編輯",
   "settings.eventDeleteAction": "刪除",
+  "protocol.badParam": "連結未執行：「{field}」的值不正確",
+  "protocol.tooLong": "連結未執行：一筆項目最多跨 {max} 天",
+  "settings.protocolDirectAddName": "允許外部連結直接新增",
+  "settings.protocolDirectAddDesc": "開啟時，帶有 save=1 的 obsidian://open-taiwan-calendar 連結會直接寫入，不開對話框。關閉時，所有連結都只開啟已預填的對話框。",
 };

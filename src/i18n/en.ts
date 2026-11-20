@@ -352,6 +352,10 @@ export const en = {
   "settings.eventListAdd": "Add an event",
   "settings.eventEditAction": "Edit",
   "settings.eventDeleteAction": "Delete",
+  "protocol.badParam": "The link was not used: the \"{field}\" value is not valid",
+  "protocol.tooLong": "The link was not used: an entry can span at most {max} days",
+  "settings.protocolDirectAddName": "Let links add entries directly",
+  "settings.protocolDirectAddDesc": "When on, an obsidian://open-taiwan-calendar link with save=1 writes the entry without opening the dialog. When off, every link only opens the pre-filled dialog.",
 } as const;
 
 export type TranslationKey = keyof typeof en;
