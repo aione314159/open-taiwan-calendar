@@ -158,6 +158,12 @@ const Calendar: React.FC<CalendarProps> = ({
   const inlineReminders = useInlineReminders((state) => state);
   const ignoredDuplicates = useSetting((state) => state.ignoredDuplicates);
   const taskProgress = useSetting((state) => state.appearance.taskProgress);
+  const weekColumnSetting = useSetting((state) => state.appearance.weekColumn);
+  // A column of numbers that cannot be clicked is only noise, so "auto" shows
+  // it only while weekly notes are on
+  const showWeekColumn =
+    weekColumnSetting === "show" ||
+    (weekColumnSetting === "auto" && isNoteTypeEnabled(NoteType.WEEKLY));
   const taskStats = useTaskStats((state) => state);
 
   // Settings are subscribed rather than read once. A plain read would leave
@@ -604,10 +610,12 @@ const Calendar: React.FC<CalendarProps> = ({
 
       <div className="otc-body">
         {mode === "month" ? (
-          <div className="otc-side">
-            <div className="otc-side-head">{t("calendar.weekColumnHeader")}</div>
-            {weekColumn}
-          </div>
+          showWeekColumn && (
+            <div className="otc-side">
+              <div className="otc-side-head">{t("calendar.weekColumnHeader")}</div>
+              {weekColumn}
+            </div>
+          )
         ) : (
           <div className="otc-side otc-side-quarters">{quarterColumn}</div>
         )}

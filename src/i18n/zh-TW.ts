@@ -437,4 +437,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.createConfirmAlways": "一律確認",
   "settings.createConfirmPast": "只在過去日期確認",
   "settings.createConfirmNever": "不確認",
+  "settings.weekColumnName": "週次欄",
+  "settings.weekColumnDesc": "月視圖左側的週次欄。自動：只在 Periodic Notes 啟用週記時顯示。",
+  "settings.weekColumnAuto": "自動",
+  "settings.weekColumnShow": "顯示",
+  "settings.weekColumnHide": "隱藏",
 };
