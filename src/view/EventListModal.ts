@@ -5,6 +5,7 @@ import { PHASE_ORDER, phaseOf } from "../event/phase";
 import { eventsStore, problemsStore, readEvents } from "../event/store";
 import { inlineRemindersStore } from "../event/inlineReminders";
 import { duplicateKey, findDuplicates } from "../event/duplicates";
+import { convertInline } from "../event/inlineConvert";
 import { patchSettings } from "../state/settings";
 import { settingsStore } from "../state/settings";
 import type { EntryProblemReason } from "../event/sanitize";
@@ -279,6 +280,14 @@ export class EventListModal extends Modal {
         void this.app.workspace.openLinkText(item.path, "", false, {
           eState: { line: item.line },
         });
+      });
+      const actions = row.createDiv({ cls: "otc-event-row-actions" });
+      const convert = actions.createEl("button", { cls: "clickable-icon" });
+      setIcon(convert, "calendar-check");
+      setTooltip(convert, t("inline.convert"));
+      convert.addEventListener("click", () => {
+        this.close();
+        convertInline(this.app, item);
       });
     }
   }

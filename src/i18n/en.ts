@@ -442,6 +442,16 @@ export const en = {
   "duplicate.ignore": "Don’t warn about this pair again",
   "duplicate.tooltipLine": "⚠ {line} (possible duplicate)",
   "duplicate.beforeSave": "Looks like an inline reminder on the same day: {items}. Press Add again to add it anyway.",
+  "inline.convert": "Make it a calendar reminder",
+  "inline.removeMarkTitle": "Remove the inline mark?",
+  "inline.removeMarkText": "The reminder is saved. Remove the (@…) mark from \"{line}\" so it is not announced twice? Cancel keeps the line as it is.",
+  "inline.removeMark": "Remove mark",
+  "command.convertInline": "Convert upcoming inline reminders to calendar reminders",
+  "inline.batchTitle": "Convert inline reminders",
+  "inline.batchRemoveMarks": "Also remove the (@…) marks from the lines",
+  "inline.batchConfirm": "{count} calendar reminders will be added. Continue?",
+  "inline.needSetting": "Turn on \"Show inline reminder marks\" in the settings first.",
+  "inline.noneUpcoming": "There are no upcoming inline reminders.",
 } as const;
 
 export type TranslationKey = keyof typeof en;
