@@ -99,7 +99,7 @@ const DayPanel: React.FC<DayPanelActions> = (actions) => {
                 onClick={() => actions.onEdit(event)}
               >
                 <span
-                  className="otc-upcoming-dot"
+                  className={classNames("otc-upcoming-dot", { "is-event": event.reminder === null })}
                   style={{ "--otc-event-color": event.color } as React.CSSProperties}
                 />
                 <span className="otc-upcoming-title">{event.title}</span>

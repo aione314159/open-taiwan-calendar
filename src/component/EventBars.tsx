@@ -116,7 +116,12 @@ const EventBars: React.FC<{
       {shown.map((event) => (
         <span
           key={event.id}
-          className={classNames("otc-event-dot", { "is-done": event.done })}
+          className={classNames("otc-event-dot", {
+            "is-done": event.done,
+            // A plain event is a short bar, a reminder a round dot: the kind
+            // reads from the shape even when both colours are the same
+            "is-event": event.reminder === null,
+          })}
           style={{ "--otc-event-color": event.color } as React.CSSProperties}
         />
       ))}
