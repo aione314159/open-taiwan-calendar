@@ -2,12 +2,21 @@ import { App, Modal, setIcon, setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import { formatReminderSummary } from "../event/offsets";
 import { PHASE_ORDER, phaseOf } from "../event/phase";
-import { eventsStore, readEvents } from "../event/store";
+import { eventsStore, problemsStore, readEvents } from "../event/store";
+import type { EntryProblemReason } from "../event/sanitize";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
+import type { TranslationKey } from "../i18n";
 import { moment } from "../util/moment";
 
 type TabKey = "reminders" | "events";
+
+const PROBLEM_LABELS: Record<EntryProblemReason, TranslationKey> = {
+  notObject: "problem.notObject",
+  title: "problem.title",
+  start: "problem.start",
+  colorDefaulted: "problem.colorDefaulted",
+};
 
 /**
  * Everything the user has entered, in one place.
@@ -26,6 +35,8 @@ type TabKey = "reminders" | "events";
 export class EventListModal extends Modal {
   private tab: TabKey = "reminders";
   private listEl: HTMLElement | null = null;
+  private problemsEl: HTMLElement | null = null;
+  private unwatchProblems: (() => void) | null = null;
   private unwatch: (() => void) | null = null;
 
   constructor(
@@ -41,6 +52,12 @@ export class EventListModal extends Modal {
   onOpen(): void {
     this.setTitle(t("eventList.title"));
     this.modalEl.addClass("otc-event-list-modal");
+
+    // Entries the plugin could not use as written. Above the tabs, because they
+    // belong to neither tab: they are the ones missing from both
+    this.problemsEl = this.contentEl.createDiv({ cls: "otc-entry-problems" });
+    this.renderProblems();
+    this.unwatchProblems = problemsStore.watch(() => this.renderProblems());
 
     const tabs = this.contentEl.createDiv({ cls: "otc-event-tabs" });
     const buttons: Array<[TabKey, string]> = [
@@ -77,6 +94,32 @@ export class EventListModal extends Modal {
       this.close();
       this.onAdd();
     });
+  }
+
+  private renderProblems(): void {
+    const el = this.problemsEl;
+    if (!el) return;
+    el.empty();
+    const problems = problemsStore.read();
+    if (problems.length === 0) return;
+    const details = el.createEl("details");
+    details.createEl("summary", {
+      text: t("eventList.problemsSummary", { count: problems.length }),
+    });
+    for (const problem of problems) {
+      const row = details.createDiv({ cls: "otc-entry-problem" });
+      const link = row.createEl("a", {
+        text: t("eventList.problemWhere", {
+          path: problem.path,
+          index: problem.index + 1,
+        }),
+      });
+      link.addEventListener("click", () => {
+        this.close();
+        void this.app.workspace.openLinkText(problem.path, "", false);
+      });
+      row.createSpan({ text: ` ${t(PROBLEM_LABELS[problem.reason])}` });
+    }
   }
 
   /** Rebuilt from scratch on every change; the list is a few dozen rows at most. */
@@ -178,6 +221,8 @@ export class EventListModal extends Modal {
   onClose(): void {
     this.unwatch?.();
     this.unwatch = null;
+    this.unwatchProblems?.();
+    this.unwatchProblems = null;
     this.contentEl.empty();
   }
 }

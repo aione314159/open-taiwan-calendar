@@ -5,8 +5,10 @@ import { t } from "../i18n";
 import { moment } from "../util/moment";
 import type { Moment } from "../util/moment";
 import { addDays, diffDays } from "./dateMath";
-import { sanitizeEvent, sortEvents, toFrontmatterEntry } from "./sanitize";
-import { readEvents, setEvents } from "./store";
+import { inspectEvent, sanitizeEvent, sortEvents, toFrontmatterEntry } from "./sanitize";
+import { problemsStore, readEvents, setEvents } from "./store";
+import type { EntryProblem } from "./store";
+import { settingsStore } from "../state/settings";
 import { FRONTMATTER_KEY } from "./types";
 import type { CalendarEvent } from "./types";
 
@@ -81,17 +83,22 @@ const rawEntriesOf = (app: App, file: TFile): unknown[] => {
  * changes. Copies of a multi-day entry are folded together by id, and the first
  * copy wins — they are written identically, so any of them is the entry.
  */
-export const collectEvents = (app: App): CalendarEvent[] => {
+export const collectEvents = (
+  app: App,
+  problems: EntryProblem[] = []
+): CalendarEvent[] => {
   const byId = new Map<string, CalendarEvent>();
   const seenIds = new Set<string>();
+  const fallback = settingsStore.read().eventDefaults;
   for (const file of Object.values(allDailyNotes())) {
-    for (const raw of rawEntriesOf(app, file)) {
+    for (const [index, raw] of rawEntriesOf(app, file).entries()) {
       // The id is checked before sanitising: sanitizeEvent hands a duplicate a
       // fresh id, which is right for two different entries that collided and
       // wrong for the same entry seen in the second note of its range
       const id = (raw as { id?: unknown })?.id;
       if (typeof id === "string" && byId.has(id)) continue;
-      const event = sanitizeEvent(raw, seenIds);
+      const { event, reason } = inspectEvent(raw, seenIds, fallback);
+      if (reason) problems.push({ path: file.path, index, reason });
       if (event) byId.set(event.id, event);
     }
   }
@@ -100,7 +107,29 @@ export const collectEvents = (app: App): CalendarEvent[] => {
 
 /** Re-read the vault into the store. */
 export const refreshEvents = (app: App): void => {
-  setEvents(collectEvents(app));
+  const problems: EntryProblem[] = [];
+  setEvents(collectEvents(app, problems));
+  problemsStore.write(problems);
+  notifyProblems(problems);
+};
+
+/**
+ * The problem sets already announced this session.
+ *
+ * Every note change re-reads the vault, so without this one bad entry would
+ * raise a notice on every keystroke in any daily note.
+ */
+const announced = new Set<string>();
+
+const notifyProblems = (problems: EntryProblem[]): void => {
+  if (problems.length === 0) return;
+  const signature = problems
+    .map((p) => `${p.path}#${p.index}#${p.reason}`)
+    .sort()
+    .join("|");
+  if (announced.has(signature)) return;
+  announced.add(signature);
+  new Notice(t("notice.entryProblems", { count: problems.length }), 10_000);
 };
 
 /**

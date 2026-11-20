@@ -366,6 +366,13 @@ export const en = {
   "eventList.markDone": "Mark done",
   "eventList.markUndone": "Mark not done",
   "eventList.badgeUnhandled": "Not handled",
+  "notice.entryProblems": "{count} entries in your daily notes could not be used as written. See Reminders and events for details.",
+  "eventList.problemsSummary": "{count} entries do not match the format",
+  "eventList.problemWhere": "{path}, entry {index}:",
+  "problem.notObject": "not a list item with fields; skipped",
+  "problem.title": "missing or empty title; skipped",
+  "problem.start": "start date is not YYYY-MM-DD; skipped",
+  "problem.colorDefaulted": "colour is not #rrggbb; the default colour is used",
 } as const;
 
 export type TranslationKey = keyof typeof en;

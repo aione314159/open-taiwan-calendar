@@ -120,6 +120,52 @@ const readReminder = (raw: Record<string, unknown>): ReminderRule | null => {
   return offsets.length === 0 ? null : { offsets, time: remindTime };
 };
 
+/** Why an entry was dropped, or repaired, on the way in. */
+export type EntryProblemReason = "notObject" | "title" | "start" | "colorDefaulted";
+
+/** The colours an entry with an unusable colour falls back to. */
+export interface FallbackColors {
+  reminderColor: string;
+  eventColor: string;
+}
+
+/** The plugin's shipped defaults; the caller passes the user's own when it has them. */
+const BUILT_IN_COLORS: FallbackColors = {
+  reminderColor: "#e07a5f",
+  eventColor: "#3d5a80",
+};
+
+/**
+ * One entry and what was wrong with it.
+ *
+ * `event` is null when the entry cannot be used at all. A bad colour is the one
+ * repair made rather than a drop: the colour only decides how the dot looks,
+ * and losing the whole entry over it would be the worse failure. That case
+ * comes back with both an event and a `colorDefaulted` reason, so the list can
+ * say the default was applied.
+ */
+export const inspectEvent = (
+  raw: unknown,
+  seenIds?: Set<string>,
+  fallback: FallbackColors = BUILT_IN_COLORS
+): { event: CalendarEvent | null; reason: EntryProblemReason | null } => {
+  if (!isPlainObject(raw)) return { event: null, reason: "notObject" };
+  const color = raw.color;
+  const colorOk = typeof color === "string" && COLOR_PATTERN.test(color);
+  const repaired = colorOk
+    ? raw
+    : {
+        ...raw,
+        color: readReminder(raw) ? fallback.reminderColor : fallback.eventColor,
+      };
+  const event = sanitizeEvent(repaired, seenIds);
+  if (event) return { event, reason: colorOk ? null : "colorDefaulted" };
+  if (typeof raw.title !== "string" || sanitizeTitle(raw.title).length === 0) {
+    return { event: null, reason: "title" };
+  }
+  return { event: null, reason: "start" };
+};
+
 /**
  * One entry, or null if it cannot be repaired.
  *

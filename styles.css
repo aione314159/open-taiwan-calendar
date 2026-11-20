@@ -1712,3 +1712,26 @@ body {
   flex: 0 0 auto;
   margin-left: auto;
 }
+
+/* ---------- entries that could not be used as written */
+.otc-entry-problems details {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-error);
+  color: var(--text-normal);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-entry-problems summary {
+  cursor: pointer;
+  font-weight: var(--font-semibold);
+}
+
+.otc-entry-problem {
+  margin-top: 4px;
+}
+
+.otc-entry-problem a {
+  cursor: pointer;
+}

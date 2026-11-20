@@ -1,4 +1,5 @@
 import { Store, useStoreValue } from "../state/store";
+import type { EntryProblemReason } from "./sanitize";
 import type { CalendarEvent } from "./types";
 
 /**
@@ -16,6 +17,18 @@ export const eventsStore = new Store<CalendarEvent[]>([]);
 
 /** Read outside React. Components should use `useEvents` so they re-render. */
 export const readEvents = (): CalendarEvent[] => eventsStore.read();
+
+/** One `otc-events` entry the last read could not use as written. */
+export interface EntryProblem {
+  /** The daily note it is in. */
+  path: string;
+  /** Its position in that note's list, from 0. */
+  index: number;
+  reason: EntryProblemReason;
+}
+
+/** What the last read dropped or repaired. Empty when every entry was usable. */
+export const problemsStore = new Store<EntryProblem[]>([]);
 
 /** Replace the whole list. Called by the repository after a load or a save. */
 export const setEvents = (events: CalendarEvent[]): void =>
