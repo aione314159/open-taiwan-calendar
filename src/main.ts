@@ -163,7 +163,7 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       refreshEvents(this.app);
       // A reminder due at 09:00 in a vault that was not open at 09:00 has to
       // appear on opening rather than be skipped for the day
-      runReminderSweep(this);
+      runReminderSweep(this, { startup: true });
 
       // Frontmatter is text the user can edit — in the property panel, in the
       // editor, or through a sync from another device — so the calendar follows

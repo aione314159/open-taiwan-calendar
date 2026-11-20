@@ -138,6 +138,15 @@ export type PluginSetting = Record<NoteType, NoteConfig> & {
    */
   reminderState: Record<string, string>;
   /**
+   * The day of the last reminder sweep on this machine, `YYYY-MM-DD`, or empty
+   * before the first one.
+   *
+   * What lets the first sweep after a gap find the reminders that came and went
+   * while Obsidian was closed — and only those: entries already over before the
+   * last sweep were seen then.
+   */
+  lastSweepDate: string;
+  /**
    * Calendars the Directorate-General of Personnel Administration has announced
    * but this plugin does not bundle yet, keyed by year. They take precedence
    * over the built-in table.
@@ -192,6 +201,7 @@ export const defaultSetting: PluginSetting = {
     allowDirectAdd: false,
   },
   reminderState: {},
+  lastSweepDate: "",
   holidayOverrides: {},
 };
 
