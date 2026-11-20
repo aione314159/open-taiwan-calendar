@@ -1,4 +1,4 @@
-import { App, Modal, Setting, TextComponent, ToggleComponent } from "obsidian";
+import { App, ColorComponent, Modal, Setting, TextComponent, ToggleComponent } from "obsidian";
 import { addDays, diffDays } from "../event/dateMath";
 import { dailyNoteExists, MAX_EVENT_DAYS } from "../event/noteStore";
 import { formatOffsets, parseOffsets } from "../event/offsets";
@@ -128,6 +128,13 @@ export class QuickAddEventModal extends Modal {
   private offsetsPicker: OffsetPicker | null = null;
   private timeField: TextComponent | null = null;
   private notesInfo: HTMLElement | null = null;
+  private colorPicker: ColorComponent | null = null;
+  private offsetsRow: Setting | null = null;
+  private timeRow: Setting | null = null;
+  /** The colour was chosen by hand (or belongs to an existing entry) and stays put. */
+  private colorTouched = false;
+  /** Set while the dialog itself changes the colour, so that is not taken as the user's choice. */
+  private settingColor = false;
   private parseSummary: HTMLElement | null = null;
   /** Whether the sentence box has text; with none the summary stays empty. */
   private hasSentence = false;
@@ -144,6 +151,8 @@ export class QuickAddEventModal extends Modal {
     super(app);
     const { reminder, eventDefaults } = settingsStore.read();
     const existing = preset.existing;
+    // An existing entry's colour, or one passed in, is kept whatever the switch does
+    this.colorTouched = existing !== undefined || preset.color !== undefined;
     const today = existing?.start ?? preset.date ?? moment().format("YYYY-MM-DD");
     this.draft = {
       title: existing?.title ?? preset.title ?? "",
@@ -259,11 +268,14 @@ export class QuickAddEventModal extends Modal {
 
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldColor"))
-      .addColorPicker((picker) =>
+      .addColorPicker((picker) => {
+        this.colorPicker = picker;
         picker.setValue(this.draft.color).onChange((value) => {
+          // A colour set from here on is the user's, not the default's
+          if (!this.settingColor) this.colorTouched = true;
           this.draft.color = value;
-        })
-      );
+        });
+      });
 
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldReminder"))
@@ -271,10 +283,11 @@ export class QuickAddEventModal extends Modal {
         this.remindToggle = toggle;
         toggle.setValue(this.draft.remind).onChange((value) => {
           this.draft.remind = value;
+          this.syncReminderFields();
         });
       });
 
-    new Setting(this.contentEl)
+    this.offsetsRow = new Setting(this.contentEl)
       .setName(t("quickAdd.fieldOffsets"))
       .setDesc(t("quickAdd.fieldOffsetsDesc"))
       .then((setting) => {
@@ -288,7 +301,7 @@ export class QuickAddEventModal extends Modal {
         );
       });
 
-    new Setting(this.contentEl)
+    this.timeRow = new Setting(this.contentEl)
       .setName(t("quickAdd.fieldTime"))
       .addText((text) => {
         this.timeField = text;
@@ -301,6 +314,8 @@ export class QuickAddEventModal extends Modal {
             this.draft.time = value.trim();
           });
       });
+
+    this.syncReminderFields();
 
     // Created empty and filled on failure, rather than created on demand: a row
     // that appears between two fields shifts everything below it, and the
@@ -378,6 +393,29 @@ export class QuickAddEventModal extends Modal {
     this.draft.end = addDays(next, span);
     this.endField?.setValue(this.draft.end);
     this.updateNotesInfo();
+  }
+
+  /**
+   * Follow the reminder switch: the days-before and time rows are disabled
+   * (not hidden, so nothing below moves under the pointer) while it is off,
+   * and the colour follows the kind of entry unless it was chosen by hand.
+   */
+  private syncReminderFields(): void {
+    const on = this.draft.remind;
+    for (const row of [this.offsetsRow, this.timeRow]) {
+      if (!row) continue;
+      row.settingEl.toggleClass("is-disabled", !on);
+      row.controlEl
+        .querySelectorAll<HTMLInputElement>("input")
+        .forEach((input) => (input.disabled = !on));
+    }
+    if (this.colorTouched || !this.colorPicker) return;
+    const { eventDefaults } = settingsStore.read();
+    const color = on ? eventDefaults.reminderColor : eventDefaults.eventColor;
+    this.settingColor = true;
+    this.colorPicker.setValue(color);
+    this.settingColor = false;
+    this.draft.color = color;
   }
 
   /**
@@ -490,6 +528,7 @@ export class QuickAddEventModal extends Modal {
     if (this.endField) this.endField.inputEl.min = parsed.start;
     this.updateNotesInfo();
     this.remindToggle?.setValue(this.draft.remind);
+    this.syncReminderFields();
     this.showError("");
   }
 
