@@ -293,10 +293,10 @@ export class QuickAddEventModal extends Modal {
     // Enter in any single-line field submits; Ctrl/Cmd+Enter anywhere does.
     // An Enter that picks a candidate in an input method is not a submit.
     this.contentEl.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
+      if (event.key !== "Enter" || event.isComposing) return;
       const target = event.target as HTMLElement;
       const singleLine =
-        target instanceof HTMLInputElement &&
+        target.instanceOf(HTMLInputElement) &&
         ["text", "date", "time", "search", "number"].includes(target.type);
       if (event.ctrlKey || event.metaKey || singleLine) {
         event.preventDefault();
