@@ -18,6 +18,7 @@ export const inlineToPreset = (item: InlineReminder): QuickAddPreset => ({
   remind: true,
   offsets: [0],
   ...(item.time ? { time: item.time } : {}),
+  fromInline: { path: item.path, line: item.line },
 });
 
 /** Remove the `(@…)` mark from its line, leaving every other character alone. */
