@@ -53,6 +53,10 @@ const allDailyNotes = (): Record<string, TFile> => {
   }
 };
 
+/** Whether the daily note for a `YYYY-MM-DD` date already exists. Never creates one. */
+export const dailyNoteExists = (day: string): boolean =>
+  dailyNoteFor(moment(day, "YYYY-MM-DD")) !== null;
+
 const dailyNoteFor = (date: Moment): TFile | null => {
   try {
     return dni.getDailyNote(date, allDailyNotes()) ?? null;
@@ -107,11 +111,13 @@ export const refreshEvents = (app: App): void => {
  * file the user did not click for. `createDailyNote` honours whatever template,
  * folder and filename format the vault is configured with.
  */
-export const ensureDailyNote = async (date: Moment): Promise<TFile | null> => {
+export const ensureDailyNote = async (
+  date: Moment
+): Promise<{ file: TFile; created: boolean } | null> => {
   const existing = dailyNoteFor(date);
-  if (existing) return existing;
+  if (existing) return { file: existing, created: false };
   try {
-    return await dni.createDailyNote(date);
+    return { file: await dni.createDailyNote(date), created: true };
   } catch {
     new Notice(t("notice.dailyNoteCreateFailed", { date: date.format("YYYY-MM-DD") }));
     return null;
@@ -142,6 +148,8 @@ const writeEntries = async (
 export interface TouchedNote {
   file: TFile;
   entries: CalendarEvent[];
+  /** True when this write created the note. */
+  created: boolean;
 }
 
 /** The entries of one note, as sanitised events. */
@@ -180,18 +188,19 @@ export const upsertEvent = async (
     if (!file) continue;
     const entries = entriesOf(app, file).filter((e) => e.id !== event.id);
     await writeEntries(app, file, entries);
-    touched.push({ file, entries });
+    touched.push({ file, entries, created: false });
   }
 
   for (const day of nextDays) {
-    const file = await ensureDailyNote(moment(day, "YYYY-MM-DD"));
-    if (!file) continue;
+    const ensured = await ensureDailyNote(moment(day, "YYYY-MM-DD"));
+    if (!ensured) continue;
+    const { file, created } = ensured;
     const entries = sortEvents([
       ...entriesOf(app, file).filter((e) => e.id !== event.id),
       event,
     ]);
     await writeEntries(app, file, entries);
-    touched.push({ file, entries });
+    touched.push({ file, entries, created });
   }
   return touched;
 };
@@ -207,7 +216,7 @@ export const deleteEvent = async (
     if (!file) continue;
     const entries = entriesOf(app, file).filter((e) => e.id !== event.id);
     await writeEntries(app, file, entries);
-    touched.push({ file, entries });
+    touched.push({ file, entries, created: false });
   }
   return touched;
 };
