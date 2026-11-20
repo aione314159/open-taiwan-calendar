@@ -232,6 +232,13 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { readingViewEvents: value as boolean },
         }));
         break;
+      case "carryOverSource":
+        // A top-level field, not "<section>.<field>", so the default below
+        // cannot write it
+        this.plugin.writeOptions(() => ({
+          carryOverSource: value === "migrate" ? "migrate" : "keep",
+        }));
+        break;
       case "floatingWindow.width": {
         const width = Math.max(
           MIN_FLOATING_WIDTH,
@@ -551,6 +558,18 @@ export default class MainSettingTable extends PluginSettingTab {
           name: t("settings.snoozeName"),
           desc: t("settings.snoozeDesc"),
           control: { type: "number", key: "reminder.snoozeMinutes", min: 1 },
+        },
+        {
+          name: t("settings.carryOverName"),
+          desc: t("settings.carryOverDesc"),
+          control: {
+            type: "dropdown",
+            key: "carryOverSource",
+            options: {
+              keep: t("settings.carryOverKeep"),
+              migrate: t("settings.carryOverMigrate"),
+            },
+          },
         },
         {
           name: t("settings.protocolDirectAddName"),

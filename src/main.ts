@@ -26,6 +26,8 @@ import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
 import { CaptureTaskModal } from "./view/CaptureTaskModal";
+import { CarryOverModal } from "./view/CarryOverModal";
+import { extractOpenTasks, previousDailyNote } from "./note/carryOver";
 import SettingView from "./view/SettingView";
 
 // The plugin object
@@ -90,6 +92,26 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       id: "capture-task",
       name: t("command.captureTask"),
       callback: () => new CaptureTaskModal(this.app).open(),
+    });
+
+    this.addCommand({
+      id: "carry-over-tasks",
+      name: t("command.carryOver"),
+      callback: () => {
+        const source = previousDailyNote();
+        if (!source) {
+          new Notice(t("notice.carryOverNoSource"));
+          return;
+        }
+        void this.app.vault.cachedRead(source).then((content) => {
+          const tasks = extractOpenTasks(content);
+          if (tasks.length === 0) {
+            new Notice(t("notice.carryOverNothing", { note: source.basename }));
+            return;
+          }
+          new CarryOverModal(this.app, source, tasks).open();
+        });
+      },
     });
 
     this.addCommand({

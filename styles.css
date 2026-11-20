@@ -1814,3 +1814,34 @@ body {
 .otc-reminder-row.is-snoozed {
   opacity: 0.5;
 }
+
+/* ---------- carry open to-dos into today */
+.otc-carry-over-source {
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-carry-over-list {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.otc-carry-over-heading {
+  margin: 8px 0 2px;
+  font-weight: var(--font-semibold);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.otc-carry-over-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.otc-carry-over-children {
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+}
