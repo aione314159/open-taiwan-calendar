@@ -91,13 +91,32 @@ export const setEventDone = async (
   );
 };
 
-/** Remove an entry from every note of its range. The notes themselves stay. */
+/** How long the "deleted — undo" notice stays. */
+const UNDO_NOTICE_MS = 8000;
+
+/**
+ * Remove an entry from every note of its range. The notes themselves stay.
+ *
+ * The notice offers Undo for as long as it is up: the entry is written back
+ * with the same id and fields into every note of its range, through the same
+ * write as any other save.
+ */
 export const removeEvent = async (app: App, id: string): Promise<void> => {
   const doomed = findEvent(id);
   if (!doomed) return;
   await deleteEvent(app, doomed);
   settle(app);
-  new Notice(t("notice.eventDeleted", { title: doomed.title }));
+  const fragment = createFragment();
+  fragment.append(t("notice.eventDeleted", { title: doomed.title }), " ");
+  const undo = fragment.createEl("a", { text: t("notice.undo") });
+  const notice = new Notice(fragment, UNDO_NOTICE_MS);
+  undo.addEventListener("click", () => {
+    notice.hide();
+    void upsertEvent(app, doomed).then(() => {
+      settle(app);
+      new Notice(t("notice.eventRestored", { title: doomed.title }));
+    });
+  });
 };
 
 /**
