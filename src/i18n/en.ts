@@ -554,6 +554,7 @@ export const en = {
   "eventList.showOnCalendar": "Show on the calendar",
   "settings.followActiveNoteName": "Follow the open note",
   "settings.followActiveNoteDesc": "When a daily note from another month becomes the active file, the calendar pages to that month.",
+  "eventList.moreActions": "More actions",
 } as const;
 
 export type TranslationKey = keyof typeof en;

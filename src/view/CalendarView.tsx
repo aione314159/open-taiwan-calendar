@@ -129,7 +129,8 @@ export class CalendarView extends ItemView {
           () => openQuickAddEvent(this.app),
           (event) => setEventDone(this.app, event, !event.done),
           // The panel stays open: jumping to a day or adding keeps the list
-          () => undefined
+          () => undefined,
+          true
         );
         body.mount();
       } else if (!open && body) {

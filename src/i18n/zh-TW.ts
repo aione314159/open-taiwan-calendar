@@ -504,4 +504,5 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "eventList.showOnCalendar": "在日曆上顯示",
   "settings.followActiveNoteName": "跟隨開啟的筆記",
   "settings.followActiveNoteDesc": "作用中檔案換成另一個月份的每日筆記時，日曆自動翻到該月。",
+  "eventList.moreActions": "更多動作",
 };
