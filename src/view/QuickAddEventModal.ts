@@ -186,9 +186,6 @@ export class QuickAddEventModal extends Modal {
         // the user can type straight after the command without reaching for the
         // mouse
         window.setTimeout(() => text.inputEl.focus(), 0);
-        text.inputEl.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") this.submit();
-        });
       });
 
     new Setting(this.contentEl)
@@ -287,7 +284,25 @@ export class QuickAddEventModal extends Modal {
     // Created empty and filled on failure, rather than created on demand: a row
     // that appears between two fields shifts everything below it, and the
     // button the user was about to press moves out from under the pointer
-    this.error = this.contentEl.createDiv({ cls: "otc-quick-add-error" });
+    this.error = this.contentEl.createDiv({
+      cls: "otc-quick-add-error",
+      // Read out by screen readers as soon as it changes
+      attr: { role: "alert", "aria-live": "assertive" },
+    });
+
+    // Enter in any single-line field submits; Ctrl/Cmd+Enter anywhere does.
+    // An Enter that picks a candidate in an input method is not a submit.
+    this.contentEl.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
+      const target = event.target as HTMLElement;
+      const singleLine =
+        target instanceof HTMLInputElement &&
+        ["text", "date", "time", "search", "number"].includes(target.type);
+      if (event.ctrlKey || event.metaKey || singleLine) {
+        event.preventDefault();
+        this.submit();
+      }
+    });
 
     const buttons = new Setting(this.contentEl);
     const onDelete = this.preset.onDelete;
@@ -413,7 +428,9 @@ export class QuickAddEventModal extends Modal {
     this.showError("");
   }
 
-  private showError(message: string): void {
+  private showError(message: string, field?: HTMLElement | null): void {
+    // The first field with the problem gets the focus
+    field?.focus();
     if (!this.error) return;
     this.error.setText(message);
     this.error.toggleClass("is-visible", message.length > 0);
@@ -423,27 +440,33 @@ export class QuickAddEventModal extends Modal {
     const { title, start, end, color, remind, offsets, time } = this.draft;
     const cleanTitle = title.trim();
     if (cleanTitle.length === 0) {
-      this.showError(t("quickAdd.errorEmptyTitle"));
+      this.showError(t("quickAdd.errorEmptyTitle"), this.titleField?.inputEl);
       return;
     }
     if (!ISO_DATE_PATTERN.test(start) || !ISO_DATE_PATTERN.test(end)) {
-      this.showError(t("quickAdd.errorBadDate"));
+      this.showError(
+        t("quickAdd.errorBadDate"),
+        ISO_DATE_PATTERN.test(start) ? this.endField?.inputEl : this.startField?.inputEl
+      );
       return;
     }
     if (end < start) {
-      this.showError(t("quickAdd.errorEndBeforeStart"));
+      this.showError(t("quickAdd.errorEndBeforeStart"), this.endField?.inputEl);
       return;
     }
 
     let reminder: CalendarEvent["reminder"] = null;
     if (remind) {
       if (!TIME_PATTERN.test(time)) {
-        this.showError(t("quickAdd.errorBadTime"));
+        this.showError(t("quickAdd.errorBadTime"), this.timeField?.inputEl);
         return;
       }
       const parsedOffsets = parseOffsets(offsets);
       if (!parsedOffsets) {
-        this.showError(t("quickAdd.errorNoOffset"));
+        this.showError(
+          t("quickAdd.errorNoOffset"),
+          this.contentEl.querySelector<HTMLElement>(".otc-offset-chip input")
+        );
         return;
       }
       reminder = { offsets: parsedOffsets, time };
