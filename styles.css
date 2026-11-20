@@ -1859,3 +1859,74 @@ body {
   color: var(--text-on-accent);
   background: var(--text-warning);
 }
+
+/* ---------- coming up, below the sidebar grid */
+.otc-upcoming {
+  margin: 4px 8px 8px;
+  font-size: var(--font-ui-small);
+}
+
+.otc-upcoming-head {
+  width: 100%;
+  justify-content: flex-start;
+  font-weight: var(--font-semibold);
+  box-shadow: none;
+  background: transparent;
+}
+
+.otc-upcoming-head::before {
+  content: "▾ ";
+}
+
+.otc-upcoming.is-collapsed .otc-upcoming-head::before {
+  content: "▸ ";
+}
+
+.otc-upcoming-empty {
+  padding: 4px 8px;
+  color: var(--text-muted);
+}
+
+.otc-upcoming-date {
+  margin: 6px 8px 2px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-upcoming-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: auto;
+  padding: 3px 8px;
+  justify-content: flex-start;
+  text-align: left;
+  box-shadow: none;
+  background: transparent;
+}
+
+.otc-upcoming-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.otc-upcoming-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--otc-event-color);
+}
+
+.otc-upcoming-title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.otc-upcoming-meta {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}

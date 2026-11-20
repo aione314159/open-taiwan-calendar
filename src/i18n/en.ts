@@ -452,6 +452,16 @@ export const en = {
   "inline.batchConfirm": "{count} calendar reminders will be added. Continue?",
   "inline.needSetting": "Turn on \"Show inline reminder marks\" in the settings first.",
   "inline.noneUpcoming": "There are no upcoming inline reminders.",
+  "upcoming.title": "Next {days} days",
+  "upcoming.empty": "Nothing in the next {days} days.",
+  "upcoming.ongoing": "Ongoing",
+  "upcoming.tomorrow": "Tomorrow",
+  "upcoming.inDays": "In {count} d",
+  "upcoming.reminds": "🔔 {time}",
+  "settings.upcomingName": "Show what is coming up",
+  "settings.upcomingDesc": "List the reminders and events of the next days below the sidebar calendar.",
+  "settings.upcomingDaysName": "Days ahead",
+  "settings.upcomingDaysDesc": "How many days the list covers, today included (1–90).",
 } as const;
 
 export type TranslationKey = keyof typeof en;

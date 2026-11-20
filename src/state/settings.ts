@@ -73,6 +73,12 @@ export interface AppearanceSetting {
    * means scanning the vault's open tasks.
    */
   inlineReminders: boolean;
+  /** Whether the sidebar lists what is coming up below the grid. */
+  upcoming: boolean;
+  /** How many days ahead that list looks, today included. */
+  upcomingDays: number;
+  /** Whether that list is folded to its heading. */
+  upcomingCollapsed: boolean;
 }
 
 export interface FloatingWindowSetting {
@@ -202,6 +208,9 @@ export const defaultSetting: PluginSetting = {
     hoverPreview: true,
     readingViewEvents: true,
     inlineReminders: false,
+    upcoming: true,
+    upcomingDays: 14,
+    upcomingCollapsed: false,
   },
   floatingWindow: {
     visible: false,
