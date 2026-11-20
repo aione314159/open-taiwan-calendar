@@ -361,6 +361,11 @@ export const en = {
   "quickAdd.notesNoneNew": "Covers {days} days. Every daily note already exists; none will be created.",
   "quickAdd.notesMore": " and {count} more",
   "quickAdd.notesOldRange": " Notes outside the new range only lose this entry; they are not deleted.",
+  "notice.eventDone": "Marked done: {title}",
+  "notice.eventUndone": "Marked not done: {title}",
+  "eventList.markDone": "Mark done",
+  "eventList.markUndone": "Mark not done",
+  "eventList.badgeUnhandled": "Not handled",
 } as const;
 
 export type TranslationKey = keyof typeof en;

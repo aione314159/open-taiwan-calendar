@@ -73,6 +73,24 @@ export const commitEventEdit = async (
   savedNotice(edited.title, createdCount(touched));
 };
 
+/**
+ * Mark an entry handled, or not.
+ *
+ * Goes through the same write as an edit, so every copy of a multi-day entry
+ * is updated together.
+ */
+export const setEventDone = async (
+  app: App,
+  event: CalendarEvent,
+  done: boolean
+): Promise<void> => {
+  await upsertEvent(app, { ...event, done }, event);
+  settle(app);
+  new Notice(
+    t(done ? "notice.eventDone" : "notice.eventUndone", { title: event.title })
+  );
+};
+
 /** Remove an entry from every note of its range. The notes themselves stay. */
 export const removeEvent = async (app: App, id: string): Promise<void> => {
   const doomed = findEvent(id);
@@ -152,6 +170,7 @@ export const openEventList = (app: App): void => {
     app,
     (event) => openEditEvent(app, event),
     (event) => void removeEvent(app, event.id),
-    () => openQuickAddEvent(app)
+    () => openQuickAddEvent(app),
+    (event) => setEventDone(app, event, !event.done)
   ).open();
 };

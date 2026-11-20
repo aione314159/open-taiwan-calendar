@@ -1,5 +1,6 @@
 import { App, Notice } from "obsidian";
 import { addDays, diffDays } from "../event/dateMath";
+import { setEventDone } from "../event/commands";
 import { readEvents } from "../event/store";
 import { ReminderChannel } from "../event/types";
 import type { CalendarEvent } from "../event/types";
@@ -115,8 +116,12 @@ const announce = (
 
   const modalItems = due.filter(wants(ReminderChannel.MODAL));
   if (modalItems.length === 0) return;
-  new ReminderModal(app, modalItems, snoozeMinutes, () =>
-    onSnooze(modalItems.map((item) => fireKey(item.event.id, item.offset)))
+  new ReminderModal(
+    app,
+    modalItems,
+    snoozeMinutes,
+    () => onSnooze(modalItems.map((item) => fireKey(item.event.id, item.offset))),
+    (event) => setEventDone(app, event, true)
   ).open();
 };
 
@@ -143,7 +148,7 @@ export const runReminderSweep = (host: SchedulerHost): void => {
 
   for (const event of events) {
     const rule = event.reminder;
-    if (!rule) continue;
+    if (!rule || event.done) continue;
     for (const offset of rule.offsets) {
       const key = fireKey(event.id, offset);
       if (state[key]) continue;

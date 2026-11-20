@@ -19,7 +19,8 @@ export type Phase = "current" | "upcoming" | "past";
 
 /** `today` is `YYYY-MM-DD`; the comparisons are plain string ordering. */
 export const phaseOf = (event: CalendarEvent, today: string): Phase => {
-  if (event.end < today) return "past";
+  // A handled reminder is finished business, whatever its dates say
+  if (event.done || event.end < today) return "past";
   if (event.start > today) return "upcoming";
   return "current";
 };

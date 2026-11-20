@@ -31,7 +31,8 @@ export class EventListModal extends Modal {
     app: App,
     private readonly onEdit: (event: CalendarEvent) => void,
     private readonly onDelete: (event: CalendarEvent) => void,
-    private readonly onAdd: () => void
+    private readonly onAdd: () => void,
+    private readonly onToggleDone: (event: CalendarEvent) => Promise<void>
   ) {
     super(app);
   }
@@ -102,6 +103,11 @@ export class EventListModal extends Modal {
 
     for (const { event, phase } of rows) {
       const row = el.createDiv({ cls: `otc-event-row is-${phase}` });
+      row.toggleClass("is-done", event.done);
+      // Over and never marked handled: the one row in this list that may still
+      // need doing
+      const unhandled = event.reminder !== null && !event.done && event.end < today;
+      row.toggleClass("is-unhandled", unhandled);
       row.createDiv({ cls: "otc-event-row-dot" }).style.setProperty(
         "--otc-event-color",
         event.color
@@ -116,12 +122,29 @@ export class EventListModal extends Modal {
           text: t("eventList.badgeNow"),
         });
       }
+      if (unhandled) {
+        head.createSpan({
+          cls: "otc-event-row-badge is-unhandled",
+          text: t("eventList.badgeUnhandled"),
+        });
+      }
       text.createDiv({
         cls: "otc-event-row-meta",
         text: `${this.range(event)} · ${formatReminderSummary(event.reminder)}`,
       });
 
       const actions = row.createDiv({ cls: "otc-event-row-actions" });
+      // Only a reminder has something to be done; a plain marker does not
+      if (event.reminder !== null) {
+        const toggle = actions.createEl("button", { cls: "clickable-icon" });
+        setIcon(toggle, event.done ? "rotate-ccw" : "check-circle");
+        setTooltip(toggle, t(event.done ? "eventList.markUndone" : "eventList.markDone"));
+        toggle.addEventListener("click", () => {
+          toggle.disabled = true;
+          // Stays open: the row moves to its new place in the list
+          void this.onToggleDone(event).then(() => this.renderList());
+        });
+      }
       for (const [icon, label, run] of [
         ["pencil", t("settings.eventEditAction"), () => this.onEdit(event)],
         ["trash-2", t("settings.eventDeleteAction"), () => this.onDelete(event)],

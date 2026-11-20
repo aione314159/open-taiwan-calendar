@@ -1,4 +1,4 @@
-import { App, Modal, Setting } from "obsidian";
+import { App, Modal, Setting, setIcon, setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
@@ -30,7 +30,9 @@ export class ReminderModal extends Modal {
     private readonly items: DueReminder[],
     private readonly snoozeMinutes: number,
     /** Called instead of a plain dismissal; the scheduler re-arms the items. */
-    private readonly onSnooze: () => void
+    private readonly onSnooze: () => void,
+    /** Marks one item handled, so its later occurrences stay silent. */
+    private readonly onDone: (event: CalendarEvent) => Promise<void>
   ) {
     super(app);
   }
@@ -55,6 +57,13 @@ export class ReminderModal extends Modal {
       text.createDiv({
         cls: "otc-reminder-meta",
         text: this.metaLine(event, daysUntil),
+      });
+      const done = row.createEl("button", { cls: "clickable-icon otc-reminder-done" });
+      setIcon(done, "check-circle");
+      setTooltip(done, t("eventList.markDone"));
+      done.addEventListener("click", () => {
+        done.disabled = true;
+        void this.onDone(event).then(() => row.addClass("is-done"));
       });
     }
 

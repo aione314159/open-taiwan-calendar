@@ -51,6 +51,11 @@ export interface CalendarEvent {
   reminder: ReminderRule | null;
   /** ISO 8601, for ordering entries created on the same day. */
   createdAt: string;
+  /**
+   * The user marked it handled. A done reminder fires no further occurrences.
+   * Old entries without the field are not done.
+   */
+  done: boolean;
 }
 
 /**
@@ -85,4 +90,6 @@ export interface EventFrontmatterEntry {
   /** Absent when the entry is an activity with no reminder. */
   remindTime?: string;
   createdAt: string;
+  /** Written only when true, so untouched entries keep their old shape. */
+  done?: boolean;
 }
