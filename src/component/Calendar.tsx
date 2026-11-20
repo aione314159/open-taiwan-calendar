@@ -725,14 +725,6 @@ const Calendar: React.FC<CalendarProps> = ({
             onClick={() => onAddEvent(moment())}
           />
           )}
-          {toolbar.eventList && (
-          <IconButton
-            icon="list-checks"
-            label={t("command.showEventList")}
-            className="otc-settings-button"
-            onClick={onShowEventList}
-          />
-          )}
           {toolbar.jump && (
           <IconButton
             icon="calendar-search"
@@ -763,6 +755,17 @@ const Calendar: React.FC<CalendarProps> = ({
         </div>
         )}
         <div className="otc-toolbar-right">
+        {/* Next to Today: both are about what the panel below shows */}
+        {toolbar.eventList && (
+          <IconButton
+            icon="list-checks"
+            label={t("command.showEventList")}
+            className={classNames("otc-settings-button", "otc-list-button", {
+              "is-active": view.listOpen,
+            })}
+            onClick={onShowEventList}
+          />
+        )}
         <button
           type="button"
           className={classNames("otc-today-button", { "is-away": awayFromToday })}

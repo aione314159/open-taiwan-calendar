@@ -1,5 +1,8 @@
 import { Root } from "react-dom/client";
 import { ItemView, WorkspaceLeaf } from "obsidian";
+import { openEditEvent, openQuickAddEvent, removeEvent, setEventDone } from "../event/commands";
+import { calendarViewStore } from "../state/view";
+import { EventListBody } from "./EventListModal";
 import { refreshAllNotes } from "../state/notes";
 import {
   mountCalendarRoot,
@@ -17,6 +20,7 @@ export class CalendarView extends ItemView {
   private root: Root | null = null;
   private upcomingRoot: Root | null = null;
   private dayPanelRoot: Root | null = null;
+  private unwatchList: (() => void) | null = null;
   private scaleController: FitScaleController | null = null;
   readonly plugin: OpenTaiwanCalendarPlugin | null = null;
 
@@ -89,7 +93,7 @@ export class CalendarView extends ItemView {
     // would let the grid stretch without bound (the same note is recorded on
     // .otc-floating-scale in styles.css). The height follows the content.
     const inner = outer.createDiv({ cls: "otc-view-scale" });
-    this.root = mountCalendarRoot(this.app, inner);
+    this.root = mountCalendarRoot(this.app, inner, { inlineList: true });
     // The sidebar is tall and narrow: the ratio is decided by the width and the
     // height is necessarily left over, so top alignment is what stops a large
     // gap appearing above the calendar
@@ -97,12 +101,52 @@ export class CalendarView extends ItemView {
       allowUpscale: true,
       align: "top",
     });
+    this.mountListPanel(mountEl.createDiv({ cls: "otc-event-list-panel" }));
     this.dayPanelRoot = mountDayPanelRoot(this.app, mountEl.createDiv());
     this.upcomingRoot = mountUpcomingRoot(this.app, mountEl.createDiv());
   }
 
   // Release resources when the view closes
+  /**
+   * The reminders-and-events list under the grid, opened by the toolbar's
+   * list button. Mounted only while open; it scrolls inside a capped height so
+   * the grid stays in view.
+   */
+  private mountListPanel(el: HTMLElement): void {
+    this.unwatchList?.();
+    let body: EventListBody | null = null;
+    const sync = () => {
+      const open = calendarViewStore.read().listOpen;
+      if (open && !body) {
+        el.addClass("is-open");
+        body = new EventListBody(
+          this.app,
+          el,
+          (event) => openEditEvent(this.app, event),
+          (event) => void removeEvent(this.app, event.id),
+          () => openQuickAddEvent(this.app),
+          (event) => setEventDone(this.app, event, !event.done),
+          // The panel stays open: jumping to a day or adding keeps the list
+          () => undefined
+        );
+        body.mount();
+      } else if (!open && body) {
+        body.destroy();
+        body = null;
+        el.removeClass("is-open");
+      }
+    };
+    const unwatch = calendarViewStore.watch(sync);
+    this.unwatchList = () => {
+      unwatch();
+      body?.destroy();
+      body = null;
+    };
+    sync();
+  }
+
   async onClose() {
+    this.unwatchList?.();
     this.scaleController?.destroy();
     this.scaleController = null;
     this.root?.unmount();
