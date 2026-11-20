@@ -127,6 +127,7 @@ export const mountCalendarRoot = (
       subscribeColorScheme={(onChange: () => void) =>
         subscribeColorScheme(app, onChange)
       }
+      onSaveSettings={() => app.workspace.trigger("open-taiwan-calendar:save-settings")}
     />
   );
   return root;

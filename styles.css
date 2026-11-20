@@ -1471,8 +1471,11 @@ body {
 }
 
 .otc-holiday-stats-title {
-  margin-bottom: 2px;
-  font-weight: var(--font-semibold);
+  padding-left: 0;
+}
+
+.otc-holiday-stats.is-collapsed .otc-upcoming-head::before {
+  content: "▸ ";
 }
 
 .otc-holiday-stats-summary {
