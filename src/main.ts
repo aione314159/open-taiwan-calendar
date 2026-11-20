@@ -26,6 +26,7 @@ import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
 import { CaptureTaskModal } from "./view/CaptureTaskModal";
+import { DatedTasksModal } from "./view/DatedTasksModal";
 import { addLineAsEntry } from "./note/lineToEvent";
 import { CarryOverModal } from "./view/CarryOverModal";
 import { extractOpenTasks, previousDailyNote } from "./note/carryOver";
@@ -98,6 +99,12 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       id: "add-line-as-event",
       name: t("command.addLineAsEvent"),
       editorCallback: (editor) => addLineAsEntry(this.app, editor, false),
+    });
+
+    this.addCommand({
+      id: "find-dated-tasks",
+      name: t("command.findDatedTasks"),
+      callback: () => new DatedTasksModal(this.app).open(),
     });
 
     this.addCommand({
