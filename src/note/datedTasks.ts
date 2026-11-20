@@ -1,5 +1,6 @@
 import { App, TFile } from "obsidian";
 import * as dni from "obsidian-daily-notes-interface";
+import { diffDays } from "../event/dateMath";
 import { eventsOnDate, readEvents } from "../event/store";
 import { parseNaturalLanguage } from "../event/parseNaturalLanguage";
 import type { ParsedInput } from "../event/parseNaturalLanguage";
@@ -14,6 +15,26 @@ export interface DatedTask {
 }
 
 const OPEN_TASK = /^\s*[-*+] \[ \] /;
+
+/**
+ * How far into the next year a date with no year may land and still count.
+ *
+ * The parser gives a date with no year the next occurrence after the note's
+ * date, which is right for a plan ("1/5" written on 20 December) and wrong
+ * for a note about something that already happened ("8/12 decided ..."
+ * written on 29 August becomes next August). A rolled-over date further out
+ * than this is taken as a reference to the past.
+ */
+const MAX_ROLLOVER_DAYS = 90;
+
+/** True when `start` came from a yearless date pushed into the year after the note's. */
+const looksLikePastReference = (line: string, start: string, noteDate: string): boolean => {
+  const [startYear] = start.split("-");
+  const [noteYear] = noteDate.split("-");
+  if (Number(startYear) !== Number(noteYear) + 1) return false;
+  if (line.includes(startYear)) return false;
+  return diffDays(noteDate, start) > MAX_ROLLOVER_DAYS;
+};
 
 /**
  * Find open to-dos in daily notes that name today or a later date and have no
@@ -49,6 +70,7 @@ export const findDatedTasks = async (
       if (!OPEN_TASK.test(line)) continue;
       const parsed = parseNaturalLanguage(line, noteDate);
       if (!parsed.matchedDate || parsed.start < today || parsed.start === noteDate) continue;
+      if (looksLikePastReference(line, parsed.start, noteDate)) continue;
       const scheduled = eventsOnDate(events, parsed.start).some(
         (event) => event.title === parsed.title
       );
