@@ -331,4 +331,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "reminder.missedMeta": "原定 {date} · 已過 {count} 天",
   "reminder.remindToday": "改到今天提醒",
   "reminder.openNote": "開啟當日筆記",
+  "reminder.snoozeMenu": "稍後提醒…",
+  "reminder.snoozeAll": "全部稍後提醒…",
+  "reminder.snoozeHour": "1 小時後",
+  "reminder.snoozeLaterToday": "今天稍晚 {time}",
+  "reminder.snoozeTomorrow": "明天 {time}",
 };
