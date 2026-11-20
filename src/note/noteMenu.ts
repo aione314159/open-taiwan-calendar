@@ -194,7 +194,8 @@ export const showNoteContextMenu = (
       item
         .setTitle(t("menu.createNote", { noteType: noteTypeLabel(type) }))
         .setIcon("plus")
-        .onClick(() => openOrCreateNote(date, type, notes, app))
+        // Picking "create" from a menu is already the confirmation
+        .onClick(() => openOrCreateNote(date, type, notes, app, false, false))
     );
     if (type === NoteType.DAILY && silentCreateAvailable(app)) {
       menu.addItem((item) =>

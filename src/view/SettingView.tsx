@@ -251,6 +251,11 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { readingViewEvents: value as boolean },
         }));
         break;
+      case "createConfirm":
+        this.plugin.writeOptions(() => ({
+          createConfirm: value === "pastOnly" || value === "never" ? value : "always",
+        }));
+        break;
       case "ribbonAction":
         this.plugin.writeOptions(() => ({
           ribbonAction:
@@ -795,6 +800,19 @@ export default class MainSettingTable extends PluginSettingTab {
           t("settings.notesCardTitle"),
           t("settings.notesCardSubtitle")
         ),
+        {
+          name: t("settings.createConfirmName"),
+          desc: t("settings.createConfirmDesc"),
+          control: {
+            type: "dropdown",
+            key: "createConfirm",
+            options: {
+              always: t("settings.createConfirmAlways"),
+              pastOnly: t("settings.createConfirmPast"),
+              never: t("settings.createConfirmNever"),
+            },
+          },
+        },
         this.paragraph(t("settings.notesCardTitle"), (el) => {
           el.createEl("a", {
             href: "obsidian://show-plugin?id=periodic-notes",

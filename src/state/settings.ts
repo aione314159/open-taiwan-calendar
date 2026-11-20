@@ -187,6 +187,12 @@ export type PluginSetting = Record<NoteType, NoteConfig> & {
   /** What the ribbon icon does: toggle the floating panel, reveal the sidebar calendar, or nothing (hidden). */
   ribbonAction: "floating" | "sidebar" | "hidden";
   /**
+   * When a click on a missing note asks before creating it: always (the old
+   * behaviour), only for past dates, or never. An explicit "create note" menu
+   * item never asks.
+   */
+  createConfirm: "always" | "pastOnly" | "never";
+  /**
    * Calendars the Directorate-General of Personnel Administration has announced
    * but this plugin does not bundle yet, keyed by year. They take precedence
    * over the built-in table.
@@ -255,6 +261,7 @@ export const defaultSetting: PluginSetting = {
   carryOverSource: "keep",
   ignoredDuplicates: [],
   ribbonAction: "floating",
+  createConfirm: "always",
   holidayOverrides: {},
 };
 

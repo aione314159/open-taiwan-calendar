@@ -432,4 +432,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.dayPanelDesc": "在側欄日曆下方顯示所選日期的行程與筆記中的未完成待辦。點擊日期即選取該日。",
   "menu.addReminderOnDay": "在這天新增提醒",
   "menu.showAllEvents": "顯示全部 {count} 筆",
+  "settings.createConfirmName": "建立筆記前確認",
+  "settings.createConfirmDesc": "點擊沒有筆記的日期時是否先詢問。從右鍵選單選「建立筆記」一律不詢問。",
+  "settings.createConfirmAlways": "一律確認",
+  "settings.createConfirmPast": "只在過去日期確認",
+  "settings.createConfirmNever": "不確認",
 };
