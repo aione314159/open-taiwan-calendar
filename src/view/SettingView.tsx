@@ -44,6 +44,7 @@ const TOOLBAR_LABELS: Record<keyof ToolbarSetting, TranslationKey> = {
   addEvent: "settings.toolbarAddEvent",
   eventList: "settings.toolbarEventList",
   jump: "settings.toolbarJump",
+  legend: "settings.toolbarLegend",
   theme: "settings.toolbarTheme",
 };
 
@@ -250,6 +251,7 @@ export default class MainSettingTable extends PluginSettingTab {
       case "appearance.toolbar.addEvent":
       case "appearance.toolbar.eventList":
       case "appearance.toolbar.jump":
+      case "appearance.toolbar.legend":
       case "appearance.toolbar.theme": {
         const button = key.split(".")[2] as keyof ToolbarSetting;
         this.plugin.writeOptions(() => ({

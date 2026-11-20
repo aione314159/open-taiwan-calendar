@@ -29,6 +29,7 @@ import CellLabel from "./CellLabel";
 import EventBars from "./EventBars";
 import IconButton from "./IconButton";
 import JumpToDate from "./JumpToDate";
+import Legend from "./Legend";
 
 /** How long a date picked in the jump picker stays marked. */
 const FLASH_MS = 2000;
@@ -189,6 +190,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const [anchor, setAnchor] = useState<Moment>(() => moment());
   const [mode, setMode] = useState<ViewMode>("month");
   const [jumpOpen, setJumpOpen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(false);
   const [flashIso, setFlashIso] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -197,6 +199,11 @@ const Calendar: React.FC<CalendarProps> = ({
     const timer = window.setTimeout(() => setFlashIso(null), FLASH_MS);
     return () => window.clearTimeout(timer);
   }, [flashIso]);
+
+  const closeLegend = useCallback(() => {
+    setLegendOpen(false);
+    rootRef.current?.querySelector<HTMLButtonElement>(".otc-legend-button")?.focus();
+  }, []);
 
   const closeJump = useCallback(() => {
     setJumpOpen(false);
@@ -535,6 +542,14 @@ const Calendar: React.FC<CalendarProps> = ({
           {/* The icon shows what the click switches to, not what is on now: a
               sun while dark reads as "go light", which is the question the user
               is answering when they reach for it. */}
+          {toolbar.legend && (
+          <IconButton
+            icon="help-circle"
+            label={t("legend.title")}
+            className="otc-settings-button otc-legend-button"
+            onClick={() => setLegendOpen((open) => !open)}
+          />
+          )}
           {toolbar.theme && (
           <IconButton
             icon={isDark ? "sun" : "moon"}
@@ -559,6 +574,8 @@ const Calendar: React.FC<CalendarProps> = ({
           ))}
         </div>
       </div>
+
+      {legendOpen && <Legend onClose={closeLegend} />}
 
       {jumpOpen && (
         <JumpToDate

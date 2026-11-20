@@ -99,6 +99,7 @@ export interface ToolbarSetting {
   addEvent: boolean;
   eventList: boolean;
   jump: boolean;
+  legend: boolean;
   theme: boolean;
 }
 
@@ -107,6 +108,7 @@ export const TOOLBAR_BUTTONS: Array<keyof ToolbarSetting> = [
   "addEvent",
   "eventList",
   "jump",
+  "legend",
   "theme",
 ];
 
@@ -245,7 +247,14 @@ export const defaultSetting: PluginSetting = {
     hoverPreview: true,
     readingViewEvents: true,
     inlineReminders: false,
-    toolbar: { settings: true, addEvent: true, eventList: true, jump: true, theme: true },
+    toolbar: {
+      settings: true,
+      addEvent: true,
+      eventList: true,
+      jump: true,
+      legend: true,
+      theme: true,
+    },
     weekColumn: "auto",
     taskProgress: true,
     dayPanel: true,

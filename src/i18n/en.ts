@@ -520,6 +520,20 @@ export const en = {
   "quickAdd.summaryRange": "Read as {start} to {end}, {days} days",
   "quickAdd.summaryNoDate": "No date found in the sentence; using {date} ({weekday})",
   "quickAdd.daysAgo": "{count} d ago",
+  "legend.title": "What the marks mean",
+  "legend.note": "The day has a daily note",
+  "legend.noteOpen": "The note still has open to-dos",
+  "legend.noteDone": "Every to-do in the note is done",
+  "legend.reminder": "A reminder",
+  "legend.event": "An event with no reminder",
+  "legend.handled": "A reminder marked done",
+  "legend.inline": "An inline (@…) reminder from the Reminder plugin",
+  "legend.more": "More entries than fit",
+  "legend.hasEvent": "Frame: the day has an entry",
+  "legend.today": "Frame: today",
+  "legend.holiday": "Badge: day off",
+  "legend.workday": "Badge: make-up workday",
+  "settings.toolbarLegend": "Toolbar: legend button",
 } as const;
 
 export type TranslationKey = keyof typeof en;

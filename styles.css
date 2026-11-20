@@ -2121,3 +2121,48 @@ body {
 .otc-upcoming-dot.is-event {
   margin-top: 0;
 }
+
+/* ---------- legend: samples drawn with the grid's own classes */
+.otc-legend:focus {
+  outline: none;
+}
+
+.otc-legend-title {
+  margin-bottom: 4px;
+  font-weight: var(--font-semibold);
+}
+
+.otc-legend-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.otc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: var(--font-ui-small);
+}
+
+.otc-legend-sample {
+  display: inline-flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+}
+
+.otc-legend-cell {
+  width: 20px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+}
+
+.otc-legend-marks {
+  position: static;
+  display: inline-flex;
+  width: 8px;
+  height: 8px;
+}
