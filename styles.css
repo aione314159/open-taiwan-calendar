@@ -2235,3 +2235,21 @@ body {
 .otc-day.has-event.events-past.span-right {
   border-right-color: transparent;
 }
+
+/* ---------- keyboard and screen readers on the grid */
+.otc-cell:focus-visible,
+.otc-title-item:focus-visible {
+  outline: 2px solid
+    color-mix(in srgb, var(--text-accent) 70%, var(--text-normal) 30%);
+  outline-offset: 1px;
+}
+
+/* Read by screen readers, not drawn */
+.otc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -540,6 +540,10 @@ export const en = {
   "tooltip.dayOff": "Day off",
   "tooltip.workday": "Make-up workday",
   "calendar.todayHint": "Back to today’s month (opens no note)",
+  "a11y.today": "today",
+  "a11y.hasNote": "has a note",
+  "a11y.entries": "{count} entries",
+  "a11y.disabled": "disabled",
 } as const;
 
 export type TranslationKey = keyof typeof en;

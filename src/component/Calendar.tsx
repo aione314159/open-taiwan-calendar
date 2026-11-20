@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useId,
   useRef,
   useState,
   useSyncExternalStore,
@@ -223,6 +224,8 @@ const Calendar: React.FC<CalendarProps> = ({
   const [legendOpen, setLegendOpen] = useState(false);
   const [flashIso, setFlashIso] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  // Unique per calendar: the sidebar and the floating panel can both be open
+  const labelPrefix = `otc-day-${useId().replace(/:/g, "")}`;
 
   useEffect(() => {
     if (!flashIso) return;
@@ -260,15 +263,47 @@ const Calendar: React.FC<CalendarProps> = ({
       type: NoteType
     ): React.HTMLAttributes<HTMLDivElement> & { disabled: boolean } => {
       const index = notes[type];
+      // Every clickable cell is a button to the keyboard and to screen
+      // readers: focusable, Enter/Space click it, Shift+F10 or the menu key
+      // opens its context menu
+      const keyboard = (
+        activate: (() => void) | null,
+        menu: (target: HTMLElement) => void
+      ): Pick<React.HTMLAttributes<HTMLDivElement>, "role" | "tabIndex" | "onKeyDown"> => ({
+        role: "button",
+        tabIndex: 0,
+        onKeyDown: (event) => {
+          if ((event.key === "Enter" || event.key === " ") && activate) {
+            event.preventDefault();
+            activate();
+          } else if (event.key === "ContextMenu" || (event.key === "F10" && event.shiftKey)) {
+            event.preventDefault();
+            menu(event.currentTarget);
+          }
+        },
+      });
+      const menuAt = (target: HTMLElement): MouseEvent => {
+        const box = target.getBoundingClientRect();
+        return new MouseEvent("contextmenu", { clientX: box.left + box.width / 2, clientY: box.bottom });
+      };
       if (!isNoteTypeEnabled(type)) {
         return {
           disabled: true,
           "aria-disabled": true,
           title: granularityDisabledHint(type),
+          // Reachable and announced as disabled, but Enter does nothing
+          ...keyboard(null, () => undefined),
         };
       }
       return {
         disabled: false,
+        ...keyboard(
+          () => {
+            if (type === NoteType.DAILY) selectDate(date.format("YYYY-MM-DD"));
+            openOrCreateNote(date, type, index, false);
+          },
+          (target) => onContextMenu(menuAt(target), date, type, index)
+        ),
         // Ctrl/Cmd click opens a split, so someone with the panel parked in a
         // corner keeps the tab they were working in
         onClick: (event) => {
@@ -351,6 +386,21 @@ const Calendar: React.FC<CalendarProps> = ({
     const spanRight = date.day() !== 0 && multiDay.some((e) => e.end > iso);
     const hasNote = !!noteExists(date, NoteType.DAILY, notes[NoteType.DAILY]);
     const { disabled, ...handlers } = cellHandlers(date, NoteType.DAILY);
+    // The accessible name lives in a hidden span: aria-label would also be
+    // shown by Obsidian as a tooltip, and the tooltip has its own content
+    const labelId = `${labelPrefix}-${iso}`;
+    const a11yName = [
+      date.format(t("tooltip.dateFormat")),
+      dateStr,
+      isToday ? t("a11y.today") : "",
+      isHoliday && !isWork ? t("tooltip.dayOff") : "",
+      isWork ? t("tooltip.workday") : "",
+      hasNote ? t("a11y.hasNote") : "",
+      dayEvents.length > 0 ? t("a11y.entries", { count: dayEvents.length }) : "",
+      disabled ? t("a11y.disabled") : "",
+    ]
+      .filter(Boolean)
+      .join(t("event.offsetSeparator"));
     const dayInline = inlineReminders.filter((item) => item.date === iso);
     const dayTasks = taskProgress && hasNote ? taskStats[iso] : undefined;
     // Everything about the day in one tooltip on the cell, where the pointer
@@ -391,6 +441,7 @@ const Calendar: React.FC<CalendarProps> = ({
           "is-flash": flashIso === iso,
         })}
         {...handlers}
+        aria-labelledby={labelId}
         ref={(el: HTMLDivElement | null) => {
           if (el) setTooltip(el, tooltip, { placement: "top" });
         }}
@@ -408,7 +459,10 @@ const Calendar: React.FC<CalendarProps> = ({
           );
         }}
       >
-        <span className="otc-day-number">{date.date()}</span>
+        <span id={labelId} className="otc-sr-only">
+          {a11yName}
+        </span>
+        <span className="otc-day-number" aria-hidden="true">{date.date()}</span>
         <CellLabel className="otc-lunar" text={dateStr} />
         {/* One row rather than three absolutely positioned spans: each badge
             used to be pinned to the same corner, so a day that is both today
