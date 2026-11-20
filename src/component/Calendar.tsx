@@ -13,6 +13,7 @@ import type { Moment } from "src/util/moment";
 import "moment/locale/zh-tw";
 import type { PaneType } from "obsidian";
 import { eventsOnDate, hasEventInMonth, useEvents } from "../event/store";
+import { phaseOf } from "../event/phase";
 import { useInlineReminders } from "../event/inlineReminders";
 import { useTaskStats } from "../note/taskStats";
 import { selectDate } from "../state/selection";
@@ -341,6 +342,11 @@ const Calendar: React.FC<CalendarProps> = ({
     // A multi-day entry joins this cell to its neighbours in the same week
     // row: Monday starts a row and Sunday ends it, so the band breaks there
     const multiDay = dayEvents.filter((e) => e.start !== e.end);
+    // Every entry on the day is over (or handled): drawn quietly, so the
+    // frames that still matter stand out
+    const todayIso = today.format("YYYY-MM-DD");
+    const eventsPast =
+      dayEvents.length > 0 && dayEvents.every((e) => phaseOf(e, todayIso) === "past");
     const spanLeft = date.day() !== 1 && multiDay.some((e) => e.start < iso);
     const spanRight = date.day() !== 0 && multiDay.some((e) => e.end > iso);
     const hasNote = !!noteExists(date, NoteType.DAILY, notes[NoteType.DAILY]);
@@ -379,6 +385,7 @@ const Calendar: React.FC<CalendarProps> = ({
           "is-disabled": disabled,
           "has-note": hasNote,
           "has-event": dayEvents.length > 0,
+          "events-past": eventsPast,
           "span-left": spanLeft,
           "span-right": spanRight,
           "is-flash": flashIso === iso,
