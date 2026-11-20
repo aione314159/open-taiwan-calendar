@@ -2823,3 +2823,23 @@ body {
 .otc-upcoming .otc-upcoming-head::before {
   margin: 0 1px 0 0;
 }
+
+/* "⋯" at the top right of its row, level with the title's first line */
+.otc-event-list-panel .otc-event-row-more {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin: 0;
+  padding: 1px 2px;
+}
+
+/* A wider gutter, so the hanging header chevron is not cut at the edge */
+.otc-event-list-panel,
+.otc-day-panel,
+.otc-upcoming {
+  --otc-panel-gutter: 10px;
+}
+
+.otc-day-panel .otc-upcoming-head,
+.otc-upcoming .otc-upcoming-head {
+  padding-left: 2px;
+}
