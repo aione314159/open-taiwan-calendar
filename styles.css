@@ -191,6 +191,20 @@ body {
   --otc-outline: #dadce0;
   --otc-elevation-1: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 
+  /* The one horizontal inset for the card header and every row, and the one
+     fixed track every row's control sits in. A percentage and a cap together:
+     a bare rem width starves the title column in a narrow pane, a bare
+     percentage grows absurdly wide in a wide one. */
+  --otc-gutter: 20px;
+  --otc-control-col: min(18rem, 45%);
+
+  /* Obsidian draws the divider between rows itself, as a ::before inset by its
+     horizontal padding variable. Pointing both at this page's tokens makes
+     that divider line up with the row content and take the card's outline
+     colour, instead of drawing a second, full-width border on top of it. */
+  --setting-items-padding-x: var(--otc-gutter);
+  --setting-items-divider-color: var(--otc-outline);
+
   /* --- JSON editor syntax colours. Contrast baseline: the editor background
      var(--otc-surface) = #ffffff ---
      Why these do not point at Obsidian's --code-string / --code-property set:
@@ -303,7 +317,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 16px var(--otc-gutter);
   margin: 0;
   background: var(--otc-surface-sunken);
   border: none;
@@ -351,18 +365,89 @@ body {
    read from variables, so they have to be overridden directly. */
 
 /* The card is the group element itself (cls: "otc-card"), so the rows are
-   matched as descendants. The header and the paragraphs draw their own frame
-   and are excluded here. */
-.otc-settings .otc-card .setting-item:not(.otc-card-head):not(.otc-card-note) {
-  padding: 16px 20px;
-  margin-bottom: 0;
-  border-top: 1px solid var(--otc-outline);
+   matched as descendants. The header, the paragraphs and the holiday editor
+   draw their own frame and are excluded here.
+
+   A row is a grid, not Obsidian's flex: there the title column and the
+   control column are both `flex: 1 1 auto`, so the longer a description is,
+   the narrower the control gets squeezed, and the fields in one card end up
+   with different left edges. The control gets a fixed track instead. */
+.otc-settings .otc-card .setting-item:not(:is(.otc-card-head, .otc-card-note, .otc-holiday-override-item)) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--otc-control-col);
+  column-gap: 24px;
   align-items: center;
-  gap: 24px;
+  padding: 16px var(--otc-gutter);
+  margin-bottom: 0;
 }
 
-.otc-settings .otc-card .otc-card-head + .setting-item {
-  border-top: none;
+.otc-settings .otc-card .setting-item:not(:is(.otc-card-head, .otc-card-note, .otc-holiday-override-item)) .setting-item-control {
+  min-width: 0;
+}
+
+/* A field fills its track. A bare <select> or <input> otherwise stops at its
+   own intrinsic width, which is what made every dropdown a different size. */
+.otc-settings .otc-card .setting-item-control > select.dropdown,
+.otc-settings .otc-card .setting-item-control > input[type="text"],
+.otc-settings .otc-card .setting-item-control > input[type="number"],
+.otc-settings .otc-card .setting-item-control > input[type="time"],
+.otc-settings .otc-card .setting-item-control > input[type="color"],
+.otc-settings .otc-card .setting-item:not(.setting-item-heading) .setting-item-control > button:not(.clickable-icon) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Same threshold and same exclusions as Obsidian's own rule for narrow
+   panes (a 400px container; toggles, navigable and action rows stay on one
+   line; headings do too in Obsidian, but not here, see below). Because the rows are grids here, that rule's
+   `flex-direction: column` no longer does anything and has to be restated for
+   a grid. The container is the card body, so the query measures the card, not
+   the whole settings pane. */
+.otc-settings .otc-card .setting-items {
+  container-type: inline-size;
+}
+
+@container (max-width: 400px) {
+  .otc-settings .otc-card .setting-items .setting-item:not(:is(.mod-toggle, .mod-navigable, .mod-action, .setting-item-heading, .otc-card-head, .otc-card-note, .otc-holiday-override-item)) {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .otc-settings .otc-card .setting-items .setting-item:not(:is(.mod-toggle, .mod-navigable, .mod-action, .setting-item-heading, .otc-card-head, .otc-card-note, .otc-holiday-override-item)) .setting-item-control {
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+
+  /* A toggle stays on one line, but the fixed track is wider than the room
+     left, so the switch takes only what it needs. */
+  .otc-settings .otc-card .setting-items .setting-item.mod-toggle {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  /* A heading's button can be as long as "set up daily notes in one click",
+     which would leave the title a sliver, so below this width the button drops
+     under the title like every other control. */
+  .otc-settings .otc-card .setting-items .setting-item.setting-item-heading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .otc-settings .otc-card .setting-items .setting-item.setting-item-heading .setting-item-control {
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+}
+
+/* The header already ends in its own border, so the row under it needs no
+   divider of its own. */
+.otc-settings .otc-card .otc-card-head + .setting-item::before {
+  content: none;
+}
+
+/* Obsidian draws no divider above a heading row; a section break inside a
+   card is a full-width rule. */
+.otc-settings .otc-card .setting-item.setting-item-heading:not(:first-child) {
+  border-top: 1px solid var(--otc-outline);
 }
 
 .otc-settings .setting-item-name {
@@ -393,12 +478,17 @@ body {
   margin: 0;
 }
 
+/* Long inline code in the variable list must wrap rather than push the card. */
+.otc-settings .otc-card-note code {
+  overflow-wrap: anywhere;
+}
+
 /* --- Inputs: Material outlined text field --- */
 
 .otc-settings .setting-item-control input[type="text"],
-.otc-settings .setting-item-control input[type="number"] {
+.otc-settings .setting-item-control input[type="number"],
+.otc-settings .setting-item-control input[type="time"] {
   height: 40px;
-  min-width: 220px;
   padding: 0 16px;
   border-radius: 4px;
   border: 1px solid var(--otc-outline);
@@ -420,6 +510,16 @@ body {
      does not change size and shove the rest of the row sideways. */
   border-color: var(--otc-primary);
   box-shadow: inset 0 0 0 1px var(--otc-primary);
+}
+
+.otc-settings .setting-item-control input[type="color"] {
+  height: 40px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid var(--otc-outline);
+  background: var(--otc-surface);
+  box-shadow: none;
+  cursor: pointer;
 }
 
 /* --- Dropdowns --- */
@@ -468,13 +568,14 @@ body {
 
 .otc-settings .otc-holiday-override-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 24px;
+  gap: 12px 24px;
   margin-bottom: 12px;
 }
 
 .otc-settings .otc-holiday-override-head .setting-item-info {
-  flex: 1 1 auto;
+  flex: 1 1 12rem;
   min-width: 0;
 }
 
@@ -1415,23 +1516,16 @@ body {
   vertical-align: middle;
 }
 
-/* Paths get long, and the settings row's default layout gives the control about
-   a third of the width — enough to show the first two dozen characters of a
-   nested folder path and hide the rest. Wrapping the row puts the field on its
-   own line at full width, so the whole path is readable and the folder
-   suggester has room to open below it.
+/* Paths get long, but a path field sits in the same fixed control track as
+   every other field: a card with one row at full width and the rest in a
+   track has two different right-hand edges, and the field's own scrolling
+   shows the part that does not fit. The folder suggester opens below it.
 
    The two classes below stand in for the has() selector, which said the same
    thing until the community CSS lint flagged its invalidation cost.
    src/view/settingRowShape.ts writes them onto the rows after each render. */
-.otc-settings .setting-item.otc-row-text {
-  flex-wrap: wrap;
-}
-
 .otc-settings .setting-item-control.otc-control-text {
-  flex-basis: 100%;
   justify-content: stretch;
-  margin-top: 8px;
 }
 
 .otc-settings .setting-item-control > input[type="text"] {
@@ -2071,6 +2165,26 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 4px 10px;
+}
+
+/* In the settings page the picker lives in the control track: ticks wrap onto
+   as many lines as they need, from the left, and the custom field takes the
+   last line at the track's full width. */
+.otc-settings .otc-offset-picker {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: start;
+}
+
+.otc-settings .otc-card .otc-offset-chip input[type="checkbox"] {
+  width: auto;
+  max-width: none;
+}
+
+.otc-settings .otc-offset-picker .otc-offset-custom {
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
 }
 
 .otc-offset-chip {

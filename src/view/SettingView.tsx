@@ -591,7 +591,7 @@ export default class MainSettingTable extends PluginSettingTab {
           t("settings.holidayCardTitle"),
           t("settings.holidayCardSubtitle")
         ),
-        this.paragraph(t("settings.holidayCardTitle"), (el) => {
+        this.paragraph(t("settings.holidayCardSubtitle"), (el) => {
           el.setText(
             t("settings.holidayIntro", {
               latestYear: LATEST_OFFICIAL_YEAR,
@@ -917,7 +917,7 @@ export default class MainSettingTable extends PluginSettingTab {
             },
           },
         },
-        this.paragraph(t("settings.notesCardTitle"), (el) => {
+        this.paragraph(t("settings.periodicNotesLink"), (el) => {
           el.createEl("a", {
             href: "obsidian://show-plugin?id=periodic-notes",
             text: t("settings.periodicNotesLink"),
