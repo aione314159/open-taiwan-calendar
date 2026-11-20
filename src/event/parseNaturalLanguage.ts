@@ -89,6 +89,69 @@ const ENGLISH_WEEKDAY: Record<string, number> = {
 const nextWeekday = (reference: string, weekday: number): string =>
   addDays(reference, (weekday - weekdayOf(reference) + 7) % 7);
 
+// ---------------------------------------------------------------- months
+
+/**
+ * Day `day` of the month `offset` months after the reference's, or null when
+ * that month has no such day. Never rolled over: "下個月31號" in a 30-day
+ * month is a date that does not exist, not the 1st of the month after.
+ */
+const dayOfMonthAfter = (reference: string, offset: number, day: number): string | null => {
+  const [year, month] = toParts(reference);
+  const index = month - 1 + offset;
+  return buildDate(year + Math.floor(index / 12), (((index % 12) + 12) % 12) + 1, day);
+};
+
+/** The last day of the reference's month. */
+const endOfMonth = (reference: string): string => {
+  const first = dayOfMonthAfter(reference, 1, 1) as string;
+  return addDays(first, -1);
+};
+
+// ---------------------------------------------------------------- one date token
+
+const YEAR_DATE = "\\d{4}\\s*[-/年]\\s*\\d{1,2}\\s*[-/月]\\s*\\d{1,2}\\s*日?";
+const MONTH_DATE = `(?:${NUMBER_SOURCE})\\s*[月/]\\s*(?:${NUMBER_SOURCE})\\s*(?:日|號)?`;
+const DATE_TOKEN = `(?:${YEAR_DATE}|${MONTH_DATE})`;
+
+/**
+ * Resolve one written date — with or without a year — against the reference.
+ * A date with no year takes the year that puts it on or after `notBefore`.
+ */
+/**
+ * The end of a written range. With no year, it is read in the start's year,
+ * and moved to the next year only when its month comes before the start's
+ * ("12/30-1/2"). "12/3到12/1" stays an end before the start, which the caller
+ * rejects.
+ */
+const resolveRangeEnd = (text: string, start: string): string | null => {
+  if (/\d{4}\s*[-/年]/.test(text)) return resolveDateToken(text, start);
+  const noYear = new RegExp(`(${NUMBER_SOURCE})\\s*[月/]\\s*(${NUMBER_SOURCE})`).exec(text);
+  if (!noYear) return null;
+  const month = chineseToNumber(noYear[1]);
+  const day = chineseToNumber(noYear[2]);
+  if (month === null || day === null) return null;
+  const [startYear, startMonth] = toParts(start);
+  return buildDate(month < startMonth ? startYear + 1 : startYear, month, day);
+};
+
+const resolveDateToken = (text: string, notBefore: string): string | null => {
+  const withYear = /(\d{4})\s*[-/年]\s*(\d{1,2})\s*[-/月]\s*(\d{1,2})/.exec(text);
+  if (withYear) {
+    return buildDate(Number(withYear[1]), Number(withYear[2]), Number(withYear[3]));
+  }
+  const noYear = new RegExp(`(${NUMBER_SOURCE})\\s*[月/]\\s*(${NUMBER_SOURCE})`).exec(text);
+  if (!noYear) return null;
+  const month = chineseToNumber(noYear[1]);
+  const day = chineseToNumber(noYear[2]);
+  if (month === null || day === null) return null;
+  const [refYear] = toParts(notBefore);
+  const thisYear = buildDate(refYear, month, day);
+  return thisYear !== null && thisYear >= notBefore
+    ? thisYear
+    : buildDate(refYear + 1, month, day);
+};
+
 // ---------------------------------------------------------------- title tidy-up
 
 /**
@@ -206,7 +269,12 @@ export const parseNaturalLanguage = (
   }
 
   let start: string | null = null;
+  let end: string | null = null;
   let durationDays: number | null = null;
+  // Set when a date phrase was recognised but names a day that does not
+  // exist. Every later date rule is skipped, so a fragment of it ("31號")
+  // cannot be read as some other date.
+  let blocked = false;
 
   // -- relative days. Matched before anything else so that "3 天後" is read as
   // an offset and never falls through to the duration rule as "3 days long"
@@ -235,8 +303,80 @@ export const parseNaturalLanguage = (
     break;
   }
 
-  // -- absolute dates
+  // -- months, weeks and month edges. After the day offsets, before the
+  // absolute dates, so "下個月5號" is never read as a bare "5號"
+  const monthly: Array<[RegExp, (m: RegExpExecArray) => string | null]> = [
+    [
+      new RegExp(`(?:下個月|下月)\\s*(${NUMBER_SOURCE})\\s*(?:號|日)`),
+      (m) => {
+        const n = chineseToNumber(m[1]);
+        return n === null ? null : dayOfMonthAfter(reference, 1, n);
+      },
+    ],
+    [
+      new RegExp(`(?:這個月|這月|本月)\\s*(${NUMBER_SOURCE})\\s*(?:號|日)`),
+      (m) => {
+        const n = chineseToNumber(m[1]);
+        return n === null ? null : dayOfMonthAfter(reference, 0, n);
+      },
+    ],
+    [
+      new RegExp(`(${NUMBER_SOURCE})\\s*(?:週|周|個禮拜|個星期|禮拜|星期)(?:之)?後`),
+      (m) => {
+        const n = chineseToNumber(m[1]);
+        return n === null ? null : addDays(reference, n * 7);
+      },
+    ],
+    [/\bin\s+(\d+)\s+weeks?\b/i, (m) => addDays(reference, Number(m[1]) * 7)],
+    [
+      new RegExp(`(${NUMBER_SOURCE})\\s*個?月(?:之)?後`),
+      (m) => {
+        const n = chineseToNumber(m[1]);
+        const [, , day] = toParts(reference);
+        return n === null ? null : dayOfMonthAfter(reference, n, day);
+      },
+    ],
+    [/\bnext\s+month\b/i, () => dayOfMonthAfter(reference, 1, toParts(reference)[2])],
+    [/月底|\bend\s+of\s+(?:the\s+)?month\b/i, () => endOfMonth(reference)],
+    // The first of the month: this month's when today is the first, else next
+    [/月初/, () => (toParts(reference)[2] === 1 ? reference : dayOfMonthAfter(reference, 1, 1))],
+    [/年底/, () => buildDate(toParts(reference)[0], 12, 31)],
+  ];
   if (start === null) {
+    for (const [pattern, resolve] of monthly) {
+      const match = pattern.exec(rest);
+      if (!match) continue;
+      const value = resolve(match);
+      if (value === null) {
+        blocked = true;
+        break;
+      }
+      start = value;
+      rest = blank(rest, match);
+      break;
+    }
+  }
+
+  // -- a range of two written dates: "12/1到12/3", "2026-12-01 - 2026-12-05".
+  // An end before the start is not a range, and falls through to the rules
+  // below as if it were not there.
+  if (start === null && !blocked) {
+    const range = new RegExp(
+      `(${DATE_TOKEN})\\s*(?:到|至|～|~|-|–)\\s*(${DATE_TOKEN})`
+    ).exec(rest);
+    if (range) {
+      const from = resolveDateToken(range[1], reference);
+      const to = from === null ? null : resolveRangeEnd(range[2], from);
+      if (from !== null && to !== null && to >= from) {
+        start = from;
+        end = to;
+        rest = blank(rest, range);
+      }
+    }
+  }
+
+  // -- absolute dates
+  if (start === null && !blocked) {
     const withYear =
       /(\d{4})\s*[-/年]\s*(\d{1,2})\s*[-/月]\s*(\d{1,2})\s*日?/.exec(rest);
     if (withYear) {
@@ -252,7 +392,7 @@ export const parseNaturalLanguage = (
     }
   }
 
-  if (start === null) {
+  if (start === null && !blocked) {
     // No year given. "10月24" said in December means next October, so the year
     // chosen is the one that puts the date on or after today.
     const noYear = new RegExp(
@@ -276,8 +416,29 @@ export const parseNaturalLanguage = (
     }
   }
 
+  // -- a bare "5號": the next 5th on or after today. 號 only — "5日" is also
+  // how a length is written ("去日本9日"), and that reading is kept
+  if (start === null && !blocked) {
+    const bare = new RegExp(`(${NUMBER_SOURCE})\\s*號`).exec(rest);
+    if (bare) {
+      const day = chineseToNumber(bare[1]);
+      if (day !== null) {
+        const value =
+          [0, 1, 2]
+            .map((offset) => dayOfMonthAfter(reference, offset, day))
+            .find((iso) => iso !== null && iso >= reference) ?? null;
+        if (value === null) {
+          blocked = true;
+        } else {
+          start = value;
+          rest = blank(rest, bare);
+        }
+      }
+    }
+  }
+
   // -- weekdays
-  if (start === null) {
+  if (start === null && !blocked) {
     const chinese = /(下下|下個|下|這個|這|本)?\s*(?:週|周|星期|禮拜)\s*([日天一二三四五六1-7])/.exec(
       rest
     );
@@ -292,7 +453,7 @@ export const parseNaturalLanguage = (
     }
   }
 
-  if (start === null) {
+  if (start === null && !blocked) {
     const english = new RegExp(
       `\\b(next\\s+)?(${Object.keys(ENGLISH_WEEKDAY).join("|")})\\b`,
       "i"
@@ -308,7 +469,7 @@ export const parseNaturalLanguage = (
   }
 
   // -- a bare "next week" with no weekday attached
-  if (start === null) {
+  if (start === null && !blocked) {
     const nextWeek = /下週|下周|下星期|下禮拜|\bnext\s+week\b/i.exec(rest);
     if (nextWeek) {
       start = addDays(reference, 7);
@@ -318,7 +479,8 @@ export const parseNaturalLanguage = (
 
   // -- how long it lasts. 晚 and 夜 are how a trip is usually counted, and a
   // "3 晚" stay still occupies 3 calendar days on the calendar.
-  const duration = new RegExp(
+  // A written range already fixed the length
+  const duration = end !== null ? null : new RegExp(
     `(${NUMBER_SOURCE})\\s*(?:天|日|晚|夜)|\\bfor\\s+(\\d+)\\s+(?:days?|nights?)\\b`
   ).exec(rest);
   if (duration) {
@@ -333,9 +495,9 @@ export const parseNaturalLanguage = (
   return {
     title: tidyTitle(rest),
     start: resolvedStart,
-    end: durationDays ? addDays(resolvedStart, durationDays - 1) : resolvedStart,
+    end: end ?? (durationDays ? addDays(resolvedStart, durationDays - 1) : resolvedStart),
     isReminder,
     matchedDate: start !== null,
-    matchedDuration: durationDays !== null,
+    matchedDuration: durationDays !== null || end !== null,
   };
 };
