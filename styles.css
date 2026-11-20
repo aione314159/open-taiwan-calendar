@@ -1150,7 +1150,7 @@ body {
 
    Belongs to the month either side of the one on screen: muted text on a
    faint panel, so it reads as "not this month" next to a past day. */
-.otc-cell.is-outside {
+.otc-cell.is-outside:not(.has-event) {
   background: var(--background-secondary);
 }
 
