@@ -227,6 +227,13 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { hoverPreview: value as boolean },
         }));
         break;
+      case "appearance.weekColumn":
+        this.plugin.writeOptions(() => ({
+          appearance: {
+            weekColumn: value === "show" || value === "hide" ? value : "auto",
+          },
+        }));
+        break;
       case "appearance.taskProgress":
         this.plugin.writeOptions(() => ({ appearance: { taskProgress: value as boolean } }));
         break;
@@ -435,6 +442,19 @@ export default class MainSettingTable extends PluginSettingTab {
           name: t("settings.pastTransparentName"),
           desc: t("settings.pastTransparentDesc"),
           control: { type: "toggle", key: "appearance.pastTimeTransparent" },
+        },
+        {
+          name: t("settings.weekColumnName"),
+          desc: t("settings.weekColumnDesc"),
+          control: {
+            type: "dropdown",
+            key: "appearance.weekColumn",
+            options: {
+              auto: t("settings.weekColumnAuto"),
+              show: t("settings.weekColumnShow"),
+              hide: t("settings.weekColumnHide"),
+            },
+          },
         },
         {
           name: t("settings.taskProgressName"),

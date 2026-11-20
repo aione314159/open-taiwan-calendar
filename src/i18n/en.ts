@@ -487,6 +487,11 @@ export const en = {
   "settings.createConfirmAlways": "Always",
   "settings.createConfirmPast": "Only for past dates",
   "settings.createConfirmNever": "Never",
+  "settings.weekColumnName": "Week-number column",
+  "settings.weekColumnDesc": "The column of week numbers left of the month. Auto shows it only while Periodic Notes has weekly notes on.",
+  "settings.weekColumnAuto": "Auto",
+  "settings.weekColumnShow": "Show",
+  "settings.weekColumnHide": "Hide",
 } as const;
 
 export type TranslationKey = keyof typeof en;

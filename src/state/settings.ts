@@ -73,6 +73,11 @@ export interface AppearanceSetting {
    * means scanning the vault's open tasks.
    */
   inlineReminders: boolean;
+  /**
+   * The week-number column of the month view: always, never, or only while
+   * Periodic Notes has weekly notes on (auto).
+   */
+  weekColumn: "show" | "hide" | "auto";
   /** Whether a day's note dot shows if its to-dos are all done. */
   taskProgress: boolean;
   /** Whether the sidebar shows the selected day's panel below the grid. */
@@ -222,6 +227,7 @@ export const defaultSetting: PluginSetting = {
     hoverPreview: true,
     readingViewEvents: true,
     inlineReminders: false,
+    weekColumn: "auto",
     taskProgress: true,
     dayPanel: true,
     dayPanelCollapsed: false,
