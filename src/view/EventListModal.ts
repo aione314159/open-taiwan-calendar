@@ -42,7 +42,7 @@ const PROBLEM_LABELS: Record<EntryProblemReason, TranslationKey> = {
  * them, greyed — visible, because "did I already have that trip" is a real
  * question, but never in the way.
  */
-export class EventListModal extends Modal {
+export class EventListBody {
   private tab: TabKey = "reminders";
   private listEl: HTMLElement | null = null;
   private query = "";
@@ -54,26 +54,25 @@ export class EventListModal extends Modal {
   private unwatch: (() => void) | null = null;
 
   constructor(
-    app: App,
+    private readonly app: App,
+    /** Where the list is drawn: a modal's content, or a panel in the sidebar. */
+    private readonly root: HTMLElement,
     private readonly onEdit: (event: CalendarEvent) => void,
     private readonly onDelete: (event: CalendarEvent) => void,
     private readonly onAdd: () => void,
-    private readonly onToggleDone: (event: CalendarEvent) => Promise<void>
-  ) {
-    super(app);
-  }
+    private readonly onToggleDone: (event: CalendarEvent) => Promise<void>,
+    /** Called where the list should get out of the way (the modal closes; a panel stays). */
+    private readonly onDismiss: () => void
+  ) {}
 
-  onOpen(): void {
-    this.setTitle(t("eventList.title"));
-    this.modalEl.addClass("otc-event-list-modal");
-
+  mount(): void {
     // Entries the plugin could not use as written. Above the tabs, because they
     // belong to neither tab: they are the ones missing from both
-    this.problemsEl = this.contentEl.createDiv({ cls: "otc-entry-problems" });
+    this.problemsEl = this.root.createDiv({ cls: "otc-entry-problems" });
     this.renderProblems();
     this.unwatchProblems = problemsStore.watch(() => this.renderProblems());
 
-    const search = this.contentEl.createEl("input", {
+    const search = this.root.createEl("input", {
       cls: "otc-event-search",
       type: "search",
       attr: { placeholder: t("eventList.search"), "aria-label": t("eventList.search") },
@@ -83,7 +82,7 @@ export class EventListModal extends Modal {
       this.renderList();
     });
 
-    const tabs = this.contentEl.createDiv({ cls: "otc-event-tabs", attr: { role: "tablist" } });
+    const tabs = this.root.createDiv({ cls: "otc-event-tabs", attr: { role: "tablist" } });
     const buttons: Array<[TabKey, string]> = [
       ["reminders", t("eventList.tabReminders")],
       ["events", t("eventList.tabEvents")],
@@ -127,7 +126,7 @@ export class EventListModal extends Modal {
       b.tabIndex = k === this.tab ? 0 : -1;
     });
 
-    this.listEl = this.contentEl.createDiv({ cls: "otc-event-list" });
+    this.listEl = this.root.createDiv({ cls: "otc-event-list" });
     this.renderList();
     // A write lands in the store only after Obsidian re-parses the note, a
     // moment after the write returns, so the list follows the store rather
@@ -135,13 +134,13 @@ export class EventListModal extends Modal {
     this.unwatch = eventsStore.watch(() => this.renderList());
     this.unwatchInline = inlineRemindersStore.watch(() => this.renderList());
 
-    const footer = this.contentEl.createDiv({ cls: "otc-event-list-footer" });
+    const footer = this.root.createDiv({ cls: "otc-event-list-footer" });
     const add = footer.createEl("button", {
       cls: "mod-cta",
       text: t("settings.eventListAdd"),
     });
     add.addEventListener("click", () => {
-      this.close();
+      this.onDismiss();
       this.onAdd();
     });
   }
@@ -165,7 +164,7 @@ export class EventListModal extends Modal {
         }),
       });
       link.addEventListener("click", () => {
-        this.close();
+        this.onDismiss();
         void this.app.workspace.openLinkText(problem.path, "", false);
       });
       row.createSpan({ text: ` ${t(PROBLEM_LABELS[problem.reason])}` });
@@ -177,7 +176,7 @@ export class EventListModal extends Modal {
     const el = this.listEl;
     if (!el) return;
     // Rebuilding empties the list, which would throw the scroll position away
-    const scroller = this.contentEl;
+    const scroller = this.root;
     const scrollTop = scroller.scrollTop;
     window.requestAnimationFrame(() => (scroller.scrollTop = scrollTop));
     el.empty();
@@ -259,7 +258,7 @@ export class EventListModal extends Modal {
       text.setAttr("role", "button");
       text.tabIndex = 0;
       const jump = (split: boolean) => {
-        this.close();
+        this.onDismiss();
         setDisplayMonth(event.start);
         selectDate(event.start);
         void openOrCreateNote(
@@ -316,7 +315,7 @@ export class EventListModal extends Modal {
       setTooltip(show, t("eventList.showOnCalendar"));
       show.setAttr("aria-label", t("eventList.showOnCalendar"));
       show.addEventListener("click", () => {
-        this.close();
+        this.onDismiss();
         setDisplayMonth(event.start);
         selectDate(event.start);
       });
@@ -381,7 +380,7 @@ export class EventListModal extends Modal {
         }),
       });
       title.addEventListener("click", () => {
-        this.close();
+        this.onDismiss();
         void this.app.workspace.openLinkText(item.path, "", false, {
           eState: { line: item.line },
         });
@@ -391,7 +390,7 @@ export class EventListModal extends Modal {
       setIcon(convert, "calendar-check");
       setTooltip(convert, t("inline.convert"));
       convert.addEventListener("click", () => {
-        this.close();
+        this.onDismiss();
         convertInline(this.app, item);
       });
     }
@@ -407,13 +406,48 @@ export class EventListModal extends Modal {
         });
   }
 
-  onClose(): void {
+  destroy(): void {
     this.unwatch?.();
     this.unwatch = null;
     this.unwatchProblems?.();
     this.unwatchProblems = null;
     this.unwatchInline?.();
     this.unwatchInline = null;
-    this.contentEl.empty();
+    this.root.empty();
+  }
+}
+
+/** The list in its own dialog, for the command and the floating panel. */
+export class EventListModal extends Modal {
+  private body: EventListBody | null = null;
+
+  constructor(
+    app: App,
+    private readonly onEdit: (event: CalendarEvent) => void,
+    private readonly onDelete: (event: CalendarEvent) => void,
+    private readonly onAdd: () => void,
+    private readonly onToggleDone: (event: CalendarEvent) => Promise<void>
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    this.setTitle(t("eventList.title"));
+    this.modalEl.addClass("otc-event-list-modal");
+    this.body = new EventListBody(
+      this.app,
+      this.contentEl,
+      this.onEdit,
+      this.onDelete,
+      this.onAdd,
+      this.onToggleDone,
+      () => this.close()
+    );
+    this.body.mount();
+  }
+
+  onClose(): void {
+    this.body?.destroy();
+    this.body = null;
   }
 }

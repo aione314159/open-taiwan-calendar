@@ -14,12 +14,20 @@ export interface CalendarViewState {
   /** `YYYY-MM-DD`, any day of the month shown. */
   anchor: string;
   mode: "month" | "year";
+  /** Whether the sidebar shows the reminders-and-events list under the grid. */
+  listOpen: boolean;
 }
 
 export const calendarViewStore = new Store<CalendarViewState>({
   anchor: moment().format("YYYY-MM-DD"),
   mode: "month",
+  listOpen: false,
 });
+
+export const toggleListPanel = (): void => {
+  const state = calendarViewStore.read();
+  calendarViewStore.write({ ...state, listOpen: !state.listOpen });
+};
 
 /** Show the month containing this day (`YYYY-MM-DD` or a Moment). */
 export const setDisplayMonth = (day: string | Moment): void => {

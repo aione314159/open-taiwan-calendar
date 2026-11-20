@@ -6,6 +6,7 @@ import { readNotes } from "../state/notes";
 import { openEditEvent, openEventList, openQuickAddEvent } from "../event/commands";
 import { eventsOnDate, readEvents } from "../event/store";
 import Upcoming from "./Upcoming";
+import { toggleListPanel } from "../state/view";
 import DayPanel from "./DayPanel";
 import { moment } from "src/util/moment";
 import { createNoteWithoutOpening, openOrCreateNote } from "../note/noteOps";
@@ -60,7 +61,12 @@ export const mountUpcomingRoot = (app: App, container: Element): Root => {
   return root;
 };
 
-export const mountCalendarRoot = (app: App, container: Element): Root => {
+export const mountCalendarRoot = (
+  app: App,
+  container: Element,
+  /** The sidebar shows the list under its grid; the floating panel opens the dialog. */
+  options: { inlineList?: boolean } = {}
+): Root => {
   const root = createRoot(container);
   root.render(
     <Calendar
@@ -116,7 +122,7 @@ export const mountCalendarRoot = (app: App, container: Element): Root => {
         openQuickAddEvent(app, { date: date.format("YYYY-MM-DD") })
       }
       onCreateQuietly={(date: Moment) => void createNoteWithoutOpening(app, date)}
-      onShowEventList={() => openEventList(app)}
+      onShowEventList={() => (options.inlineList ? toggleListPanel() : openEventList(app))}
       onToggleColorScheme={() => toggleColorScheme(app)}
       subscribeColorScheme={(onChange: () => void) =>
         subscribeColorScheme(app, onChange)

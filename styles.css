@@ -2386,3 +2386,27 @@ body {
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
+
+/* ---------- the list under the sidebar grid (toolbar list button) */
+.otc-event-list-panel {
+  display: none;
+}
+
+.otc-event-list-panel.is-open {
+  display: block;
+  margin: 4px 8px 0;
+  padding: 8px;
+  max-height: 45vh;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+}
+
+.otc-event-list-panel .otc-event-row-text[role="button"] {
+  cursor: pointer;
+}
+
+.otc-list-button.is-active {
+  color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+}
