@@ -13,6 +13,7 @@ import type { Moment } from "src/util/moment";
 import "moment/locale/zh-tw";
 import type { PaneType } from "obsidian";
 import { eventsOnDate, hasEventInMonth, useEvents } from "../event/store";
+import { useInlineReminders } from "../event/inlineReminders";
 import { formatLabel, formatDate, formatMonth } from "../note/format";
 import { noteExists } from "../note/noteOps";
 import { granularityDisabledHint } from "../note/periodicNotes";
@@ -152,6 +153,7 @@ const Calendar: React.FC<CalendarProps> = ({
 }) => {
   const notes = useNotes((state) => state);
   const events = useEvents((state) => state);
+  const inlineReminders = useInlineReminders((state) => state);
 
   // Settings are subscribed rather than read once. A plain read would leave
   // React unaware that anything changed, and the floating panel — which does
@@ -341,7 +343,11 @@ const Calendar: React.FC<CalendarProps> = ({
             ))}
           </div>
         )}
-        <EventBars events={dayEvents} hasNote={hasNote} />
+        <EventBars
+          events={dayEvents}
+          hasNote={hasNote}
+          inline={inlineReminders.filter((item) => item.date === iso)}
+        />
       </div>
     );
   };

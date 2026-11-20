@@ -382,4 +382,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "datedTasks.add": "加為提醒",
   "datedTasks.addAll": "全部加為提醒（{count} 筆）",
   "datedTasks.addAllConfirm": "將以預設時間與提前天數新增 {count} 筆提醒，要繼續嗎？",
+  "settings.inlineRemindersName": "顯示行內提醒語法",
+  "settings.inlineRemindersDesc": "在日曆上以菱形標出未完成待辦上的 Reminder 外掛語法 (@2026-12-29 09:30)。唯讀，本插件不會為它們發出通知。",
+  "inline.tooltipLine": "◆ {text} {time}",
+  "eventList.tabInline": "行內提醒",
+  "eventList.inlineMeta": "{date} {time} · {note}",
 };

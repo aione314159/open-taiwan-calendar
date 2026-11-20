@@ -1845,3 +1845,12 @@ body {
   color: var(--text-faint);
   font-size: var(--font-ui-smaller);
 }
+
+/* ---------- the Reminder plugin's inline marks: a diamond, so they are never
+   mistaken for this plugin's own entries */
+.otc-event-dot.is-inline {
+  border-radius: 0;
+  transform: rotate(45deg) scale(0.85);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--text-muted);
+}

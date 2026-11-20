@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import classNames from "classnames";
 import { setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
+import type { InlineReminder } from "../event/inlineReminders";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 
@@ -51,27 +52,32 @@ const EventBars: React.FC<{
    * of being positioned into the middle of it.
    */
   hasNote: boolean;
-}> = ({ events, hasNote }) => {
+  /** The Reminder plugin's inline marks on this day; drawn as diamonds. */
+  inline?: InlineReminder[];
+}> = ({ events, hasNote, inline = [] }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!ref.current) return;
     setTooltip(
       ref.current,
-      events
-        .map((event) =>
+      [
+        ...events.map((event) =>
           event.start === event.end
             ? event.title
             : `${event.title}（${t("event.dateRange", {
                 start: shortDate(event.start),
                 end: shortDate(event.end),
               })}）`
-        )
-        .join("\n")
+        ),
+        ...inline.map((item) =>
+          t("inline.tooltipLine", { text: item.text, time: item.time ?? "" }).trim()
+        ),
+      ].join("\n")
     );
-  }, [events]);
+  }, [events, inline]);
 
-  if (events.length === 0 && !hasNote) return null;
+  if (events.length === 0 && inline.length === 0 && !hasNote) return null;
 
   const shown = events.slice(0, MAX_DOTS);
 
@@ -86,6 +92,7 @@ const EventBars: React.FC<{
           about anything on it, and a fixed position keeps the row from
           reshuffling as events come and go */}
       {hasNote && <span className="otc-event-dot is-note" />}
+      {inline.length > 0 && <span className="otc-event-dot is-inline" />}
       {shown.map((event) => (
         <span
           key={event.id}
