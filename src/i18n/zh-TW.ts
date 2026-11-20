@@ -220,8 +220,6 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "menu.addEvent": "在這天新增活動",
   "command.showEventList": "顯示提醒與活動",
   "eventList.title": "提醒與活動",
-  "eventList.tabReminders": "提醒",
-  "eventList.tabEvents": "活動",
   "eventList.badgeNow": "進行中",
   "eventList.empty": "還沒有任何項目。",
   "noteEvents.heading": "這天的項目",
@@ -506,4 +504,5 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "settings.followActiveNoteDesc": "作用中檔案換成另一個月份的每日筆記時，日曆自動翻到該月。",
   "eventList.moreActions": "更多動作",
   "eventList.close": "關閉清單",
+  "eventList.tabAll": "提醒與活動",
 };

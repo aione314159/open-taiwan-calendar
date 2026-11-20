@@ -258,8 +258,6 @@ export const en = {
   "menu.addEvent": "Add an event on this day",
   "command.showEventList": "Show reminders and events",
   "eventList.title": "Reminders and events",
-  "eventList.tabReminders": "Reminders",
-  "eventList.tabEvents": "Events",
   "eventList.badgeNow": "Now",
   "eventList.empty": "Nothing here yet.",
   "noteEvents.heading": "On this day",
@@ -556,6 +554,7 @@ export const en = {
   "settings.followActiveNoteDesc": "When a daily note from another month becomes the active file, the calendar pages to that month.",
   "eventList.moreActions": "More actions",
   "eventList.close": "Close the list",
+  "eventList.tabAll": "Reminders and events",
 } as const;
 
 export type TranslationKey = keyof typeof en;
