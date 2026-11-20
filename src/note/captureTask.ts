@@ -66,8 +66,9 @@ export const insertIntoSection = (
     }
   }
   if (start === -1) {
-    const trimmed = content.replace(/\n+$/, "");
-    return { content: `${trimmed}\n${line}\n`, found: false };
+    // Appended as-is: the note's own trailing blank lines are its content too
+    const separator = content.length === 0 || content.endsWith("\n") ? "" : "\n";
+    return { content: `${content}${separator}${line}\n`, found: false };
   }
   let end = lines.length;
   for (let i = start + 1; i < lines.length; i++) {
