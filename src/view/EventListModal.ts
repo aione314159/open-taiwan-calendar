@@ -40,6 +40,9 @@ const PROBLEM_LABELS: Record<EntryProblemReason, TranslationKey> = {
 export class EventListModal extends Modal {
   private tab: TabKey = "reminders";
   private listEl: HTMLElement | null = null;
+  private query = "";
+  private showPast = false;
+  private tabButtons: Array<[HTMLButtonElement, TabKey]> = [];
   private problemsEl: HTMLElement | null = null;
   private unwatchProblems: (() => void) | null = null;
   private unwatchInline: (() => void) | null = null;
@@ -65,7 +68,17 @@ export class EventListModal extends Modal {
     this.renderProblems();
     this.unwatchProblems = problemsStore.watch(() => this.renderProblems());
 
-    const tabs = this.contentEl.createDiv({ cls: "otc-event-tabs" });
+    const search = this.contentEl.createEl("input", {
+      cls: "otc-event-search",
+      type: "search",
+      attr: { placeholder: t("eventList.search"), "aria-label": t("eventList.search") },
+    });
+    search.addEventListener("input", () => {
+      this.query = search.value.trim().toLowerCase();
+      this.renderList();
+    });
+
+    const tabs = this.contentEl.createDiv({ cls: "otc-event-tabs", attr: { role: "tablist" } });
     const buttons: Array<[TabKey, string]> = [
       ["reminders", t("eventList.tabReminders")],
       ["events", t("eventList.tabEvents")],
@@ -74,19 +87,40 @@ export class EventListModal extends Modal {
         ? ([["inline", t("eventList.tabInline")]] as Array<[TabKey, string]>)
         : []),
     ];
-    const rendered = buttons.map(([key, label]) => {
+    const select = (key: TabKey, focus = false) => {
+      this.tab = key;
+      this.tabButtons.forEach(([b, k]) => {
+        const active = k === key;
+        b.toggleClass("is-active", active);
+        b.setAttr("aria-selected", String(active));
+        b.tabIndex = active ? 0 : -1;
+        if (active && focus) b.focus();
+      });
+      this.renderList();
+    };
+    this.tabButtons = buttons.map(([key, label]) => {
       const button = tabs.createEl("button", {
         cls: "otc-event-tab",
-        text: label,
+        attr: { role: "tab" },
       });
-      button.addEventListener("click", () => {
-        this.tab = key;
-        rendered.forEach(([b, k]) => b.toggleClass("is-active", k === this.tab));
-        this.renderList();
+      button.dataset.label = label;
+      button.addEventListener("click", () => select(key));
+      // Left and right move between tabs, the way a tab list is used from the keyboard
+      button.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+        event.preventDefault();
+        const keys = this.tabButtons.map(([, k]) => k);
+        const at = keys.indexOf(this.tab);
+        const next = keys[(at + (event.key === "ArrowRight" ? 1 : keys.length - 1)) % keys.length];
+        select(next, true);
       });
-      return [button, key] as const;
+      return [button, key] as [HTMLButtonElement, TabKey];
     });
-    rendered.forEach(([b, k]) => b.toggleClass("is-active", k === this.tab));
+    this.tabButtons.forEach(([b, k]) => {
+      b.toggleClass("is-active", k === this.tab);
+      b.setAttr("aria-selected", String(k === this.tab));
+      b.tabIndex = k === this.tab ? 0 : -1;
+    });
 
     this.listEl = this.contentEl.createDiv({ cls: "otc-event-list" });
     this.renderList();
@@ -143,16 +177,30 @@ export class EventListModal extends Modal {
     window.requestAnimationFrame(() => (scroller.scrollTop = scrollTop));
     el.empty();
 
+    const today = moment().format("YYYY-MM-DD");
+    // Each tab is labelled with how many of its entries are not over yet
+    const openCount = (key: TabKey): number =>
+      key === "inline"
+        ? inlineRemindersStore.read().length
+        : readEvents().filter(
+            (e) =>
+              (key === "reminders" ? e.reminder !== null : e.reminder === null) &&
+              phaseOf(e, today) !== "past"
+          ).length;
+    for (const [button, key] of this.tabButtons) {
+      button.setText(`${button.dataset.label ?? ""} (${openCount(key)})`);
+    }
+
     if (this.tab === "inline") {
       this.renderInline(el);
       return;
     }
 
-    const today = moment().format("YYYY-MM-DD");
-    const rows = readEvents()
-      .filter((e) =>
-        this.tab === "reminders" ? e.reminder !== null : e.reminder === null
-      )
+    const all = readEvents().filter((e) =>
+      this.tab === "reminders" ? e.reminder !== null : e.reminder === null
+    );
+    const rows = all
+      .filter((e) => !this.query || e.title.toLowerCase().includes(this.query))
       .map((event) => ({ event, phase: phaseOf(event, today) }))
       .sort(
         (a, b) =>
@@ -165,11 +213,31 @@ export class EventListModal extends Modal {
       );
 
     if (rows.length === 0) {
-      el.createDiv({ cls: "otc-event-list-empty", text: t("eventList.empty") });
+      el.createDiv({
+        cls: "otc-event-list-empty",
+        text: this.query && all.length > 0 ? t("eventList.noMatch", { query: this.query }) : t("eventList.empty"),
+      });
       return;
     }
 
+    // Finished entries fold into one line unless searching or opened
+    const pastCount = rows.filter((r) => r.phase === "past").length;
+    const folded = !this.query && !this.showPast;
+    let pastToggleDrawn = false;
     for (const { event, phase } of rows) {
+      if (phase === "past" && !pastToggleDrawn && !this.query) {
+        pastToggleDrawn = true;
+        const toggle = el.createEl("button", {
+          cls: "otc-event-past-toggle",
+          text: t(folded ? "eventList.pastFolded" : "eventList.pastOpen", { count: pastCount }),
+          attr: { "aria-expanded": String(!folded) },
+        });
+        toggle.addEventListener("click", () => {
+          this.showPast = !this.showPast;
+          this.renderList();
+        });
+      }
+      if (phase === "past" && folded) continue;
       const row = el.createDiv({ cls: `otc-event-row is-${phase}` });
       row.toggleClass("is-done", event.done);
       // Over and never marked handled: the one row in this list that may still

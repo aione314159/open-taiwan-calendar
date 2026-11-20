@@ -453,4 +453,8 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "noteEvents.add": "在這天新增項目",
   "notice.undo": "復原",
   "notice.eventRestored": "已復原：{title}",
+  "eventList.search": "搜尋標題",
+  "eventList.noMatch": "沒有符合「{query}」的項目。",
+  "eventList.pastFolded": "▸ 已結束（{count}）",
+  "eventList.pastOpen": "▾ 已結束（{count}）",
 };
