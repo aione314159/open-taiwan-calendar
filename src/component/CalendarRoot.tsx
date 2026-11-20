@@ -2,7 +2,8 @@ import { createRoot, Root } from "react-dom/client";
 import type { Moment } from "src/util/moment";
 import { App, PaneType } from "obsidian";
 import type { NoteIndex } from "../state/notes";
-import { openEventList, openQuickAddEvent } from "../event/commands";
+import { openEditEvent, openEventList, openQuickAddEvent } from "../event/commands";
+import Upcoming from "./Upcoming";
 import { createNoteWithoutOpening, openOrCreateNote } from "../note/noteOps";
 import { showNoteContextMenu, triggerHoverPreview } from "../note/noteMenu";
 import { granularityEnabled } from "../note/periodicNotes";
@@ -24,6 +25,18 @@ import Calendar from "./Calendar";
  * whether a granularity is switched on, adding an event — is handed down from
  * here as a callback.
  */
+/** The "coming up" list below the sidebar grid, in its own root so it is not scaled. */
+export const mountUpcomingRoot = (app: App, container: Element): Root => {
+  const root = createRoot(container);
+  root.render(
+    <Upcoming
+      onEdit={(event) => openEditEvent(app, event)}
+      onSaveSettings={() => app.workspace.trigger("open-taiwan-calendar:save-settings")}
+    />
+  );
+  return root;
+};
+
 export const mountCalendarRoot = (app: App, container: Element): Root => {
   const root = createRoot(container);
   root.render(

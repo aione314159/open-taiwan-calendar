@@ -227,6 +227,14 @@ export default class MainSettingTable extends PluginSettingTab {
           appearance: { hoverPreview: value as boolean },
         }));
         break;
+      case "appearance.upcoming":
+        this.plugin.writeOptions(() => ({ appearance: { upcoming: value as boolean } }));
+        break;
+      case "appearance.upcomingDays":
+        this.plugin.writeOptions(() => ({
+          appearance: { upcomingDays: Math.min(90, Math.max(1, Math.round(Number(value) || 14))) },
+        }));
+        break;
       case "appearance.inlineReminders":
         this.plugin.writeOptions(() => ({
           appearance: { inlineReminders: value as boolean },
@@ -410,6 +418,16 @@ export default class MainSettingTable extends PluginSettingTab {
           name: t("settings.pastTransparentName"),
           desc: t("settings.pastTransparentDesc"),
           control: { type: "toggle", key: "appearance.pastTimeTransparent" },
+        },
+        {
+          name: t("settings.upcomingName"),
+          desc: t("settings.upcomingDesc"),
+          control: { type: "toggle", key: "appearance.upcoming" },
+        },
+        {
+          name: t("settings.upcomingDaysName"),
+          desc: t("settings.upcomingDaysDesc"),
+          control: { type: "number", key: "appearance.upcomingDays", min: 1 },
         },
         {
           name: t("settings.inlineRemindersName"),

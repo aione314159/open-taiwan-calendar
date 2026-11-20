@@ -82,7 +82,7 @@ const DAY_CHECK_INTERVAL_MS = 60_000;
  * is noticed. The interval returns the previous moment untouched whenever the
  * day has not changed, so the common tick costs a comparison and no re-render.
  */
-const useToday = (): Moment => {
+export const useToday = (): Moment => {
   const [today, setToday] = useState<Moment>(() => moment().startOf("day"));
   useEffect(() => {
     const timer = window.setInterval(() => {
