@@ -18,6 +18,12 @@ import { phaseOf } from "../event/phase";
 import { useInlineReminders } from "../event/inlineReminders";
 import { useTaskStats } from "../note/taskStats";
 import { selectDate } from "../state/selection";
+import {
+  readDisplayMonth,
+  setDisplayMonth,
+  setViewMode,
+  useCalendarView,
+} from "../state/view";
 import { formatLabel, formatDate, formatMonth } from "../note/format";
 import { noteExists } from "../note/noteOps";
 import { granularityDisabledHint } from "../note/periodicNotes";
@@ -218,8 +224,14 @@ const Calendar: React.FC<CalendarProps> = ({
   const isDark = useSyncExternalStore(subscribeColorScheme, isDarkMode);
 
   const today = useToday();
-  const [anchor, setAnchor] = useState<Moment>(() => moment());
-  const [mode, setMode] = useState<ViewMode>("month");
+  // The month shown and the view live in a store outside this tree, so a
+  // re-render (or reopening the sidebar) keeps them; see state/view.ts
+  const view = useCalendarView();
+  const anchor = useMemo(() => moment(view.anchor, "YYYY-MM-DD"), [view.anchor]);
+  const mode: ViewMode = view.mode;
+  const setAnchor = (next: Moment | ((current: Moment) => Moment)): void =>
+    setDisplayMonth(typeof next === "function" ? next(readDisplayMonth()) : next);
+  const setMode = setViewMode;
   const [jumpOpen, setJumpOpen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
   const [flashIso, setFlashIso] = useState<string | null>(null);

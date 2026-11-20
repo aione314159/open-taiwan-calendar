@@ -15,6 +15,7 @@ import { moment } from "../util/moment";
 import { commitEventEdit } from "../event/commands";
 import { openDailyNote, openExistingDailyNote } from "../event/noteStore";
 import { selectDate } from "../state/selection";
+import { setDisplayMonth } from "../state/view";
 import { shortDate } from "../event/dateMath";
 import { MissedReminderModal, ReminderModal } from "../view/ReminderModal";
 import type { DueReminder } from "../view/ReminderModal";
@@ -129,7 +130,10 @@ const dueLine = (item: DueReminder): string => {
  */
 const goToDay = (app: App, day: string): void => {
   void openExistingDailyNote(app, day).then((opened) => {
-    if (!opened) selectDate(day);
+    if (!opened) {
+      selectDate(day);
+      setDisplayMonth(day);
+    }
   });
 };
 

@@ -1,5 +1,5 @@
 import { Root } from "react-dom/client";
-import { Events, ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, WorkspaceLeaf } from "obsidian";
 import { refreshAllNotes } from "../state/notes";
 import {
   mountCalendarRoot,
@@ -27,10 +27,10 @@ export class CalendarView extends ItemView {
     // The vault listeners that keep the note index current live on the plugin,
     // not here: the floating panel reads the same index, and it has to stay
     // current while this view is closed or deferred.
-    const workspace = this.app.workspace as Events;
-    this.registerEvent(
-      workspace.on("open-taiwan-calendar:settings-updated", () => this.render())
-    );
+    // Settings changes reach the calendar through its own subscriptions
+    // (useSetting); re-mounting here on every save sent the grid back to
+    // today's month whenever anything — a reminder firing, a snooze, the
+    // floating panel moving — wrote data.json
   }
 
   // The ResizeObserver already covers container size changes; this adds one
