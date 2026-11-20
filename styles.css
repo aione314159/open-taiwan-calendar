@@ -1143,16 +1143,35 @@ body {
   color: var(--text-accent);
 }
 
-/* Belongs to the month either side of the one on screen. */
+/* Faded by colour, not by opacity. Whole-cell opacity took the 12px lunar
+   text far below a readable contrast and multiplied where a cell was both
+   past and outside. --text-muted keeps 4.5:1 or better in the default light
+   and dark themes; red weekend and holiday text keeps its own colour.
+
+   Belongs to the month either side of the one on screen: muted text on a
+   faint panel, so it reads as "not this month" next to a past day. */
 .otc-cell.is-outside {
-  opacity: 0.3;
+  background: var(--background-secondary);
 }
 
-/* Already in the past: faded, but every bit as clickable — of course a past
-   day's note has to be openable. Deliberately not named "disabled", which
-   below means the opposite thing. */
+.otc-cell.is-outside,
 .otc-cell.is-past {
-  opacity: 0.45;
+  color: var(--text-muted);
+}
+
+.otc-cell.is-outside:not(.is-weekend):not(.is-holiday) .otc-lunar,
+.otc-cell.is-past:not(.is-weekend):not(.is-holiday) .otc-lunar {
+  color: var(--text-muted);
+}
+
+/* Already in the past: as clickable as any day — of course a past day's note
+   has to be openable. Deliberately not named "disabled", which below means
+   the opposite thing. Its marks lose some colour but stay recognisable. */
+.otc-cell.is-past .otc-event-marks,
+.otc-cell.is-past .otc-badges,
+.otc-cell.is-outside .otc-event-marks,
+.otc-cell.is-outside .otc-badges {
+  filter: saturate(0.55);
 }
 
 /* The granularity is switched off in Periodic Notes: visible, but inert and
@@ -1179,7 +1198,7 @@ body {
 /* Faint on both counts has to read fainter than either one alone, and that
    has to be settled by specificity rather than by declaration order. */
 .otc-cell.is-past.is-disabled {
-  opacity: 0.3;
+  opacity: 0.45;
 }
 
 /* ---------- compact layout */
