@@ -490,4 +490,8 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "tooltip.dayOff": "放假",
   "tooltip.workday": "補班",
   "calendar.todayHint": "回到今天所在的月份（不開啟筆記）",
+  "a11y.today": "今天",
+  "a11y.hasNote": "已有筆記",
+  "a11y.entries": "{count} 筆項目",
+  "a11y.disabled": "停用",
 };
