@@ -1,4 +1,4 @@
-import { App, Modal, setIcon, setTooltip } from "obsidian";
+import { App, Menu, Modal, setIcon, setTooltip } from "obsidian";
 import { shortDate } from "../event/dateMath";
 import { formatReminderSummary } from "../event/offsets";
 import { PHASE_ORDER, phaseOf } from "../event/phase";
@@ -62,7 +62,12 @@ export class EventListBody {
     private readonly onAdd: () => void,
     private readonly onToggleDone: (event: CalendarEvent) => Promise<void>,
     /** Called where the list should get out of the way (the modal closes; a panel stays). */
-    private readonly onDismiss: () => void
+    private readonly onDismiss: () => void,
+    /**
+     * For the narrow sidebar panel: each row's buttons fold into one "⋯"
+     * menu on the second line, so the title gets the whole width.
+     */
+    private readonly compact = false
   ) {}
 
   mount(): void {
@@ -171,8 +176,54 @@ export class EventListBody {
     }
   }
 
-  /** Rebuilt from scratch on every change; the list is a few dozen rows at most. */
+  /** Draw the list, then fold the row buttons when the panel is compact. */
   private renderList(): void {
+    this.drawList();
+    if (this.compact) this.collapseActions();
+  }
+
+  /**
+   * Replace each row's button group with one "⋯" button at the end of the
+   * row's second line. Its menu lists the same actions, by their labels and
+   * icons, and runs them by clicking the original (hidden) button, so the
+   * menu can never drift from what the buttons do.
+   */
+  private collapseActions(): void {
+    for (const row of Array.from(this.listEl?.querySelectorAll(".otc-event-row") ?? [])) {
+      const actions = row.querySelector<HTMLElement>(".otc-event-row-actions");
+      const buttons = Array.from(actions?.querySelectorAll("button") ?? []);
+      if (!actions || buttons.length === 0) continue;
+      actions.addClass("is-collapsed");
+      const host =
+        row.querySelector<HTMLElement>(".otc-event-row-meta") ??
+        row.querySelector<HTMLElement>(".otc-event-row-text");
+      if (!host) continue;
+      const more = host.createEl("button", { cls: "clickable-icon otc-event-row-more" });
+      setIcon(more, "more-horizontal");
+      setTooltip(more, t("eventList.moreActions"));
+      more.setAttr("aria-label", t("eventList.moreActions"));
+      more.addEventListener("click", (event) => {
+        // The row text opens the day on click; the menu must not do that too
+        event.stopPropagation();
+        const menu = new Menu();
+        for (const button of buttons) {
+          const label = button.getAttr("aria-label") ?? "";
+          const icon = /lucide-([a-z0-9-]+)/.exec(
+            button.querySelector("svg")?.getAttr("class") ?? ""
+          )?.[1];
+          menu.addItem((item) => {
+            item.setTitle(label).onClick(() => button.click());
+            if (icon) item.setIcon(icon);
+          });
+        }
+        menu.showAtMouseEvent(event);
+      });
+      more.addEventListener("keydown", (event) => event.stopPropagation());
+    }
+  }
+
+  /** Rebuilt from scratch on every change; the list is a few dozen rows at most. */
+  private drawList(): void {
     const el = this.listEl;
     if (!el) return;
     // Rebuilding empties the list, which would throw the scroll position away
