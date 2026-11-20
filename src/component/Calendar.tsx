@@ -309,6 +309,11 @@ const Calendar: React.FC<CalendarProps> = ({
     const isToday = date.isSame(today, "day");
     const iso = date.format("YYYY-MM-DD");
     const dayEvents = eventsOnDate(events, iso);
+    // A multi-day entry joins this cell to its neighbours in the same week
+    // row: Monday starts a row and Sunday ends it, so the band breaks there
+    const multiDay = dayEvents.filter((e) => e.start !== e.end);
+    const spanLeft = date.day() !== 1 && multiDay.some((e) => e.start < iso);
+    const spanRight = date.day() !== 0 && multiDay.some((e) => e.end > iso);
     const hasNote = !!noteExists(date, NoteType.DAILY, notes[NoteType.DAILY]);
     const { disabled, ...handlers } = cellHandlers(date, NoteType.DAILY);
     // A day is never both a holiday and a make-up workday, so at most two of
@@ -334,6 +339,8 @@ const Calendar: React.FC<CalendarProps> = ({
           "is-disabled": disabled,
           "has-note": hasNote,
           "has-event": dayEvents.length > 0,
+          "span-left": spanLeft,
+          "span-right": spanRight,
           "is-flash": flashIso === iso,
         })}
         {...handlers}
