@@ -2189,3 +2189,22 @@ body {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
+
+/* ---------- Today: an action, kept apart from the month/year switch */
+.otc-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.otc-today-button {
+  height: auto;
+  padding: 2px 8px;
+  font-size: var(--font-ui-small);
+}
+
+/* The grid shows another month: Today is the way back */
+.otc-today-button.is-away {
+  color: var(--text-on-accent);
+  background: var(--interactive-accent);
+}
