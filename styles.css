@@ -1995,3 +1995,9 @@ body {
 .otc-note-events .otc-event-row:focus-within .otc-note-events-edit {
   opacity: 1;
 }
+
+/* Items that came due while the dialog was already open */
+.otc-reminder-row.is-new .otc-reminder-title::after {
+  content: " •";
+  color: var(--text-accent);
+}
