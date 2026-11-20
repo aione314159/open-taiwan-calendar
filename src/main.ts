@@ -35,7 +35,10 @@ import { openPluginSettings } from "./util/pluginSettings";
 import { CalendarView, VIEW_TYPE_CALENDAR } from "./view/CalendarView";
 import { FloatingCalendarPanel } from "./view/FloatingCalendarPanel";
 import { CaptureTaskModal } from "./view/CaptureTaskModal";
-import { setDisplayMonth } from "./state/view";
+import { readDisplayMonth, setDisplayMonth } from "./state/view";
+import { openOrCreateNote } from "./note/noteOps";
+import { readNotes } from "./state/notes";
+import { NoteType } from "./enum";
 import { DatedTasksModal } from "./view/DatedTasksModal";
 import { addLineAsEntry } from "./note/lineToEvent";
 import { CarryOverModal } from "./view/CarryOverModal";
@@ -107,6 +110,31 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       name: t("command.toggleFloatingPanel"),
       callback: () => this.toggleFloatingPanel(),
     });
+
+    // Calendar navigation and day notes, for the command palette and hotkeys
+    // (none bound by default)
+    this.addCommand({
+      id: "reveal-calendar",
+      name: t("command.revealCalendar"),
+      callback: () => void this.revealSidebar(),
+    });
+    const shiftMonth = (by: number) => () =>
+      setDisplayMonth(readDisplayMonth().add(by, "month"));
+    this.addCommand({ id: "previous-month", name: t("command.previousMonth"), callback: shiftMonth(-1) });
+    this.addCommand({ id: "next-month", name: t("command.nextMonth"), callback: shiftMonth(1) });
+    this.addCommand({
+      id: "go-to-today",
+      name: t("command.goToToday"),
+      callback: () => setDisplayMonth(moment()),
+    });
+    const openDay = (offset: number) => () => {
+      const day = moment().startOf("day").add(offset, "day");
+      // The same open-or-create path as a click, prompt setting included
+      void openOrCreateNote(day, NoteType.DAILY, readNotes(NoteType.DAILY), this.app);
+    };
+    this.addCommand({ id: "open-today-note", name: t("command.openTodayNote"), callback: openDay(0) });
+    this.addCommand({ id: "open-tomorrow-note", name: t("command.openTomorrowNote"), callback: openDay(1) });
+    this.addCommand({ id: "open-yesterday-note", name: t("command.openYesterdayNote"), callback: openDay(-1) });
 
     this.addCommand({
       id: "quick-add-event",
