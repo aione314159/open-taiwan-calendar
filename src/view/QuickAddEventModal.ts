@@ -8,6 +8,8 @@ import { inlineRemindersStore } from "../event/inlineReminders";
 import type { CalendarEvent } from "../event/types";
 import { t } from "../i18n";
 import { settingsStore } from "../state/settings";
+import { buildOffsetPicker } from "./offsetPicker";
+import type { OffsetPicker } from "./offsetPicker";
 import { markSettingRowShapes } from "./settingRowShape";
 import { moment } from "../util/moment";
 
@@ -123,7 +125,7 @@ export class QuickAddEventModal extends Modal {
   private startField: TextComponent | null = null;
   private endField: TextComponent | null = null;
   private remindToggle: ToggleComponent | null = null;
-  private offsetsField: TextComponent | null = null;
+  private offsetsPicker: OffsetPicker | null = null;
   private timeField: TextComponent | null = null;
   private notesInfo: HTMLElement | null = null;
   /** Set once the duplicate warning has been shown; the next Add goes through. */
@@ -257,17 +259,23 @@ export class QuickAddEventModal extends Modal {
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldOffsets"))
       .setDesc(t("quickAdd.fieldOffsetsDesc"))
-      .addText((text) => {
-        this.offsetsField = text;
-        text.setValue(this.draft.offsets).onChange((value) => {
-          this.draft.offsets = value;
-        });
+      .then((setting) => {
+        this.offsetsPicker = buildOffsetPicker(
+          setting.controlEl,
+          parseOffsets(this.draft.offsets) ?? [],
+          (offsets) => {
+            // An unreadable custom field is kept as text, so submit reports it
+            this.draft.offsets = offsets ? formatOffsets(offsets) : "x";
+          }
+        );
       });
 
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldTime"))
       .addText((text) => {
         this.timeField = text;
+        // A native time input: it cannot hold 25:00, and it reports HH:mm
+        text.inputEl.type = "time";
         text
           .setPlaceholder(t("quickAdd.timePlaceholder"))
           .setValue(this.draft.time)
@@ -393,7 +401,7 @@ export class QuickAddEventModal extends Modal {
     }
     if (parsed.offsets) {
       this.draft.offsets = formatOffsets(parsed.offsets);
-      this.offsetsField?.setValue(this.draft.offsets);
+      this.offsetsPicker?.setValue(parsed.offsets);
     }
 
     this.titleField?.setValue(parsed.title);

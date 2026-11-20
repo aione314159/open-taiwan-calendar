@@ -2037,3 +2037,23 @@ body {
   box-shadow: none;
   background: transparent;
 }
+
+/* ---------- days-before picker: ticks plus a custom field */
+.otc-offset-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 10px;
+}
+
+.otc-offset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.otc-offset-custom {
+  width: 8em;
+}

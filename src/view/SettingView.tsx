@@ -3,9 +3,10 @@ import type { SettingDefinitionItem, SettingGroupItem } from "obsidian";
 
 import { NoteType } from "../enum";
 import { openEditEvent, openQuickAddEvent, removeEvent } from "src/event/commands";
-import { formatOffsets, formatReminderSummary, parseOffsets } from "src/event/offsets";
+import { formatReminderSummary } from "src/event/offsets";
 import { eventsStore, readEvents } from "src/event/store";
 import { REMINDER_CHANNELS, ReminderChannel } from "src/event/types";
+import { buildOffsetPicker } from "./offsetPicker";
 import type { CalendarEvent } from "src/event/types";
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
@@ -163,25 +164,12 @@ export default class MainSettingTable extends PluginSettingTab {
    */
   private readSynthetic(key: string): unknown {
     const { reminder } = this.plugin.options;
-    if (key === "reminder.offsetsText") {
-      return formatOffsets(reminder.defaultOffsets);
-    }
     const channel = REMINDER_CHANNELS.find((c) => key === `reminder.channel.${c}`);
     return channel ? reminder.channels.includes(channel) : undefined;
   }
 
   /** Returns true when the key was a synthetic one and has been handled. */
   private writeSynthetic(key: string, value: unknown): boolean {
-    if (key === "reminder.offsetsText") {
-      const offsets = parseOffsets(String(value));
-      // A line that does not parse is rejected by `validate` before it reaches
-      // here; this guard is what stops a programming slip from writing an empty
-      // rule that can never fire
-      if (offsets) {
-        this.plugin.writeOptions(() => ({ reminder: { defaultOffsets: offsets } }));
-      }
-      return true;
-    }
 
     const channel = REMINDER_CHANNELS.find((c) => key === `reminder.channel.${c}`);
     if (!channel) return false;
@@ -640,25 +628,41 @@ export default class MainSettingTable extends PluginSettingTab {
           control: { type: "toggle", key: "reminder.enabled" },
         },
         {
+          // The same native time input as the quick-add dialog
           name: t("settings.reminderTimeName"),
           desc: t("settings.reminderTimeDesc"),
-          control: {
-            type: "text",
-            key: "reminder.defaultTime",
-            validate: (raw) =>
-              TIME_PATTERN.test(String(raw).trim())
-                ? undefined
-                : t("quickAdd.errorBadTime"),
+          render: (setting: Setting) => {
+            setting
+              .setName(t("settings.reminderTimeName"))
+              .setDesc(t("settings.reminderTimeDesc"))
+              .addText((text) => {
+                text.inputEl.type = "time";
+                text.setValue(this.plugin.options.reminder.defaultTime).onChange((value) => {
+                  if (!TIME_PATTERN.test(value.trim())) return;
+                  this.plugin.writeOptions(() => ({ reminder: { defaultTime: value.trim() } }));
+                  this.plugin.saveOptions();
+                });
+              });
           },
         },
         {
+          // The same ticks-plus-custom picker as the quick-add dialog
           name: t("settings.reminderOffsetsName"),
           desc: t("settings.reminderOffsetsDesc"),
-          control: {
-            type: "text",
-            key: "reminder.offsetsText",
-            validate: (raw) =>
-              parseOffsets(String(raw)) ? undefined : t("quickAdd.errorNoOffset"),
+          render: (setting: Setting) => {
+            setting
+              .setName(t("settings.reminderOffsetsName"))
+              .setDesc(t("settings.reminderOffsetsDesc"));
+            buildOffsetPicker(
+              setting.controlEl,
+              this.plugin.options.reminder.defaultOffsets,
+              (offsets) => {
+                // Nothing ticked and nothing typed is not a rule that can fire
+                if (!offsets || offsets.length === 0) return;
+                this.plugin.writeOptions(() => ({ reminder: { defaultOffsets: offsets } }));
+                this.plugin.saveOptions();
+              }
+            );
           },
         },
         ...REMINDER_CHANNELS.map((channel) => ({

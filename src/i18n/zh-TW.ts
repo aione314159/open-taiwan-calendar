@@ -249,7 +249,7 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "quickAdd.fieldReminder": "要提醒我",
   "quickAdd.fieldOffsets": "提前幾天",
   "quickAdd.fieldOffsetsDesc":
-    "用逗號分隔。0 是當天，所以「1, 0」是前一天一次、當天一次。",
+    "勾選要提醒的日子；其他天數寫在「自訂」，用逗號分隔。",
   "quickAdd.fieldTime": "時間",
   "quickAdd.submit": "新增",
   "quickAdd.editTitle": "編輯活動",
@@ -457,4 +457,5 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "eventList.noMatch": "沒有符合「{query}」的項目。",
   "eventList.pastFolded": "▸ 已結束（{count}）",
   "eventList.pastOpen": "▾ 已結束（{count}）",
+  "quickAdd.offsetsCustom": "自訂，例如 14",
 };
