@@ -501,4 +501,5 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "command.openTodayNote": "開啟今天的每日筆記",
   "command.openTomorrowNote": "開啟明天的每日筆記",
   "command.openYesterdayNote": "開啟昨天的每日筆記",
+  "eventList.showOnCalendar": "在日曆上顯示",
 };

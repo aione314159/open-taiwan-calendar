@@ -551,6 +551,7 @@ export const en = {
   "command.openTodayNote": "Open today’s daily note",
   "command.openTomorrowNote": "Open tomorrow’s daily note",
   "command.openYesterdayNote": "Open yesterday’s daily note",
+  "eventList.showOnCalendar": "Show on the calendar",
 } as const;
 
 export type TranslationKey = keyof typeof en;
