@@ -2057,3 +2057,16 @@ body {
 .otc-offset-custom {
   width: 8em;
 }
+
+/* ---------- what the sentence was read as. Fixed height: never shifts the
+   fields below when it appears or changes. */
+.otc-quick-add-summary {
+  min-height: 1.6em;
+  margin: -4px 0 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.otc-quick-add-summary.is-warning {
+  color: var(--text-warning);
+}
