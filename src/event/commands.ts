@@ -11,6 +11,7 @@ import {
   refreshEvents,
   upsertEvent,
 } from "./noteStore";
+import type { TouchedNote } from "./noteStore";
 import type { CalendarEvent } from "./types";
 
 /**
@@ -33,14 +34,26 @@ import type { CalendarEvent } from "./types";
  */
 const settle = (app: App): void => refreshEvents(app);
 
+/** How many notes a write created, for the saved notice. */
+const createdCount = (touched: TouchedNote[]): number =>
+  touched.filter((note) => note.created).length;
+
+const savedNotice = (title: string, created: number): void => {
+  new Notice(
+    created > 0
+      ? t("notice.eventSavedCreated", { title, count: created })
+      : t("notice.eventSaved", { title })
+  );
+};
+
 /** Persist a new entry into the notes of its range, creating them as needed. */
 export const commitNewEvent = async (
   app: App,
   event: CalendarEvent
 ): Promise<void> => {
-  await upsertEvent(app, event);
+  const touched = await upsertEvent(app, event);
   settle(app);
-  new Notice(t("notice.eventSaved", { title: event.title }));
+  savedNotice(event.title, createdCount(touched));
 };
 
 /**
@@ -55,8 +68,9 @@ export const commitEventEdit = async (
   previous: CalendarEvent,
   edited: CalendarEvent
 ): Promise<void> => {
-  await upsertEvent(app, edited, previous);
+  const touched = await upsertEvent(app, edited, previous);
   settle(app);
+  savedNotice(edited.title, createdCount(touched));
 };
 
 /** Remove an entry from every note of its range. The notes themselves stay. */

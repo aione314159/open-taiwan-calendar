@@ -306,4 +306,9 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "protocol.tooLong": "連結未執行：一筆項目最多跨 {max} 天",
   "settings.protocolDirectAddName": "允許外部連結直接新增",
   "settings.protocolDirectAddDesc": "開啟時，帶有 save=1 的 obsidian://open-taiwan-calendar 連結會直接寫入，不開對話框。關閉時，所有連結都只開啟已預填的對話框。",
+  "notice.eventSavedCreated": "已儲存：{title}（新建立 {count} 篇每日筆記）",
+  "quickAdd.notesNew": "涵蓋 {days} 天，將新建立 {count} 篇每日筆記：{dates}",
+  "quickAdd.notesNoneNew": "涵蓋 {days} 天，每日筆記都已存在，不會建立新筆記。",
+  "quickAdd.notesMore": " 等，另有 {count} 篇",
+  "quickAdd.notesOldRange": " 舊範圍的筆記只會移除此項目，不會刪除筆記。",
 };

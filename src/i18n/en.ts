@@ -356,6 +356,11 @@ export const en = {
   "protocol.tooLong": "The link was not used: an entry can span at most {max} days",
   "settings.protocolDirectAddName": "Let links add entries directly",
   "settings.protocolDirectAddDesc": "When on, an obsidian://open-taiwan-calendar link with save=1 writes the entry without opening the dialog. When off, every link only opens the pre-filled dialog.",
+  "notice.eventSavedCreated": "Saved: {title} ({count} new daily notes created)",
+  "quickAdd.notesNew": "Covers {days} days. {count} daily notes will be created: {dates}",
+  "quickAdd.notesNoneNew": "Covers {days} days. Every daily note already exists; none will be created.",
+  "quickAdd.notesMore": " and {count} more",
+  "quickAdd.notesOldRange": " Notes outside the new range only lose this entry; they are not deleted.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

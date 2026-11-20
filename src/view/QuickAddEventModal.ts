@@ -1,5 +1,6 @@
 import { App, Modal, Setting, TextComponent, ToggleComponent } from "obsidian";
 import { addDays, diffDays } from "../event/dateMath";
+import { dailyNoteExists, MAX_EVENT_DAYS } from "../event/noteStore";
 import { formatOffsets, parseOffsets } from "../event/offsets";
 import { parseNaturalLanguage } from "../event/parseNaturalLanguage";
 import type { CalendarEvent } from "../event/types";
@@ -113,6 +114,7 @@ export class QuickAddEventModal extends Modal {
   private startField: TextComponent | null = null;
   private endField: TextComponent | null = null;
   private remindToggle: ToggleComponent | null = null;
+  private notesInfo: HTMLElement | null = null;
 
   constructor(
     app: App,
@@ -208,12 +210,19 @@ export class QuickAddEventModal extends Modal {
               ? this.draft.start
               : next;
           if (this.draft.end !== next) this.endField?.setValue(this.draft.end);
+          this.updateNotesInfo();
         });
       });
     if (this.endField) {
       addDatePickerButton(endRow, this.endField.inputEl);
       this.endField.inputEl.min = this.draft.start;
     }
+
+    // Which daily notes this entry lands in, and which of them do not exist
+    // yet: a nine-day trip silently creating six template-only notes is what
+    // the user only found out about afterwards
+    this.notesInfo = this.contentEl.createDiv({ cls: "otc-quick-add-notes" });
+    this.updateNotesInfo();
 
     new Setting(this.contentEl)
       .setName(t("quickAdd.fieldColor"))
@@ -294,6 +303,39 @@ export class QuickAddEventModal extends Modal {
       : 0;
     this.draft.end = addDays(next, span);
     this.endField?.setValue(this.draft.end);
+    this.updateNotesInfo();
+  }
+
+  /**
+   * Say how many daily notes the entry covers and which ones saving creates.
+   *
+   * Reads the note index only; nothing is created until the user saves.
+   */
+  private updateNotesInfo(): void {
+    const el = this.notesInfo;
+    if (!el) return;
+    const { start, end } = this.draft;
+    if (!ISO_DATE_PATTERN.test(start) || !ISO_DATE_PATTERN.test(end) || end < start) {
+      el.setText("");
+      el.removeClass("is-warning");
+      return;
+    }
+    const span = Math.min(diffDays(start, end) + 1, MAX_EVENT_DAYS);
+    const missing = Array.from({ length: span }, (_, i) => addDays(start, i)).filter(
+      (day) => !dailyNoteExists(day)
+    );
+    const listed = missing.slice(0, 3).join(t("event.offsetSeparator"));
+    const more = missing.length > 3 ? t("quickAdd.notesMore", { count: missing.length - 3 }) : "";
+    let text =
+      missing.length === 0
+        ? t("quickAdd.notesNoneNew", { days: span })
+        : t("quickAdd.notesNew", { days: span, count: missing.length, dates: listed + more });
+    const existing = this.preset.existing;
+    if (existing && (existing.start !== start || existing.end !== end)) {
+      text += t("quickAdd.notesOldRange");
+    }
+    el.setText(text);
+    el.toggleClass("is-warning", missing.length > 7);
   }
 
   /**
@@ -320,6 +362,7 @@ export class QuickAddEventModal extends Modal {
     this.startField?.setValue(parsed.start);
     this.endField?.setValue(parsed.end);
     if (this.endField) this.endField.inputEl.min = parsed.start;
+    this.updateNotesInfo();
     this.remindToggle?.setValue(this.draft.remind);
     this.showError("");
   }
