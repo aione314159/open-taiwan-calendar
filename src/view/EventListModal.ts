@@ -137,6 +137,10 @@ export class EventListModal extends Modal {
   private renderList(): void {
     const el = this.listEl;
     if (!el) return;
+    // Rebuilding empties the list, which would throw the scroll position away
+    const scroller = this.contentEl;
+    const scrollTop = scroller.scrollTop;
+    window.requestAnimationFrame(() => (scroller.scrollTop = scrollTop));
     el.empty();
 
     if (this.tab === "inline") {
@@ -247,10 +251,9 @@ export class EventListModal extends Modal {
         const button = actions.createEl("button", { cls: "clickable-icon" });
         setIcon(button, icon);
         setTooltip(button, label);
-        button.addEventListener("click", () => {
-          this.close();
-          run();
-        });
+        // The list stays open: the edit dialog opens on top of it, and a
+        // delete shows up through the store watch, tab and scroll kept
+        button.addEventListener("click", () => run());
       }
     }
   }
