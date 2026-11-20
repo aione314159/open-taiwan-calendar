@@ -76,6 +76,11 @@ export interface QuickAddPreset {
   /** `HH:mm` */
   time?: string;
   /**
+   * The inline reminder this entry is being converted from. It is the same
+   * thing by design, so the duplicate warning leaves it out.
+   */
+  fromInline?: { path: string; line: number };
+  /**
    * When set, the dialog edits this entry rather than creating one. Every
    * field starts at its current value and the id is carried through, which is
    * what makes the settings list's rows editable without a second dialog.
@@ -430,7 +435,10 @@ export class QuickAddEventModal extends Modal {
     };
     const settings = settingsStore.read();
     const duplicates = settings.appearance.inlineReminders
-      ? findDuplicates(candidate, inlineRemindersStore.read(), settings.ignoredDuplicates)
+      ? findDuplicates(candidate, inlineRemindersStore.read(), settings.ignoredDuplicates).filter(
+          (item) =>
+            !(item.path === this.preset.fromInline?.path && item.line === this.preset.fromInline?.line)
+        )
       : [];
     if (duplicates.length > 0 && !this.duplicateAcknowledged) {
       this.duplicateAcknowledged = true;
