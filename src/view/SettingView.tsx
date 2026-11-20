@@ -269,6 +269,9 @@ export default class MainSettingTable extends PluginSettingTab {
       case "appearance.taskProgress":
         this.plugin.writeOptions(() => ({ appearance: { taskProgress: value as boolean } }));
         break;
+      case "appearance.followActiveNote":
+        this.plugin.writeOptions(() => ({ appearance: { followActiveNote: value as boolean } }));
+        break;
       case "appearance.dayPanel":
         this.plugin.writeOptions(() => ({ appearance: { dayPanel: value as boolean } }));
         break;
@@ -497,6 +500,11 @@ export default class MainSettingTable extends PluginSettingTab {
           name: t("settings.taskProgressName"),
           desc: t("settings.taskProgressDesc"),
           control: { type: "toggle", key: "appearance.taskProgress" },
+        },
+        {
+          name: t("settings.followActiveNoteName"),
+          desc: t("settings.followActiveNoteDesc"),
+          control: { type: "toggle", key: "appearance.followActiveNote" },
         },
         {
           name: t("settings.dayPanelName"),

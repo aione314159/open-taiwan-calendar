@@ -82,6 +82,8 @@ export interface AppearanceSetting {
   weekColumn: "show" | "hide" | "auto";
   /** Whether a day's note dot shows if its to-dos are all done. */
   taskProgress: boolean;
+  /** Whether opening another month's daily note pages the calendar to it. */
+  followActiveNote: boolean;
   /** Whether the sidebar shows the selected day's panel below the grid. */
   dayPanel: boolean;
   /** Whether that panel is folded to its heading. */
@@ -257,6 +259,7 @@ export const defaultSetting: PluginSetting = {
     },
     weekColumn: "auto",
     taskProgress: true,
+    followActiveNote: true,
     dayPanel: true,
     dayPanelCollapsed: false,
     upcoming: true,

@@ -502,4 +502,6 @@ export const zhTW: Partial<Record<TranslationKey, string>> = {
   "command.openTomorrowNote": "開啟明天的每日筆記",
   "command.openYesterdayNote": "開啟昨天的每日筆記",
   "eventList.showOnCalendar": "在日曆上顯示",
+  "settings.followActiveNoteName": "跟隨開啟的筆記",
+  "settings.followActiveNoteDesc": "作用中檔案換成另一個月份的每日筆記時，日曆自動翻到該月。",
 };

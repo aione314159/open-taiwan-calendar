@@ -12,6 +12,7 @@ import {
 } from "./event/inlineReminders";
 import { convertInline } from "./event/inlineConvert";
 import { startTaskStats } from "./note/taskStats";
+import { startActiveNoteTracking } from "./state/activeNote";
 import { InlineConvertModal } from "./view/InlineConvertModal";
 import { sanitizeOverrides } from "./holiday/rocHoliday";
 import type { RocHolidayEntry } from "./holiday/types";
@@ -312,6 +313,7 @@ export default class OpenTaiwanCalendarPlugin extends Plugin {
       refreshEvents(this.app);
       startInlineReminders(this);
       startTaskStats(this);
+      startActiveNoteTracking(this);
       // A reminder due at 09:00 in a vault that was not open at 09:00 has to
       // appear on opening rather than be skipped for the day
       runReminderSweep(this, { startup: true });

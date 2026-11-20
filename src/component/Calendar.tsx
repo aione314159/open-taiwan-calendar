@@ -17,6 +17,7 @@ import { eventsOnDate, hasEventInMonth, useEvents } from "../event/store";
 import { phaseOf } from "../event/phase";
 import { useInlineReminders } from "../event/inlineReminders";
 import { useTaskStats } from "../note/taskStats";
+import { useActiveNote } from "../state/activeNote";
 import { selectDate } from "../state/selection";
 import {
   readDisplayMonth,
@@ -227,6 +228,7 @@ const Calendar: React.FC<CalendarProps> = ({
   // The month shown and the view live in a store outside this tree, so a
   // re-render (or reopening the sidebar) keeps them; see state/view.ts
   const view = useCalendarView();
+  const activeNote = useActiveNote();
   const anchor = useMemo(() => moment(view.anchor, "YYYY-MM-DD"), [view.anchor]);
   const mode: ViewMode = view.mode;
   const setAnchor = (next: Moment | ((current: Moment) => Moment)): void =>
@@ -523,6 +525,8 @@ const Calendar: React.FC<CalendarProps> = ({
           "span-left": spanLeft,
           "span-right": spanRight,
           "is-flash": flashIso === iso,
+          // The daily note open in the editor
+          "is-active-note": activeNote.type === NoteType.DAILY && activeNote.iso === iso,
         })}
         {...handlers}
         aria-labelledby={labelId}
@@ -828,6 +832,14 @@ const Calendar: React.FC<CalendarProps> = ({
                   className={classNames("otc-title-item", {
                     "is-disabled": disabled,
                     "has-note": noteExists(anchor, type, notes[type]),
+                    // The open note is this year's, month's or quarter's
+                    "is-active-note":
+                      activeNote.type === type &&
+                      !!activeNote.iso &&
+                      anchor.isSame(
+                        activeNote.iso,
+                        type === NoteType.YEARLY ? "year" : type === NoteType.QUARTERLY ? "quarter" : "month"
+                      ),
                   })}
                   {...handlers}
                 >
