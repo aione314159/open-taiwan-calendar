@@ -471,6 +471,15 @@ export const en = {
   "calendar.taskProgress": "{open} open of {total} to-dos",
   "settings.taskProgressName": "Show to-do progress",
   "settings.taskProgressDesc": "A day whose note still has open to-dos gets a hollow note dot; one where all are done gets a filled green dot. Counts come from Obsidian’s cache, no files are read.",
+  "dayPanel.title": "{date} · {lunar}",
+  "dayPanel.dateFormat": "ddd D MMM",
+  "dayPanel.noEvents": "No reminders or events on this day.",
+  "dayPanel.noTasks": "No open to-dos in this day’s note.",
+  "dayPanel.openTasks": "{count} open to-dos",
+  "dayPanel.more": "and {count} more",
+  "dayPanel.createNote": "Create this day’s note",
+  "settings.dayPanelName": "Show the day panel",
+  "settings.dayPanelDesc": "Below the sidebar calendar, show the selected day’s entries and the open to-dos of its note. Clicking a day selects it.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

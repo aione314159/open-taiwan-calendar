@@ -1940,3 +1940,32 @@ body {
 .otc-event-dot.is-note.is-all-done {
   background: var(--color-green);
 }
+
+/* ---------- the selected day, below the sidebar grid. Capped and scrolled so
+   it never pushes the grid out of view. */
+.otc-day-panel {
+  margin: 4px 8px 0;
+  font-size: var(--font-ui-small);
+}
+
+.otc-day-panel-body {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.otc-day-panel.is-collapsed .otc-upcoming-head::before {
+  content: "▸ ";
+}
+
+.otc-day-panel .otc-upcoming-head::before {
+  content: "▾ ";
+}
+
+.otc-day-panel-box {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
+.otc-day-panel-create {
+  margin: 4px 8px;
+}

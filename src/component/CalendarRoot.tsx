@@ -2,8 +2,11 @@ import { createRoot, Root } from "react-dom/client";
 import type { Moment } from "src/util/moment";
 import { App, PaneType } from "obsidian";
 import type { NoteIndex } from "../state/notes";
+import { readNotes } from "../state/notes";
 import { openEditEvent, openEventList, openQuickAddEvent } from "../event/commands";
 import Upcoming from "./Upcoming";
+import DayPanel from "./DayPanel";
+import { moment } from "src/util/moment";
 import { createNoteWithoutOpening, openOrCreateNote } from "../note/noteOps";
 import { showNoteContextMenu, triggerHoverPreview } from "../note/noteMenu";
 import { granularityEnabled } from "../note/periodicNotes";
@@ -25,6 +28,25 @@ import Calendar from "./Calendar";
  * whether a granularity is switched on, adding an event — is handed down from
  * here as a callback.
  */
+/** The selected day's panel below the sidebar grid. */
+export const mountDayPanelRoot = (app: App, container: Element): Root => {
+  const root = createRoot(container);
+  root.render(
+    <DayPanel
+      onEdit={(event) => openEditEvent(app, event)}
+      onOpenLine={(file, line) =>
+        void app.workspace.getLeaf(false).openFile(file, { eState: { line } })
+      }
+      onCreateNote={(day) =>
+        void openOrCreateNote(moment(day, "YYYY-MM-DD"), NoteType.DAILY, readNotes(NoteType.DAILY), app)
+      }
+      readFile={(file) => app.vault.cachedRead(file)}
+      onSaveSettings={() => app.workspace.trigger("open-taiwan-calendar:save-settings")}
+    />
+  );
+  return root;
+};
+
 /** The "coming up" list below the sidebar grid, in its own root so it is not scaled. */
 export const mountUpcomingRoot = (app: App, container: Element): Root => {
   const root = createRoot(container);

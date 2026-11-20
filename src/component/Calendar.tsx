@@ -15,6 +15,7 @@ import type { PaneType } from "obsidian";
 import { eventsOnDate, hasEventInMonth, useEvents } from "../event/store";
 import { useInlineReminders } from "../event/inlineReminders";
 import { useTaskStats } from "../note/taskStats";
+import { selectDate } from "../state/selection";
 import { formatLabel, formatDate, formatMonth } from "../note/format";
 import { noteExists } from "../note/noteOps";
 import { granularityDisabledHint } from "../note/periodicNotes";
@@ -226,6 +227,8 @@ const Calendar: React.FC<CalendarProps> = ({
         // Ctrl/Cmd click opens a split, so someone with the panel parked in a
         // corner keeps the tab they were working in
         onClick: (event) => {
+          // The day panel follows the last day clicked, whatever happens next
+          if (type === NoteType.DAILY) selectDate(date.format("YYYY-MM-DD"));
           // Alt-click on a day sets its note up for later without leaving the
           // note being worked on
           if (event.altKey && type === NoteType.DAILY) {
